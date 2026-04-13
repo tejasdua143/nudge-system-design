@@ -1209,6 +1209,7 @@ const TIER_2 = ['India', 'Brazil', 'Indonesia', 'Philippines', 'Mexico', 'Nigeri
 let state = {
   user: {},
   activeSignals: new Set(),
+  activeActions: new Set(),
   signalLog: [],
   featureScores: {},
   milestonesThisSession: 0,
@@ -1568,16 +1569,39 @@ function generateCopy(feature) {
 // 13. Coordinator — performAction() + resetSimulator()
 // ══════════════════════════════════════════════════════════════════════════════
 
+function rebuildSignalsFromActions() {
+  // Collect all signals contributed by currently active actions
+  var actionSignals = new Set();
+  state.activeActions.forEach(function(aid) {
+    var action = ACTIONS.find(function(a) { return a.id === aid; });
+    if (action) action.signals.forEach(function(s) { actionSignals.add(s); });
+  });
+
+  // Rebuild activeSignals: start from context signals (from user profile), add action signals
+  state.activeSignals = new Set();
+  profileUser();
+  addStateSignals();
+  actionSignals.forEach(function(s) { state.activeSignals.add(s); });
+}
+
 function performAction(actionId) {
-  const action = ACTIONS.find(a => a.id === actionId);
+  var action = ACTIONS.find(function(a) { return a.id === actionId; });
   if (!action) return;
 
-  // Add signals to activeSignals
-  action.signals.forEach(s => state.activeSignals.add(s));
+  var btn = document.getElementById('act-' + actionId);
 
-  // Mark button as done
-  const btn = document.getElementById('act-' + actionId);
-  if (btn) btn.classList.add('done');
+  if (state.activeActions.has(actionId)) {
+    // Toggle OFF
+    state.activeActions.delete(actionId);
+    if (btn) btn.classList.remove('done');
+  } else {
+    // Toggle ON
+    state.activeActions.add(actionId);
+    if (btn) btn.classList.add('done');
+  }
+
+  // Rebuild signals from scratch based on active actions
+  rebuildSignalsFromActions();
 
   // Re-render and evaluate
   renderSignals();
@@ -1590,6 +1614,7 @@ function resetSimulator() {
   state = {
     user: {},
     activeSignals: new Set(),
+    activeActions: new Set(),
     signalLog: [],
     featureScores: {},
     milestonesThisSession: 0,
