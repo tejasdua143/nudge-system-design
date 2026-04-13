@@ -27,6 +27,7 @@ let state = {
   featuresShownThisSession: new Set(), // Feature IDs already shown as milestones
   lastMilestoneTime: 0,              // Timestamp of last milestone (used for cooldown)
   milestoneLog: [],                   // Reverse-chronological log of fired milestones
+  isUserActive: false,                // Whether the user is currently active
 };
 ```
 
@@ -65,6 +66,7 @@ Set by the ContextProfiler after `generateUser()`.
 | `mindsetVector`    | object | Per-feature weight object (0--5 per feature for all 9 features)  |
 | `audienceStakes`   | string | `'high-external'` \| `'low-external'` \| `'internal'`           |
 | `promptSynthesis`  | object | Per-feature 0--5 scores derived from topic/prompt analysis       |
+| `isProUser`        | boolean | Derived field set by `handleUpgrade()`; default `undefined`/`false` |
 
 ### featureScores Structure
 
@@ -91,7 +93,7 @@ Entries are stored in reverse-chronological order (newest first).
 
 ```js
 {
-  feature: string,             // Feature ID that was nudged
+  feature: object,             // Full feature object (id, name, icon, type, verb, does, plus merged score fields)
   copy: {
     title: string,             // Milestone display title
     body: string               // Milestone display body text
@@ -101,7 +103,7 @@ Entries are stored in reverse-chronological order (newest first).
   universal: number,           // Universal contribution component
   directSignals: [...],        // Direct signals that were active
   universalSignals: [...],     // Universal signals that were active
-  time: number                 // Timestamp when milestone was fired
+  time: string                 // Formatted time string from new Date().toLocaleTimeString() (e.g. "2:34:15 PM")
 }
 ```
 
@@ -112,7 +114,8 @@ Entries are stored in reverse-chronological order (newest first).
 | **SignalCollector**  | `user`, `activeSignals`, `signalLog`                                                      |
 | **ScoringEngine**   | `featureScores`                                                                           |
 | **MilestoneSelector** | `milestonesThisSession`, `featuresShownThisSession`, `lastMilestoneTime`, `milestoneLog` |
-| **Coordinator**     | `activeActions`                                                                           |
+| **Coordinator**     | `activeActions`, `isUserActive` (toggled by `toggleUserActive()`)                         |
+| **Feedback Handlers** | `user.isProUser` (set by `handleUpgrade()`)                                             |
 
 No engine writes outside its slice. This prevents race conditions and makes the data flow deterministic and traceable.
 
@@ -131,4 +134,6 @@ No engine writes outside its slice. This prevents race conditions and makes the 
 - **ContextProfiler** (spec 03) -- Enriches `user` with derived fields; adds context signals.
 - **ScoringEngine** (spec 04) -- Reads `activeSignals`, writes `featureScores`.
 - **MilestoneSelector** -- Reads `featureScores`, writes milestone tracking fields.
-- **Coordinator** -- Manages `activeActions` based on user interactions.
+- **Coordinator** -- Manages `activeActions` based on user interactions; `toggleUserActive()` toggles `isUserActive`.
+- **`handleDismiss()`** -- Feedback loop handler for nudge dismissals.
+- **`handleUpgrade()`** -- Feedback loop handler that sets `user.isProUser` on upgrade.

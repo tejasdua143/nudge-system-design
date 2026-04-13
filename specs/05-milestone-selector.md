@@ -35,7 +35,7 @@ Called after every user action. This is the main decision function.
 **Algorithm (step by step):**
 
 1. Call `calculateScores()` to get a fresh score object for all features.
-2. Map all 9 features with their current scores: `{ id, label, direct, universal, total }`.
+2. Map all 9 features by merging each FEATURES entry with its current scores: `{ id, name, icon, type, verb, does, direct, universalRaw, universalContrib, total, directSignals, universalSignals }`.
 3. **Filter** — keep only features where:
    - `total >= CONFIG.THRESHOLD` (14), AND
    - feature has NOT already been shown this session (`state.featuresShownThisSession`)
@@ -102,6 +102,7 @@ So if `brand-kit` and `export` both score 18, `brand-kit` wins because it has a 
 - **Session scoping**: `featuresShownThisSession` resets when the session resets. A feature can only fire once per session.
 - **Double filtering**: The "already shown" check happens both in the filter step (step 3) and inside guardrails (feature repeat check). The filter step is the primary gate; the guardrail check is a safety net.
 - **Re-evaluation on every action**: Scores are recalculated fresh on every call. A feature that didn't qualify before may qualify after new actions add signals.
+- **Guardrail suppression**: Even when the top feature scores above threshold, `checkGuardrails()` can still prevent it from firing. In particular, the activity pause guardrail (cooldown after recent nudge) and the Pro user kill switch (no nudges for Pro subscribers) will block the nudge silently. See [06-guardrails.md](./06-guardrails.md) for the full list of guardrail checks.
 
 ---
 

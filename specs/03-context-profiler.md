@@ -32,7 +32,7 @@ Writes to:
 
 ### profileUser()
 
-Executes Layers 1, 2, and 3 in order, then calls `addStateSignals()`.
+Executes Layers 1, 2, and 3 in order. Does **not** call `addStateSignals()` — that function is called separately by `generateUser()` in the SignalCollector (spec 02).
 
 ---
 

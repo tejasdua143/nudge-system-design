@@ -81,7 +81,7 @@ Displays all currently active signals with type classification badges.
 | `UNI` | Signal contributes to universal scoring only |
 | `D+U` | Signal contributes to both direct and universal scoring |
 
-**Signal pool:** 46 possible signals defined in the `allSignals` array. Only active signals are shown at any given time.
+**Signal pool:** 48 possible signals defined in the `allSignals` array. Only active signals are shown at any given time.
 
 ---
 
@@ -116,14 +116,16 @@ Score matrix table showing all 9 features ranked by total score.
 
 ### 6. `renderGuardrails()`
 
-4-item status bar showing current guardrail state.
+6-item status bar showing current guardrail state.
 
 | Indicator | Display | Visual States |
 |---|---|---|
+| Pro user | `Pro` or `Free` | `ok` (free user, nudges active), `blocked` (Pro user, all nudges suppressed) |
 | Milestones fired | `X/3` | `ok` (0-1 fired), `warn` (2 fired), `blocked` (3 fired — cap hit) |
 | Cooldown | `Xs` or `Ready` | `warn` (active, shows remaining seconds), `ok` (ready to fire) |
 | Features shown | `X/9` | Informational count of distinct features shown this session |
 | Intent floor | `Pass` or `Low (X)` | `ok` (universal sum >= 3), `blocked` (universal sum < 3, shows value) |
+| Activity | `Active` or `Idle` | Clickable toggle. Calls `toggleUserActive()`. When toggled active→idle, triggers `evaluateAndFire()` |
 
 ---
 
@@ -149,6 +151,8 @@ Triggered when a milestone fires. Renders two things:
 **Modal buttons:**
 - **Dismiss** — closes the modal (`closeNudgeModal()`)
 - **Skip Cooldown** — calls `skipCooldown()` to reset the cooldown timer for testing
+
+**Important: dismiss behaviors differ.** The inline nudge card's "Not now" button calls `handleDismiss()`, which updates state (increments dismissals, removes the `zero-dismissals` signal, re-renders multiple panels). The modal's "Dismiss" button calls `closeNudgeModal()`, which only closes the overlay without changing state. These are intentionally different — inline dismiss reflects a real user action, while modal dismiss is just UI cleanup.
 
 ---
 
@@ -205,6 +209,9 @@ Built by `buildNudgeCardHTML(feature, copy)`.
 | `getActionImpact()` | Returns per-feature score impact for an action button |
 | `buildTooltipHTML()` | Generates tooltip markup for action button hover |
 | `shufflePrompt()` | Picks a new random prompt and re-runs the full pipeline |
+| `handleDismiss(featureId)` | Called by "Not now" button on inline nudge card. Increments `state.user.dismissals`, removes `zero-dismissals` signal, closes modal, re-renders UserContext/Signals/Matrix/Guardrails |
+| `handleUpgrade(featureId)` | Called by "Upgrade to Pro" / "Talk to our team" CTA button. For Pro features: sets `state.user.isProUser = true` and kills all future nudges. For hire-team: routes to service booking flow |
+| `toggleUserActive()` | Called by clicking the Activity indicator in the guardrail bar. Toggles `state.isUserActive`, re-renders guardrails, and triggers `evaluateAndFire()` when going from active→idle |
 
 ---
 
@@ -220,6 +227,6 @@ Built by `buildNudgeCardHTML(feature, copy)`.
 ## Cross-References
 
 - **MilestoneSelector**: [05-milestone-selector.md](./05-milestone-selector.md) — `fireMilestone()` triggers `renderNudgePreview`, `renderFeed`, `renderMatrix`, `renderGuardrails`.
-- **Guardrails**: [06-guardrails.md](./06-guardrails.md) — `renderGuardrails()` visualizes the 4-item status bar; `skipCooldown()` is exposed in the modal UI.
+- **Guardrails**: [06-guardrails.md](./06-guardrails.md) — `renderGuardrails()` visualizes the 6-item status bar; `skipCooldown()` is exposed in the modal UI.
 - **Copy Engine**: [07-copy-engine.md](./07-copy-engine.md) — `renderNudgePreview()` and `buildNudgeCardHTML()` consume copy output.
 - **Scoring**: `renderMatrix()` reads score data; `renderActions()` and `renderUserContext()` show score impact via tooltips.

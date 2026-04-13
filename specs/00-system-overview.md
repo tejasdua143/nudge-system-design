@@ -50,7 +50,7 @@ Not a Pro plan feature — a paid service where our team builds the presentation
 
 ---
 
-## Architecture — Six Engines + Shared State
+## Architecture — Six Engines + Renderer + Shared State
 
 ```
 USER ACTIONS
@@ -134,7 +134,7 @@ All engines read from and write to a central **NudgeState Bus**. Each engine own
 
 ## Scoring Math
 
-For each of the 8 Pro features:
+For each of the 9 features (8 Pro + hire-team):
 
 ```
 Direct Score    = SUM of all matching signal weights for that feature
