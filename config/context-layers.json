@@ -1,0 +1,16 @@
+{
+  "_doc": "Audience stakes classification. Maps audience names to stakes levels. Used by ContextProfiler Layer 2.",
+
+  "audienceStakes": {
+    "high-external": ["Investors", "VCs", "Board members", "Angel investors", "Enterprise clients", "C-suite buyers"],
+    "low-external": ["Prospects", "Potential clients", "Recruiters", "Art directors"],
+    "internal": ["Leadership team", "Executives", "Stakeholders", "Cross-functional team", "Students", "Corporate trainees", "Workshop attendees", "Professor", "Panel judges", "Classmates"]
+  },
+
+  "stakesSignalWeights": {
+    "_doc": "Per-stakes direct signal weights. Also present in direct-signal-map.json for the scoring engine.",
+    "stakes-high-external": { "unbranded": 3, "analytics": 2, "brand-kit": 2, "hire-team": 2 },
+    "stakes-low-external": { "unbranded": 2, "brand-kit": 1 },
+    "stakes-internal": { "gen-speed": 2, "ai-models": 2, "invite-collab": 2 }
+  }
+}
