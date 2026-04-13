@@ -1829,6 +1829,7 @@ function resetSimulator() {
   // Clear any pending timers from previous simulation
   if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
   if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
+  if (promptDebounceTimer) { clearTimeout(promptDebounceTimer); promptDebounceTimer = null; }
   closeNudgeModal();
 
   state = {
@@ -2003,7 +2004,7 @@ function renderPromptAnalysis() {
   // Editable prompt with shuffle button
   html += '<div class="prompt-section-label">User Prompt</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
-  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" onchange="applyCustomPrompt(this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" placeholder="Type any prompt..." />';
+  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
   html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
   html += '</div>';
 
@@ -2035,6 +2036,12 @@ function renderPromptAnalysis() {
   el.innerHTML = html;
 }
 
+var promptDebounceTimer = null;
+function debouncePrompt(text) {
+  if (promptDebounceTimer) clearTimeout(promptDebounceTimer);
+  promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, 300);
+}
+
 function applyCustomPrompt(text) {
   var prompt = (text || '').trim();
   if (!prompt) return;
@@ -2047,6 +2054,10 @@ function applyCustomPrompt(text) {
   DIRECT_MAP['prompt-synthesis'] = synthesis;
   state.activeSignals.add('prompt-synthesis');
 
+  // Save cursor position before re-render destroys the input
+  var oldInput = document.getElementById('prompt-input');
+  var cursorPos = oldInput ? oldInput.selectionStart : null;
+
   rebuildSignalsFromActions();
   renderUserContext();
   renderPromptAnalysis();
@@ -2055,9 +2066,12 @@ function applyCustomPrompt(text) {
   renderGuardrails();
   evaluateAndFire();
 
-  // Re-focus the input after re-render
-  var input = document.getElementById('prompt-input');
-  if (input) input.focus();
+  // Restore focus and cursor position after re-render
+  var newInput = document.getElementById('prompt-input');
+  if (newInput && cursorPos !== null) {
+    newInput.focus();
+    newInput.setSelectionRange(cursorPos, cursorPos);
+  }
 }
 
 function shufflePrompt() {
