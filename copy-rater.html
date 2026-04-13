@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copy Rater — Nudge System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #484f58;
+    --blue: #58a6ff;
+    --purple: #a78bfa;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --orange: #db6d28;
+    --pro: linear-gradient(135deg, #8b5cf6, #6366f1);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 40px;
+  }
+
+  /* Header */
+  .header {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+  }
+  .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 700px; }
+
+  /* Signal card */
+  .signal-card {
+    max-width: 1100px;
+    margin: 0 auto 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+  }
+  .signal-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .signal-card-header h2 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--blue);
+  }
+  .reshuffle-btn {
+    padding: 6px 16px;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 8px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reshuffle-btn:hover { background: rgba(88,166,255,0.15); }
+
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .signal-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .signal-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+  }
+  .signal-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .signal-value.highlight { color: var(--purple); }
+
+  /* Feature selector */
+  .feature-bar {
+    max-width: 1100px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .feature-bar-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-right: 4px;
+  }
+  .feature-chip {
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .feature-chip:hover { border-color: var(--text-dim); color: var(--text); }
+  .feature-chip.active {
+    background: rgba(139,92,246,0.1);
+    border-color: rgba(139,92,246,0.3);
+    color: var(--purple);
+    font-weight: 600;
+  }
+
+  /* Copy cards */
+  /* Copy list */
+  .copy-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .copy-card {
+    background: var(--surface);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.15s;
+  }
+  .copy-card:hover { background: var(--surface-2); }
+  .copy-card.rated-good { background: rgba(63,185,80,0.04); }
+  .copy-card.rated-ok { background: rgba(210,153,34,0.04); }
+  .copy-card.rated-bad { background: rgba(248,81,73,0.04); }
+
+  .copy-number {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .copy-strategy {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 90px;
+    text-align: center;
+  }
+  .copy-strategy.outcome { background: rgba(88,166,255,0.1); color: var(--blue); }
+  .copy-strategy.investment { background: rgba(139,92,246,0.1); color: var(--purple); }
+  .copy-strategy.social { background: rgba(63,185,80,0.1); color: var(--green); }
+  .copy-strategy.scarcity { background: rgba(248,81,73,0.1); color: var(--red); }
+  .copy-strategy.peer { background: rgba(210,153,34,0.1); color: var(--yellow); }
+  .copy-strategy.direct { background: rgba(219,109,40,0.1); color: var(--orange); }
+
+  .copy-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .copy-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .copy-body {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Rating */
+  .rating-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .rate-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .rate-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .rate-btn.selected-ship {
+    background: rgba(63,185,80,0.15);
+    border-color: rgba(63,185,80,0.4);
+    color: var(--green);
+  }
+  .rate-btn.selected-close {
+    background: rgba(210,153,34,0.15);
+    border-color: rgba(210,153,34,0.4);
+    color: var(--yellow);
+  }
+  .rate-btn.selected-miss {
+    background: rgba(248,81,73,0.15);
+    border-color: rgba(248,81,73,0.4);
+    color: var(--red);
+  }
+
+  /* Summary bar */
+  .summary-bar {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 28px;
+    display: none;
+  }
+  .summary-bar.visible { display: block; }
+  .summary-bar h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .summary-stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+  }
+  .summary-stat {
+    text-align: center;
+  }
+  .summary-stat .num {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .summary-stat .num.green { color: var(--green); }
+  .summary-stat .num.yellow { color: var(--yellow); }
+  .summary-stat .num.red { color: var(--red); }
+  .summary-stat .lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .summary-insight {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* How rating works */
+  .rating-explainer {
+    max-width: 1100px;
+    margin: 0 auto 24px;
+    padding: 16px 20px;
+    background: rgba(139,92,246,0.04);
+    border: 1px solid rgba(139,92,246,0.12);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .rating-explainer strong { color: var(--text); }
+
+  /* Recommended */
+  .copy-card.recommended {
+    background: rgba(139,92,246,0.06);
+  }
+  .copy-card.recommended:hover {
+    background: rgba(139,92,246,0.09);
+  }
+  .rec-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.3);
+    color: var(--purple);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .rec-reason {
+    font-size: 11px;
+    color: var(--purple);
+    opacity: 0.7;
+    line-height: 1.4;
+    margin-top: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Copy Rater</h1>
+  <p>Random user context is generated. You see 10 copy variations for the selected feature. Rate each one based on how well the copy connects the user's context to the feature's value.</p>
+</div>
+
+<div class="rating-explainer">
+  <strong>How to rate:</strong> Read the user context first — understand who this person is, what they are building, and where they are in their session. Then rate each copy:<br>
+  <strong style="color:var(--green)">Ship it</strong> — This copy would make the user stop, read, and seriously consider the CTA. It connects their specific situation to the feature's value. You would ship this.<br>
+  <strong style="color:var(--yellow)">Close</strong> — The angle is right but the execution needs work. Maybe too wordy, slightly off-tone, or missing one detail that would make it land.<br>
+  <strong style="color:var(--red)">Miss</strong> — This would get dismissed without reading. Too generic, too salesy, wrong angle for this user's context, or feels gimmicky.
+</div>
+
+<div class="signal-card">
+  <div class="signal-card-header">
+    <h2>User Context (randomized)</h2>
+    <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle user</button>
+  </div>
+  <div class="signal-grid" id="signal-grid"></div>
+</div>
+
+<div class="feature-bar" id="feature-bar">
+  <span class="feature-bar-label">Feature:</span>
+</div>
+
+<div class="copy-grid" id="copy-grid"></div>
+
+<div class="summary-bar" id="summary-bar">
+  <h3>Rating Summary</h3>
+  <div class="summary-stats" id="summary-stats"></div>
+  <div class="summary-insight" id="summary-insight"></div>
+</div>
+
+<script>
+// ── DATA ──
+const ROLES = [
+  { value: 'leadership', label: 'Leadership', archetype: 'Founder' },
+  { value: 'sales', label: 'Sales', archetype: 'Sales' },
+  { value: 'marketing', label: 'Marketing', archetype: 'Sales' },
+  { value: 'product', label: 'Product', archetype: 'Corporate' },
+  { value: 'design', label: 'Design', archetype: 'Creative' },
+  { value: 'engineering', label: 'Engineering', archetype: 'Corporate' },
+  { value: 'data-analytics', label: 'Data Analytics', archetype: 'Corporate' },
+  { value: 'consulting', label: 'Consulting', archetype: 'Corporate' },
+  { value: 'operations', label: 'Operations', archetype: 'Corporate' },
+  { value: 'finance', label: 'Finance', archetype: 'Corporate' },
+  { value: 'creator', label: 'Creator', archetype: 'Creative' },
+  { value: 'teacher', label: 'Teacher', archetype: 'Educator' },
+  { value: 'student', label: 'Student', archetype: 'Student' }
+];
+
+const AUDIENCES = {
+  Founder: ['Investors', 'VCs', 'Board members', 'Angel investors'],
+  Sales: ['Enterprise clients', 'Prospects', 'C-suite buyers', 'Procurement teams'],
+  Corporate: ['Leadership team', 'Cross-functional team', 'Executives', 'Board', 'Stakeholders'],
+  Creative: ['Potential clients', 'Recruiters', 'Art directors', 'Agency partners'],
+  Educator: ['Undergraduate students', 'Graduate students', 'Corporate trainees', 'Workshop attendees'],
+  Student: ['Classmates', 'Professor', 'Panel judges', 'Study group']
+};
+
+const TOPICS = {
+  Founder: ['Series A pitch for fintech startup', 'Seed round deck for healthtech platform', 'Investor update Q1 2026', 'Product demo for enterprise AI tool', 'YC batch application deck'],
+  Sales: ['Enterprise SaaS proposal for Fortune 500', 'Partnership pitch to retail chain', 'Annual contract renewal presentation', 'Product comparison for procurement', 'ROI case study for CFO'],
+  Corporate: ['Q1 business review', 'Product roadmap for H2', 'Team restructuring proposal', 'Budget allocation presentation', 'OKR review and planning'],
+  Creative: ['Design portfolio for senior role', 'Agency credentials deck', 'Case study showcase for client', 'Brand identity presentation', 'Freelance services overview'],
+  Educator: ['Introduction to machine learning', 'History of modern architecture', 'Business ethics seminar', 'Data visualization workshop', 'Research methodology lecture'],
+  Student: ['Final thesis defense', 'Group project on climate change', 'Marketing 101 assignment', 'Startup pitch for entrepreneurship class', 'Capstone project presentation']
+};
+
+const FEATURES = [
+  { id: 'ai-edit', label: 'AI Edit' },
+  { id: 'ai-enhance', label: 'AI Enhance' },
+  { id: 'brand-colors', label: 'Brand Colors' },
+  { id: 'remove-watermark', label: 'Remove Watermark' },
+  { id: 'pro-templates', label: 'Pro Templates' },
+  { id: 'pdf-export', label: 'PDF Export' },
+  { id: 'pptx-export', label: 'PPTX Export' },
+  { id: 'share-no-watermark', label: 'Share (no watermark)' },
+  { id: 'invite-collab', label: 'Invite Collaborators' },
+  { id: 'viewer-analytics', label: 'Viewer Analytics' }
+];
+
+const NAMES = ['Raj', 'Maria', 'Alex', 'Priya', 'James', 'Sofia', 'Chen', 'Fatima', 'David', 'Anya', 'Omar', 'Lisa', 'Tejas', 'Nina', 'Marcus'];
+
+// ── STATE ──
+let currentUser = {};
+let currentFeature = FEATURES[0];
+let ratings = {};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function generateUser() {
+  const role = pick(ROLES);
+  const arch = role.archetype;
+  const audience = pick(AUDIENCES[arch] || AUDIENCES['Corporate']);
+  const topic = pick(TOPICS[arch] || TOPICS['Corporate']);
+  const name = pick(NAMES);
+
+  const credits = pick([100, 85, 72, 55, 42, 30, 18, 8, 0]);
+  const minutes = pick([2, 5, 8, 14, 22, 35]);
+  const decks = credits < 50 ? pick([1, 2, 3]) : pick([1, 1, 2]);
+  const slidesGenerated = Math.floor((100 - credits) / 3);
+  const gateHits = pick([1, 1, 2, 3, 4, 6]);
+  const previousDismissals = pick([0, 0, 0, 1, 2]);
+  const sessionNumber = pick([1, 1, 1, 2, 2, 3]);
+  const visitedPricing = pick([false, false, false, true]);
+  const boughtExport = pick([false, false, false, false, true]);
+  const intentScore = Math.max(0,
+    (gateHits * 3) +
+    (decks >= 2 ? 4 : 0) +
+    (credits < 50 ? 3 : 0) +
+    (credits === 0 ? 5 : 0) +
+    (boughtExport ? 5 : 0) +
+    (visitedPricing ? 2 : 0) +
+    (minutes > 10 ? 1 : 0) +
+    (sessionNumber > 1 ? 3 : 0) +
+    (previousDismissals * -1)
+  );
+
+  const previousFeatures = [];
+  const featurePool = FEATURES.map(f => f.label);
+  for (let i = 0; i < Math.min(gateHits - 1, 4); i++) {
+    const f = pick(featurePool.filter(x => !previousFeatures.includes(x)));
+    if (f) previousFeatures.push(f);
+  }
+
+  currentUser = {
+    name, role: role.label, roleValue: role.value, archetype: arch,
+    audience, topic, credits, minutes, decks, slidesGenerated,
+    gateHits, previousDismissals, sessionNumber, visitedPricing,
+    boughtExport, intentScore, previousFeatures
+  };
+  return currentUser;
+}
+
+function renderSignals() {
+  const u = currentUser;
+  const signals = [
+    { label: 'Name', value: u.name },
+    { label: 'Role', value: u.role },
+    { label: 'Archetype', value: u.archetype, highlight: true },
+    { label: 'Audience', value: u.audience },
+    { label: 'Topic', value: u.topic },
+    { label: 'Credits', value: `${u.credits} / 100` },
+    { label: 'Time in editor', value: `${u.minutes} min` },
+    { label: 'Decks created', value: u.decks },
+    { label: 'Slides generated', value: u.slidesGenerated },
+    { label: 'Gate hits', value: u.gateHits },
+    { label: 'Previous dismissals', value: u.previousDismissals },
+    { label: 'Session', value: u.sessionNumber === 1 ? '1st visit' : `Session ${u.sessionNumber} (returning)` },
+    { label: 'Visited pricing', value: u.visitedPricing ? 'Yes' : 'No' },
+    { label: 'Bought single export', value: u.boughtExport ? 'Yes ($4.99)' : 'No' },
+    { label: 'Intent score', value: u.intentScore, highlight: true },
+    { label: 'Previously explored', value: u.previousFeatures.length > 0 ? u.previousFeatures.join(', ') : 'None' }
+  ];
+
+  document.getElementById('signal-grid').innerHTML = signals.map(s =>
+    `<div class="signal-item">
+      <span class="signal-label">${s.label}</span>
+      <span class="signal-value${s.highlight ? ' highlight' : ''}">${s.value}</span>
+    </div>`
+  ).join('');
+}
+
+function renderFeatureBar() {
+  const bar = document.getElementById('feature-bar');
+  bar.innerHTML = '<span class="feature-bar-label">Feature:</span>' +
+    FEATURES.map(f =>
+      `<span class="feature-chip${f.id === currentFeature.id ? ' active' : ''}" onclick="selectFeature('${f.id}')">${f.label}</span>`
+    ).join('');
+}
+
+function selectFeature(id) {
+  currentFeature = FEATURES.find(f => f.id === id);
+  ratings = {};
+  renderFeatureBar();
+  generateCopies();
+  updateSummary();
+}
+
+// ── RECOMMENDATION ENGINE ──
+function getRecommendation(u) {
+  // Returns { strategy, reason } based on user signals
+  // Priority: strongest behavioral signal wins
+
+  // Credits = 0 → scarcity (functional blocker, urgency is real)
+  if (u.credits === 0) {
+    return { strategy: 'scarcity', reason: 'Credits at zero — urgency is real, scarcity framing matches their situation.' };
+  }
+
+  // Bought export before → investment (they already paid, acknowledge it)
+  if (u.boughtExport) {
+    return { strategy: 'investment', reason: 'Already paid for a single export — investment framing leverages existing commitment.' };
+  }
+
+  // Low credits + high time = invested but running out → scarcity
+  if (u.credits < 25 && u.minutes >= 10) {
+    return { strategy: 'scarcity', reason: 'Low credits (' + u.credits + ') after ' + u.minutes + ' min of work — scarcity feels earned, not pushy.' };
+  }
+
+  // Previous dismissals → peer (softer, less direct pressure)
+  if (u.previousDismissals >= 2) {
+    return { strategy: 'peer', reason: 'Dismissed nudges ' + u.previousDismissals + ' times — peer framing is softer, avoids triggering another dismissal.' };
+  }
+
+  // High intent (20+) → outcome (they are ready, lead with the result)
+  if (u.intentScore >= 20) {
+    return { strategy: 'outcome', reason: 'Intent score ' + u.intentScore + ' — high intent user, outcome framing closes the gap directly.' };
+  }
+
+  // Returning user with investment → investment
+  if (u.sessionNumber > 1 && (u.minutes >= 8 || u.decks >= 2)) {
+    return { strategy: 'investment', reason: 'Returning user (session ' + u.sessionNumber + ') with real investment — acknowledge what they built.' };
+  }
+
+  // Multiple decks or long session → investment
+  if (u.decks >= 2 || u.minutes >= 15) {
+    return { strategy: 'investment', reason: u.decks >= 2 ? u.decks + ' decks created — invested user, reflect their effort back.' : u.minutes + ' min in editor — deep engagement, investment framing resonates.' };
+  }
+
+  // Many gate hits → social (curious, exploring, show what others do)
+  if (u.gateHits >= 4) {
+    return { strategy: 'social', reason: u.gateHits + ' gate hits — exploring broadly, social proof validates the features they keep finding.' };
+  }
+
+  // Credits running low → scarcity
+  if (u.credits < 50 && u.credits > 0) {
+    return { strategy: 'scarcity', reason: 'Credits below 50 (' + u.credits + ') — light scarcity framing creates awareness without pressure.' };
+  }
+
+  // Low intent, first session → direct (just explain the feature, no angle)
+  if (u.intentScore <= 5) {
+    return { strategy: 'direct', reason: 'Intent score ' + u.intentScore + ' — low intent, direct explanation builds understanding before selling.' };
+  }
+
+  // Moderate intent → outcome (default strong strategy)
+  return { strategy: 'outcome', reason: 'Moderate intent (' + u.intentScore + ') — outcome framing connects the feature to their goal without pressure.' };
+}
+
+// ── COPY GENERATION ──
+function generateCopies() {
+  const u = currentUser;
+  const f = currentFeature;
+  const copies = [];
+
+  const strategies = [
+    'outcome-a', 'outcome-b',
+    'context-a', 'context-b',
+    'scarcity-a', 'scarcity-b',
+    'direct-a', 'direct-b',
+    'peer-a', 'peer-b'
+  ];
+  strategies.forEach(s => copies.push(compose(u, f.id, s)));
+
+  // Get recommendation before shuffle
+  const rec = getRecommendation(u);
+
+  // Find best match: first copy that matches the recommended strategy
+  let recIndex = copies.findIndex(c => c.strategy === rec.strategy);
+
+  // Shuffle
+  for (let i = copies.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copies[i], copies[j]] = [copies[j], copies[i]];
+  }
+
+  // Find recommended copy index after shuffle
+  const recCopy = recIndex >= 0 ? copies.find((c, i) => {
+    // Find the first copy matching the recommended strategy
+    return c.strategy === rec.strategy;
+  }) : null;
+  const recIndexAfterShuffle = recCopy ? copies.indexOf(recCopy) : -1;
+
+  const grid = document.getElementById('copy-grid');
+  grid.innerHTML = copies.map((c, i) => {
+    const isRec = i === recIndexAfterShuffle;
+    return `<div class="copy-card${isRec ? ' recommended' : ''}" id="card-${i}">
+      <span class="copy-number">${i + 1}</span>
+      <span class="copy-strategy ${c.strategy}">${c.strategyLabel}</span>
+      <div class="copy-content">
+        <div class="copy-title">${c.title}</div>
+        <div class="copy-body">${c.body}</div>
+        ${isRec ? '<div class="rec-reason">' + rec.reason + '</div>' : ''}
+      </div>
+      ${isRec ? '<span class="rec-badge">Recommended</span>' : ''}
+      <div class="rating-row">
+        <button class="rate-btn" onclick="rate(${i},\'ship\',this)">Ship it</button>
+        <button class="rate-btn" onclick="rate(${i},\'close\',this)">Close</button>
+        <button class="rate-btn" onclick="rate(${i},\'miss\',this)">Miss</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function rate(index, value, btn) {
+  ratings[index] = value;
+
+  const card = document.getElementById(`card-${index}`);
+  card.className = 'copy-card' + (value === 'ship' ? ' rated-good' : value === 'close' ? ' rated-ok' : ' rated-bad');
+
+  const buttons = card.querySelectorAll('.rate-btn');
+  buttons.forEach(b => b.className = 'rate-btn');
+  btn.className = 'rate-btn ' + (value === 'ship' ? 'selected-ship' : value === 'close' ? 'selected-close' : 'selected-miss');
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const vals = Object.values(ratings);
+  if (vals.length === 0) {
+    document.getElementById('summary-bar').classList.remove('visible');
+    return;
+  }
+
+  const ship = vals.filter(v => v === 'ship').length;
+  const close = vals.filter(v => v === 'close').length;
+  const miss = vals.filter(v => v === 'miss').length;
+
+  document.getElementById('summary-bar').classList.add('visible');
+  document.getElementById('summary-stats').innerHTML = `
+    <div class="summary-stat"><div class="num green">${ship}</div><div class="lbl">Ship it</div></div>
+    <div class="summary-stat"><div class="num yellow">${close}</div><div class="lbl">Close</div></div>
+    <div class="summary-stat"><div class="num red">${miss}</div><div class="lbl">Miss</div></div>
+    <div class="summary-stat"><div class="num" style="color:var(--text-dim)">${10 - vals.length}</div><div class="lbl">Unrated</div></div>
+  `;
+
+  // Generate insight
+  let insight = '';
+  if (vals.length >= 5) {
+    const shipStrategies = [];
+    const missStrategies = [];
+    Object.entries(ratings).forEach(([idx, val]) => {
+      const card = document.getElementById(`card-${idx}`);
+      const strat = card?.querySelector('.copy-strategy')?.textContent || '';
+      if (val === 'ship') shipStrategies.push(strat);
+      if (val === 'miss') missStrategies.push(strat);
+    });
+
+    if (shipStrategies.length > 0) {
+      insight += `Strategies that work for this context: <strong>${[...new Set(shipStrategies)].join(', ')}</strong>. `;
+    }
+    if (missStrategies.length > 0) {
+      insight += `Strategies that miss: <strong>${[...new Set(missStrategies)].join(', ')}</strong>. `;
+    }
+    if (ship > miss) {
+      insight += 'Overall the copy bank is leaning in the right direction for this user profile.';
+    } else if (miss > ship) {
+      insight += 'Most copies are missing for this context — the angles need rethinking for this archetype x intent level.';
+    }
+  } else {
+    insight = `Rate ${5 - vals.length} more to see strategy insights.`;
+  }
+  document.getElementById('summary-insight').innerHTML = insight;
+}
+
+// ── DYNAMIC COPY ENGINE ──
+// Copy is composed from signals, not pulled from a static bank.
+// Change any signal → copy changes.
+
+// Feature atoms: what each feature IS and DOES (plain facts)
+const F = {
+  'ai-edit': {
+    name: 'AI Edit',
+    does: 'fixes phrasing, spacing, and layout across your slides',
+    verb: 'Run AI Edit',
+    result: 'cleaner, more consistent slides',
+  },
+  'ai-enhance': {
+    name: 'AI Enhance',
+    does: 'restructures slides for better visual hierarchy and narrative flow',
+    verb: 'Run AI Enhance',
+    result: 'a deck that reads as well as it looks',
+  },
+  'brand-colors': {
+    name: 'Brand Colors',
+    does: 'replaces default colors with your brand palette on every slide',
+    verb: 'Apply your brand colors',
+    result: 'a deck that looks like yours, not a template',
+  },
+  'remove-watermark': {
+    name: 'Remove Watermark',
+    does: 'removes the Presentations.AI badge from all slides',
+    verb: 'Remove the watermark',
+    result: 'a clean deck with only your name on it',
+  },
+  'pro-templates': {
+    name: 'Pro Templates',
+    does: 'gives you professionally designed slide layouts',
+    verb: 'Use a Pro template',
+    result: 'a stronger starting structure for your content',
+  },
+  'pdf-export': {
+    name: 'PDF Export',
+    does: 'downloads your deck as a static PDF that preserves layout',
+    verb: 'Export as PDF',
+    result: 'a portable file you can email, print, or share',
+  },
+  'pptx-export': {
+    name: 'PPTX Export',
+    does: 'downloads your deck as an editable PowerPoint file',
+    verb: 'Export as PPTX',
+    result: 'a file that works offline on any device',
+  },
+  'share-no-watermark': {
+    name: 'Share without watermark',
+    does: 'generates a share link without the Presentations.AI badge',
+    verb: 'Share without watermark',
+    result: 'a clean link where only your content shows',
+  },
+  'invite-collab': {
+    name: 'Invite Collaborators',
+    does: 'lets others view, comment, and edit your deck in real time',
+    verb: 'Invite a collaborator',
+    result: 'a second pair of eyes before you send it out',
+  },
+  'viewer-analytics': {
+    name: 'Viewer Analytics',
+    does: 'tracks who opened your deck, which slides they viewed, and for how long',
+    verb: 'Turn on analytics',
+    result: 'data on exactly how your audience engaged',
+  },
+};
+
+// ── SIGNAL READERS ──
+// These extract the strongest context from the user signals
+
+function topicShort(u) {
+  const w = u.topic.split(' ');
+  return w.length <= 4 ? u.topic : w.slice(0, 4).join(' ') + '...';
+}
+
+function deckType(u) {
+  if (u.archetype === 'Founder') return 'pitch deck';
+  if (u.archetype === 'Sales') return 'proposal';
+  if (u.archetype === 'Educator') return 'lecture';
+  if (u.archetype === 'Student') return 'presentation';
+  if (u.archetype === 'Creative') return 'portfolio deck';
+  return 'deck';
+}
+
+function peerNoun(u) {
+  const m = { Founder: 'founders', Sales: 'sales teams', Corporate: 'teams', Creative: 'creatives', Educator: 'educators', Student: 'students' };
+  return m[u.archetype] || 'teams';
+}
+
+// What is the single strongest behavioral signal right now?
+function strongestSignal(u) {
+  if (u.credits === 0) return { key: 'no-credits', text: 'You have no credits left.' };
+  if (u.boughtExport) return { key: 'bought-export', text: 'You already paid $4.99 for a single export.' };
+  if (u.credits <= 10) return { key: 'critical-credits', text: `${u.credits} credits left \u2014 about ${Math.floor(u.credits / 3)} more slides.` };
+  if (u.sessionNumber > 1 && u.decks >= 2) return { key: 'returning-invested', text: `Session ${u.sessionNumber}, ${u.decks} decks built.` };
+  if (u.sessionNumber > 1) return { key: 'returning', text: `You are back for session ${u.sessionNumber}.` };
+  if (u.credits < 30) return { key: 'low-credits', text: `${u.credits} credits remaining \u2014 roughly ${Math.floor(u.credits / 3)} slides.` };
+  if (u.decks >= 2) return { key: 'multi-deck', text: `${u.decks} decks created this session.` };
+  if (u.minutes >= 20) return { key: 'long-session', text: `${u.minutes} minutes in the editor.` };
+  if (u.slidesGenerated >= 15) return { key: 'many-slides', text: `${u.slidesGenerated} slides generated so far.` };
+  if (u.gateHits >= 4) return { key: 'exploring', text: `You have tried ${u.gateHits} Pro features.` };
+  if (u.credits < 50) return { key: 'mid-credits', text: `${u.credits} credits left.` };
+  if (u.minutes >= 10) return { key: 'engaged', text: `${u.minutes} minutes into your ${deckType(u)}.` };
+  return { key: 'fresh', text: null };
+}
+
+// ── COPY COMPOSER ──
+// Each strategy has a pattern. The pattern pulls from feature atoms + signals.
+
+function compose(u, fid, strategy) {
+  const fd = F[fid];
+  const sig = strongestSignal(u);
+  const topic = topicShort(u);
+  const dt = deckType(u);
+  const aud = u.audience;
+  const peer = peerNoun(u);
+  let t, b;
+
+  if (strategy === 'outcome-a') {
+    // Title: feature verb | Body: what audience gets
+    t = fd.verb;
+    if (sig.key === 'no-credits') {
+      b = `Your ${topic} ${dt} is done but stuck behind the credit wall. ${fd.name} ${fd.does} \u2014 ${aud} get ${fd.result}.`;
+    } else if (sig.key === 'bought-export') {
+      b = `You paid for a single export. ${fd.name} ${fd.does} across your entire ${topic} ${dt}. ${aud} get ${fd.result}.`;
+    } else if (sig.key.includes('credits')) {
+      b = `${sig.text} ${fd.name} ${fd.does}, so your ${topic} ${dt} is ready for ${aud}.`;
+    } else {
+      b = `Your ${topic} ${dt} goes to ${aud}. ${fd.name} ${fd.does} \u2014 they get ${fd.result}.`;
+    }
+    return { strategy: 'outcome', strategyLabel: 'Outcome-led', title: t, body: b };
+  }
+
+  if (strategy === 'outcome-b') {
+    // Title: what audience experiences | Body: feature as mechanism
+    if (sig.key === 'no-credits') {
+      t = `Your ${dt} is ready \u2014 finish it`;
+      b = `${aud} are waiting on this. ${fd.name} ${fd.does}. No credits needed for Pro features.`;
+    } else if (sig.key === 'returning' || sig.key === 'returning-invested') {
+      t = `${aud} will see the difference`;
+      b = `${sig.text} ${fd.name} ${fd.does} \u2014 one step before your ${topic} ${dt} is ready to send.`;
+    } else {
+      t = `${fd.result.charAt(0).toUpperCase() + fd.result.slice(1)}`;
+      b = `${fd.name} ${fd.does}. Your ${topic} ${dt} for ${aud} gets ${fd.result}.`;
+    }
+    return { strategy: 'outcome', strategyLabel: 'Outcome-led', title: t, body: b };
+  }
+
+  if (strategy === 'context-a') {
+    // Title: signal-aware opener | Body: feature + audience
+    if (sig.key === 'no-credits') {
+      t = `No credits left`;
+      b = `You have used all free credits. ${fd.verb} on your ${topic} ${dt} \u2014 ${fd.does}. Pro gives unlimited access.`;
+    } else if (sig.key === 'bought-export') {
+      t = `You paid $4.99 for one export`;
+      b = `Pro includes ${fd.name.toLowerCase()}, unlimited exports, and everything else for $${pick([12,15,20])}/mo. Your ${topic} ${dt} for ${aud} gets the full toolkit.`;
+    } else if (sig.key === 'returning-invested') {
+      t = `${sig.text}`;
+      b = `${fd.verb} on your ${topic} ${dt}. ${fd.name} ${fd.does} \u2014 ${aud} get ${fd.result}.`;
+    } else if (sig.key === 'returning') {
+      t = `Welcome back`;
+      b = `${sig.text} ${fd.verb} on your ${topic} ${dt} \u2014 ${fd.does}. Ready for ${aud}.`;
+    } else if (sig.text) {
+      t = `${sig.text.replace(/\.$/, '')}`;
+      b = `${fd.verb} on your ${topic} ${dt}. ${fd.name} ${fd.does} before it goes to ${aud}.`;
+    } else {
+      t = `${fd.verb}`;
+      b = `Your ${topic} ${dt} is heading to ${aud}. ${fd.name} ${fd.does}.`;
+    }
+    return { strategy: 'investment', strategyLabel: 'Context-aware', title: t, body: b };
+  }
+
+  if (strategy === 'context-b') {
+    // Title: feature name | Body: signal + audience connection
+    t = fd.name;
+    if (sig.key === 'no-credits') {
+      b = `You are out of free credits. ${fd.name} is a Pro feature \u2014 ${fd.does}. Your ${topic} ${dt} for ${aud} needs this to be complete.`;
+    } else if (sig.key.includes('credits')) {
+      b = `${sig.text} ${fd.name} ${fd.does}. Get ${fd.result} on your ${topic} ${dt} before sending to ${aud}.`;
+    } else if (sig.key === 'multi-deck' || sig.key === 'many-slides') {
+      b = `${sig.text} ${fd.name} ${fd.does} \u2014 apply it across your ${topic} ${dt} for ${aud}.`;
+    } else if (sig.key === 'long-session' || sig.key === 'engaged') {
+      b = `${sig.text} ${fd.name} ${fd.does}. Your ${topic} ${dt} is close \u2014 ${aud} are the next step.`;
+    } else if (sig.text) {
+      b = `${sig.text} ${fd.name} ${fd.does}. Useful before sharing your ${topic} ${dt} with ${aud}.`;
+    } else {
+      b = `${fd.name} ${fd.does}. Applies to your ${topic} ${dt} for ${aud}.`;
+    }
+    return { strategy: 'investment', strategyLabel: 'Context-aware', title: t, body: b };
+  }
+
+  if (strategy === 'scarcity-a') {
+    // Credits-driven. Only meaningful when credits are actually low.
+    const credLine = u.credits === 0 ? 'No credits remaining.'
+      : u.credits <= 10 ? `Only ${u.credits} credits left.`
+      : u.credits < 30 ? `${u.credits} credits remaining.`
+      : u.credits < 50 ? `${u.credits} credits \u2014 getting low.`
+      : `${u.credits} credits available.`;
+    t = fd.verb;
+    if (u.credits === 0) {
+      b = `${credLine} Your ${topic} ${dt} is blocked. Pro unlocks ${fd.name.toLowerCase()}, unlimited slides, and everything else. ${aud} are waiting.`;
+    } else if (u.credits < 30) {
+      b = `${credLine} ${fd.name} ${fd.does} on your ${topic} ${dt}. Worth doing now while you still have edits left.`;
+    } else {
+      b = `${credLine} ${fd.name} ${fd.does}. Your ${topic} ${dt} for ${aud} \u2014 ${fd.result}.`;
+    }
+    return { strategy: 'scarcity', strategyLabel: 'Scarcity-led', title: t, body: b };
+  }
+
+  if (strategy === 'scarcity-b') {
+    t = fd.name;
+    if (u.credits === 0) {
+      b = `Free credits are done. ${fd.name} ${fd.does}. To finish your ${topic} ${dt} for ${aud}, you need Pro.`;
+    } else if (u.credits <= 10) {
+      b = `${u.credits} credits left \u2014 about ${Math.floor(u.credits / 3)} slides. ${fd.verb} on your ${topic} ${dt} now. ${aud} should see ${fd.result}.`;
+    } else if (u.credits < 50) {
+      b = `${u.credits} credits remaining. ${fd.name} ${fd.does}. Your ${topic} ${dt} for ${aud} \u2014 handle this before credits run out.`;
+    } else {
+      b = `${fd.name} ${fd.does}. Pro feature \u2014 applies to your ${topic} ${dt} for ${aud}.`;
+    }
+    return { strategy: 'scarcity', strategyLabel: 'Scarcity-led', title: t, body: b };
+  }
+
+  if (strategy === 'direct-a') {
+    // Pure feature explanation + their specific deck/audience
+    t = fd.name;
+    b = `${fd.name} ${fd.does}. Applies to your ${topic} ${dt}${u.slidesGenerated > 0 ? ' (' + u.slidesGenerated + ' slides)' : ''}. Pro feature.`;
+    return { strategy: 'direct', strategyLabel: 'Direct', title: t, body: b };
+  }
+
+  if (strategy === 'direct-b') {
+    t = fd.verb;
+    b = `${fd.does.charAt(0).toUpperCase() + fd.does.slice(1)}. Your ${topic} ${dt} for ${aud} gets ${fd.result}.`;
+    return { strategy: 'direct', strategyLabel: 'Direct', title: t, body: b };
+  }
+
+  if (strategy === 'peer-a') {
+    t = fd.verb;
+    const peerAction = {
+      'ai-edit': `run a final edit pass`,
+      'ai-enhance': `use AI Enhance for structure`,
+      'brand-colors': `apply brand colors`,
+      'remove-watermark': `remove the watermark`,
+      'pro-templates': `start from Pro templates`,
+      'pdf-export': `export as PDF`,
+      'pptx-export': `export as PPTX`,
+      'share-no-watermark': `remove watermarks before sharing`,
+      'invite-collab': `get a second opinion first`,
+      'viewer-analytics': `track who opens their deck`,
+    };
+    const pa = peerAction[fid] || `use ${fd.name}`;
+    if (sig.key === 'returning' || sig.key === 'returning-invested') {
+      b = `Most ${peer} ${pa} before sending to ${aud}. ${sig.text} Your ${topic} ${dt} is worth the extra step.`;
+    } else if (sig.text) {
+      b = `${sig.text} Most ${peer} ${pa} before sharing with ${aud}. Your ${topic} ${dt} \u2014 ${fd.result}.`;
+    } else {
+      b = `Most ${peer} ${pa} before sharing with ${aud}. ${fd.name} ${fd.does}.`;
+    }
+    return { strategy: 'peer', strategyLabel: 'Peer-led', title: t, body: b };
+  }
+
+  if (strategy === 'peer-b') {
+    t = `What ${peer} do`;
+    if (u.previousDismissals >= 2) {
+      b = `No pressure. ${peer} who present to ${aud} typically use ${fd.name.toLowerCase()} \u2014 ${fd.does}. Your ${topic} ${dt} might benefit.`;
+    } else if (sig.key === 'exploring') {
+      b = `You have been exploring Pro features. ${peer} presenting to ${aud} use ${fd.name.toLowerCase()} regularly \u2014 ${fd.does}.`;
+    } else {
+      b = `${peer.charAt(0).toUpperCase() + peer.slice(1)} presenting to ${aud} use ${fd.name.toLowerCase()} on their ${dt}s. It ${fd.does}.`;
+    }
+    return { strategy: 'peer', strategyLabel: 'Peer-led', title: t, body: b };
+  }
+
+  // fallback
+  t = fd.name;
+  b = `${fd.name} ${fd.does}. Pro feature for your ${topic} ${dt}.`;
+  return { strategy: 'direct', strategyLabel: 'Direct', title: t, body: b };
+}
+
+// ── INIT ──
+function reshuffleAll() {
+  ratings = {};
+  generateUser();
+  renderSignals();
+  renderFeatureBar();
+  generateCopies();
+  updateSummary();
+}
+
+reshuffleAll();
+</script>
+</body>
+</html>

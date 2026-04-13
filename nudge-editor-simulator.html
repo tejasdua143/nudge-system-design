@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge Editor Simulator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #484f58;
+    --blue: #58a6ff;
+    --purple: #a78bfa;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --orange: #db6d28;
+    --pro: linear-gradient(135deg, #8b5cf6, #6366f1);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ── ONBOARDING ── */
+  #onboarding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg);
+  }
+  .onboard-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 48px;
+    width: 480px;
+    max-width: 90vw;
+  }
+  .onboard-card h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .onboard-card .sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--blue);
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .field select option { background: var(--bg); }
+
+  .start-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--pro);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  .start-btn:hover { opacity: 0.9; }
+
+  /* ── EDITOR LAYOUT ── */
+  #editor {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+  }
+  #editor.active { display: flex; }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .topbar-logo {
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--pro);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .topbar-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Credit meter */
+  .credit-meter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--bg);
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+  }
+  .credit-meter .bar {
+    width: 60px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .credit-meter .bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 0.5s, background 0.3s;
+  }
+  .credit-meter.low .bar-fill { background: var(--yellow); }
+  .credit-meter.critical .bar-fill { background: var(--red); }
+
+  /* Debug panel */
+  .debug-panel {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(139,92,246,0.06);
+    border-radius: 6px;
+    border: 1px solid rgba(139,92,246,0.15);
+  }
+  .debug-panel span { white-space: nowrap; }
+  .debug-val { color: var(--purple); font-weight: 600; }
+
+  /* Main area */
+  .editor-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    width: 56px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s;
+    font-size: 16px;
+  }
+  .tool-btn:hover { background: var(--surface-2); color: var(--text); }
+  .tool-btn .pro-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple);
+  }
+  .tool-btn .tooltip-label {
+    display: none;
+    position: absolute;
+    left: 52px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    color: var(--text);
+    z-index: 10;
+  }
+  .tool-btn:hover .tooltip-label { display: block; }
+
+  .tool-sep {
+    width: 28px;
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  /* Slide canvas */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 32px;
+    position: relative;
+  }
+  .slide {
+    width: 720px;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+  }
+  .slide-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .slide-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+  }
+  .watermark {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.15);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* Right panel */
+  .right-panel {
+    width: 240px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .panel-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    margin-bottom: 4px;
+  }
+  .panel-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .panel-btn:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.03); }
+  .panel-btn .icon { font-size: 15px; width: 20px; text-align: center; }
+  .panel-btn .pro-badge {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--pro);
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  /* Bottom bar */
+  .bottombar {
+    height: 36px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* ── NUDGE OVERLAYS ── */
+  .overlay-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s;
+  }
+  .overlay-backdrop.active { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .nudge-overlay {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 440px;
+    width: 90vw;
+    animation: slideUp 0.25s ease-out;
+    position: relative;
+  }
+
+  /* Tooltip style - small, anchored */
+  .nudge-overlay.tooltip-style {
+    max-width: 320px;
+    padding: 20px 24px;
+    border-radius: 12px;
+  }
+  /* Upgrade panel - large */
+  .nudge-overlay.upgrade-style {
+    max-width: 520px;
+    padding: 36px 40px;
+  }
+
+  .nudge-type-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .nudge-type-badge.tooltip { background: rgba(56,139,253,0.15); color: var(--blue); }
+  .nudge-type-badge.credit { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .nudge-type-badge.insight { background: rgba(139,92,246,0.15); color: var(--purple); }
+  .nudge-type-badge.comparison { background: rgba(63,185,80,0.15); color: var(--green); }
+  .nudge-type-badge.milestone { background: rgba(219,109,40,0.15); color: var(--orange); }
+  .nudge-type-badge.upgrade { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .nudge-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .nudge-body {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .nudge-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+    line-height: 1.6;
+  }
+  .nudge-cta {
+    padding: 10px 20px;
+    background: var(--pro);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: opacity 0.2s;
+  }
+  .nudge-cta:hover { opacity: 0.9; }
+  .nudge-dismiss {
+    padding: 10px 16px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nudge-dismiss:hover { border-color: var(--text-dim); color: var(--text); }
+  .nudge-dismiss-never {
+    display: block;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .nudge-dismiss-never:hover { color: var(--text-muted); }
+
+  .nudge-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .nudge-close:hover { color: var(--text-muted); }
+
+  /* Comparison visual */
+  .comparison-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .comp-side {
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .comp-side.free {
+    background: rgba(248,81,73,0.06);
+    border: 1px solid rgba(248,81,73,0.2);
+    color: var(--red);
+  }
+  .comp-side.pro-side {
+    background: rgba(63,185,80,0.06);
+    border: 1px solid rgba(63,185,80,0.2);
+    color: var(--green);
+  }
+  .comp-side .comp-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    opacity: 0.7;
+  }
+  .comp-side .comp-val { font-size: 14px; font-weight: 600; }
+
+  /* Credit reminder - corner toast */
+  .credit-toast {
+    display: none;
+    position: fixed;
+    bottom: 56px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid rgba(210,153,34,0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    z-index: 90;
+    animation: slideUp 0.25s ease-out;
+    max-width: 280px;
+  }
+  .credit-toast.active { display: block; }
+  .credit-toast .ct-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .credit-toast .ct-text strong { color: var(--yellow); }
+  .credit-toast .ct-link {
+    font-size: 11px;
+    color: var(--purple);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .credit-toast .ct-link:hover { text-decoration: underline; }
+
+  /* Upgrade feature list */
+  .upgrade-features {
+    list-style: none;
+    margin-bottom: 20px;
+  }
+  .upgrade-features li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .upgrade-features li::before {
+    content: "~";
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  /* Log panel */
+  .log-toggle {
+    position: fixed;
+    bottom: 48px;
+    left: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    z-index: 80;
+  }
+  .log-toggle:hover { color: var(--text-muted); }
+
+  .log-panel {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    left: 12px;
+    width: 380px;
+    max-height: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-y: auto;
+    z-index: 80;
+    padding: 12px;
+    font-size: 11px;
+    font-family: 'SF Mono', Monaco, monospace;
+    line-height: 1.6;
+  }
+  .log-panel.active { display: block; }
+  .log-entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .log-entry .log-signal { color: var(--blue); }
+  .log-entry .log-score { color: var(--purple); }
+  .log-entry .log-suppress { color: var(--red); }
+  .log-entry .log-fire { color: var(--green); }
+  .log-entry .log-time { color: var(--text-dim); margin-right: 6px; }
+
+  /* Spend credits btn */
+  .spend-btn {
+    position: fixed;
+    bottom: 48px;
+    right: 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .spend-btn:hover { border-color: var(--text-dim); color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ── ONBOARDING ── -->
+<div id="onboarding">
+  <div class="onboard-card">
+    <h1>Presentations.AI</h1>
+    <p class="sub">Tell us a bit about yourself to personalize your experience</p>
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" id="inp-name" placeholder="e.g., Tejas">
+    </div>
+    <div class="field">
+      <label>Your role</label>
+      <select id="inp-role">
+        <option value="">Select your role</option>
+        <option value="leadership">Leadership</option>
+        <option value="sales">Sales</option>
+        <option value="marketing">Marketing</option>
+        <option value="product">Product</option>
+        <option value="design">Design</option>
+        <option value="engineering">Engineering</option>
+        <option value="data-analytics">Data Analytics</option>
+        <option value="consulting">Consulting</option>
+        <option value="support">Support</option>
+        <option value="operations">Operations</option>
+        <option value="finance">Finance</option>
+        <option value="legal">Legal</option>
+        <option value="creator">Creator</option>
+        <option value="teacher">Teacher</option>
+        <option value="student">Student</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Who is this presentation for?</label>
+      <select id="inp-audience">
+        <option value="">Select your audience</option>
+        <option value="investors">Investors / VCs</option>
+        <option value="clients">Clients / Prospects</option>
+        <option value="students">Students / Trainees</option>
+        <option value="team">Team / Leadership</option>
+        <option value="recruiters">Recruiters / Portfolio</option>
+        <option value="personal">Personal / Friends</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>What's your presentation about?</label>
+      <textarea id="inp-topic" placeholder="e.g., Series A pitch for our AI-powered analytics platform"></textarea>
+    </div>
+    <button class="start-btn" onclick="startEditor()">Start creating</button>
+  </div>
+</div>
+
+<!-- ── EDITOR ── -->
+<div id="editor">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">Presentations.AI</span>
+      <span class="topbar-title" id="deck-title">Untitled Presentation</span>
+    </div>
+    <div class="topbar-right">
+      <div class="debug-panel">
+        <span>Score: <span class="debug-val" id="dbg-score">0</span></span>
+        <span>Archetype: <span class="debug-val" id="dbg-arch">—</span></span>
+        <span>System nudges: <span class="debug-val" id="dbg-nudges">0/2</span></span>
+        <span>Total shown: <span class="debug-val" id="dbg-total">0</span></span>
+      </div>
+      <div class="credit-meter" id="credit-meter">
+        <span id="credit-count">100</span>
+        <div class="bar"><div class="bar-fill" id="credit-bar" style="width:100%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-main">
+    <!-- Left toolbar -->
+    <div class="toolbar">
+      <button class="tool-btn" onclick="triggerFeature('slide-gen')">
+        <span>+</span>
+        <span class="tooltip-label">Generate slides</span>
+      </button>
+      <button class="tool-btn" onclick="triggerFeature('ai-edit')">
+        <span>~</span>
+        <span class="pro-dot"></span>
+        <span class="tooltip-label">AI Edit</span>
+      </button>
+      <button class="tool-btn" onclick="triggerFeature('ai-enhance')">
+        <span>*</span>
+        <span class="pro-dot"></span>
+        <span class="tooltip-label">AI Enhance</span>
+      </button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="triggerFeature('brand-colors')">
+        <span style="color:#a78bfa">~</span>
+        <span class="pro-dot"></span>
+        <span class="tooltip-label">Brand Colors</span>
+      </button>
+      <button class="tool-btn" onclick="triggerFeature('remove-watermark')">
+        <span>W</span>
+        <span class="pro-dot"></span>
+        <span class="tooltip-label">Remove Watermark</span>
+      </button>
+      <button class="tool-btn" onclick="triggerFeature('pro-templates')">
+        <span>T</span>
+        <span class="pro-dot"></span>
+        <span class="tooltip-label">Pro Templates</span>
+      </button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-area">
+      <div class="slide">
+        <div class="slide-title" id="slide-title">Your Presentation</div>
+        <div class="slide-subtitle" id="slide-subtitle">Created with Presentations.AI</div>
+        <div class="watermark">Made with Presentations.AI</div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="panel-section-label">Export</div>
+      <div class="panel-btn" onclick="triggerFeature('pdf-export')">
+        <span class="icon">D</span> PDF Export
+        <span class="pro-badge">PRO</span>
+      </div>
+      <div class="panel-btn" onclick="triggerFeature('pptx-export')">
+        <span class="icon">P</span> PPTX Export
+        <span class="pro-badge">PRO</span>
+      </div>
+
+      <div class="panel-section-label">Share</div>
+      <div class="panel-btn" onclick="triggerFeature('share-no-watermark')">
+        <span class="icon">S</span> Share (no watermark)
+        <span class="pro-badge">PRO</span>
+      </div>
+      <div class="panel-btn" onclick="triggerFeature('invite-collab')">
+        <span class="icon">+</span> Invite collaborators
+        <span class="pro-badge">PRO</span>
+      </div>
+
+      <div class="panel-section-label">Analytics</div>
+      <div class="panel-btn" onclick="triggerFeature('viewer-analytics')">
+        <span class="icon">#</span> Viewer Analytics
+        <span class="pro-badge">PRO</span>
+      </div>
+
+      <div class="panel-section-label" style="margin-top:16px">Credits</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
+        <span id="panel-credits">100</span> credits remaining
+        <br><span style="font-size:10px;color:var(--text-dim)">~<span id="panel-slides">33</span> slides left</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <span>Slide 1 / 1</span>
+    <span id="status-text">Ready</span>
+  </div>
+</div>
+
+<!-- Overlay backdrop -->
+<div class="overlay-backdrop" id="overlay-backdrop">
+  <div class="nudge-overlay" id="nudge-overlay">
+    <!-- Filled dynamically -->
+  </div>
+</div>
+
+<!-- Credit toast -->
+<div class="credit-toast" id="credit-toast"></div>
+
+<!-- Log toggle & panel -->
+<button class="log-toggle" id="log-toggle" onclick="toggleLog()" style="display:none">Engine Log</button>
+<div class="log-panel" id="log-panel"></div>
+
+<!-- Spend credits button -->
+<button class="spend-btn" id="spend-btn" onclick="spendCredits()" style="display:none">
+  Use 15 credits (generate slides)
+</button>
+
+<script>
+// ═══════════════════════════════════════════════════
+// NUDGE DECISION ENGINE v2 — Context-Stuffed Copy
+// 4 nudge types: Nudge, Credit Reminder, Milestone, Upgrade Panel
+// Copy strategies: outcome-led, investment-led, social-proof-led, scarcity-led, peer-led
+// ═══════════════════════════════════════════════════
+
+// ── STATE ──
+const state = {
+  name: '',
+  role: '',
+  audience: '',
+  topic: '',
+  archetype: 'Fallback',
+  intentScore: 0,
+  credits: 100,
+  maxCredits: 100,
+  nudgesShown: 0,
+  systemNudgesShown: 0,
+  maxNudges: 2,
+  gateHits: {},          // feature -> count
+  totalGateHits: 0,
+  decksCreated: 1,
+  creditReminderShown: false,
+  creditThreshold50Fired: false,
+  creditThreshold0Fired: false,
+  dismissHistory: {},    // "feature:overlayType" -> "not-now" | "never"
+  sessionDismissed: {},  // overlayType -> true (for session-level suppression)
+  upgraded: false,
+  sessionStart: Date.now(),
+  logs: [],
+  impressionLog: []  // tracks every nudge shown: copy, strategy, outcome
+};
+
+// ── ARCHETYPE DETECTION ──
+// Direct role → archetype mapping (roles are predefined dropdowns)
+const roleToArchetype = {
+  'leadership':     'Founder',
+  'sales':          'Sales',
+  'marketing':      'Sales',
+  'product':        'Corporate',
+  'design':         'Creative',
+  'engineering':    'Corporate',
+  'data-analytics': 'Corporate',
+  'consulting':     'Corporate',
+  'support':        'Corporate',
+  'operations':     'Corporate',
+  'finance':        'Corporate',
+  'legal':          'Corporate',
+  'creator':        'Creative',
+  'teacher':        'Educator',
+  'student':        'Student'
+};
+
+// Audience and topic still use weighted keyword matching for refinement
+const archetypeSignals = {
+  'Founder': {
+    audiences: ['investors','vcs','board'],
+    topics: ['pitch','fundraise','series','seed','startup','raise','investor','vc','funding']
+  },
+  'Sales': {
+    audiences: ['clients','prospects','customers'],
+    topics: ['sales','proposal','pricing','product','deal','client','revenue','pipeline','quota']
+  },
+  'Educator': {
+    audiences: ['students','trainees','class'],
+    topics: ['lecture','course','lesson','training','curriculum','teach','syllabus']
+  },
+  'Corporate': {
+    audiences: ['team','leadership','executives'],
+    topics: ['update','review','quarterly','report','strategy','roadmap','okr','metrics']
+  },
+  'Creative': {
+    audiences: ['clients','recruiters','portfolio'],
+    topics: ['portfolio','showcase','case study','design','brand','agency','creative']
+  },
+  'Student': {
+    audiences: ['classmates','personal','friends'],
+    topics: ['assignment','project','school','class','thesis','homework']
+  }
+};
+
+function detectArchetype() {
+  const roleVal = state.role.toLowerCase();
+  const audVal = state.audience.toLowerCase();
+  const topicVal = state.topic.toLowerCase();
+
+  // Step 1: Role gives base archetype (weight 3, strongest signal)
+  const roleArch = roleToArchetype[roleVal] || null;
+
+  // Step 2: Score all archetypes from audience + topic
+  const scores = {};
+  for (const [arch, signals] of Object.entries(archetypeSignals)) {
+    let s = 0;
+    if (signals.audiences.some(a => audVal.includes(a))) s += 3;
+    if (signals.topics.some(t => topicVal.includes(t))) s += 2;
+    scores[arch] = s;
+  }
+
+  // Step 3: Add role weight to the role-mapped archetype
+  if (roleArch) {
+    scores[roleArch] = (scores[roleArch] || 0) + 3;
+  }
+
+  // Step 4: Highest score wins. Ties broken by priority (higher-stakes first)
+  let best = 'Fallback', bestScore = 0;
+  const priority = ['Founder','Corporate','Sales','Educator','Creative','Student'];
+  for (const arch of priority) {
+    if ((scores[arch] || 0) > bestScore) {
+      bestScore = scores[arch];
+      best = arch;
+    } else if ((scores[arch] || 0) === bestScore && bestScore > 0) {
+      if (priority.indexOf(arch) < priority.indexOf(best)) best = arch;
+    }
+  }
+
+  // Special case: Leadership + investors audience = Founder (override Corporate)
+  if (roleVal === 'leadership' && audVal.includes('investors')) best = 'Founder';
+
+  if (bestScore === 0) best = 'Fallback';
+  return best;
+}
+
+// ── COPY GENERATION (situational, outcome-driven — simulating LLM) ──
+const copyTemplates = {
+  'Founder': {
+    'ai-edit':          { title: 'Pitching soon?', body: `Run a quick scan to tighten your messaging and sharpen every slide before this goes in front of {audience}. First impressions close rounds.` },
+    'ai-enhance':       { title: 'Make it look like a $10k deck', body: `{audience} see hundreds of decks a month. The ones that get meetings have structure, spacing, and flow that feel intentional. One click gets you there.` },
+    'brand-colors':     { title: 'Your brand, every slide', body: `{audience} remember branded decks — it signals you're serious, not scrappy. Lock in your startup colors across all slides so nothing feels templated.` },
+    'remove-watermark': { title: 'Lose the "made with" badge', body: `When {audience} open your deck, the first thing they shouldn't notice is someone else's logo. Present like you've been doing this for years.` },
+    'pro-templates':    { title: 'Templates that got funded', body: `Structures used by companies like Uber, Airbnb, and Stripe in their early decks. Problem → Solution → Traction → Ask. Pre-built, ready to fill.` },
+    'pdf-export':       { title: 'They will want the deck after', body: `After the meeting, {audience} will forward this to partners. Give them a clean PDF they can share internally — not a link that might break.` },
+    'pptx-export':      { title: 'Need to present in the room?', body: `Some {audience} meetings are in-person, no WiFi, no browser. Download as PPTX so you're never scrambling at the projector.` },
+    'share-no-watermark': { title: 'Share it like it is yours', body: `You're about to send this to people who might write you a check. Make sure the link looks like YOUR brand, not someone else's.` },
+    'invite-collab':    { title: 'Get your co-founder in here', body: `Two eyes on a pitch deck are better than one. Pull in your co-founder, advisor, or lead investor for real-time feedback before the meeting.` },
+    'viewer-analytics': { title: 'Did they actually read it?', body: `Stop guessing. See exactly which {audience} opened your deck, which slides they lingered on, and whether they forwarded it to partners. Time your follow-up perfectly.` },
+    'slide-gen':        { title: 'Keep going, finish the pitch', body: `You're building momentum on your {topic} deck. Pro gives you unlimited generation so you can add the traction slide, the team slide, the appendix — whatever it takes to close.` }
+  },
+  'Sales': {
+    'ai-edit':          { title: 'Tighten this before the call', body: `{audience} decide in the first 5 slides whether to keep listening. Run a quick polish to make sure every word earns its spot in your {topic} proposal.` },
+    'ai-enhance':       { title: 'Turn slides into a closer', body: `Restructure your {topic} deck so the narrative builds urgency — problem, cost of inaction, your solution, proof. The format that gets "let's move forward."` },
+    'brand-colors':     { title: 'Look like the bigger company', body: `{audience} trust vendors who look put-together. Branded slides signal you're professional, established, and worth the premium. One click to apply.` },
+    'remove-watermark': { title: 'A badge is undercutting your price', body: `You're asking {audience} to pay for your product. A "made with free tool" watermark quietly undermines that conversation.` },
+    'pro-templates':    { title: 'Proposal templates that close', body: `Pre-built structures for case studies, pricing tables, comparison slides, and ROI calculators. The pages {audience} actually flip to before signing.` },
+    'pdf-export':       { title: 'Send the leave-behind', body: `After the call, {audience} share your deck with their team to get buy-in. Make sure what lands in their inbox is a clean PDF they'll actually forward.` },
+    'pptx-export':      { title: 'Presenting at their office?', body: `Some deals close in the room, not over Zoom. Download your {topic} deck as PPTX and present on their setup without any dependencies.` },
+    'share-no-watermark': { title: 'Your proposal, your brand', body: `When {audience} circulate your proposal internally, every touchpoint should reinforce YOUR brand — not remind them you used a free tool.` },
+    'invite-collab':    { title: 'Loop in the AE before sending', body: `Get your account exec or sales lead reviewing the {topic} proposal before it goes to {audience}. Catch the pricing typo before they do.` },
+    'viewer-analytics': { title: 'Know when to follow up', body: `Did {audience} open your proposal? Did they spend time on the pricing slide or skip it? Stop guessing — see exactly when to call back and what to say.` },
+    'slide-gen':        { title: 'Add the case study they asked for', body: `{audience} want proof. Pro gives you unlimited generation to add the case studies, testimonials, and ROI breakdowns that tip deals over the line.` }
+  },
+  'Educator': {
+    'ai-edit':          { title: 'Quick cleanup before class', body: `{audience} lose focus on cluttered slides. Run a quick pass to simplify your {topic} material — cleaner layouts, tighter text, better flow between concepts.` },
+    'ai-enhance':       { title: 'Make the hard stuff click', body: `Complex {topic} concepts need clear visual structure. Restructure your slides so {audience} follow the logic instead of getting lost in walls of text.` },
+    'brand-colors':     { title: 'Match your institution', body: `Apply your school or department colors for a consistent, professional look. {audience} take branded materials more seriously — it signals effort.` },
+    'remove-watermark': { title: 'Keep all eyes on the lesson', body: `A watermark in the corner is a distraction when {audience} should be focused on your {topic} content. Remove it for a clean teaching experience.` },
+    'pro-templates':    { title: 'Built for the classroom', body: `Lecture layouts, quiz formats, concept breakdowns, and recap slides — structures designed for how {audience} actually learn, not just how slides look.` },
+    'pdf-export':       { title: 'Give them the study material', body: `{audience} want to review your {topic} slides before the exam. Export as PDF so they can annotate, highlight, and study at their own pace.` },
+    'pptx-export':      { title: 'Present offline in the classroom', body: `Not every classroom has reliable WiFi. Download your {topic} deck as PPTX so you're never stuck buffering in front of {audience}.` },
+    'share-no-watermark': { title: 'Share clean course materials', body: `When you distribute {topic} materials to {audience}, keep the focus on your content. No third-party branding to explain or apologize for.` },
+    'invite-collab':    { title: 'Build the curriculum together', body: `Invite your TA or co-instructor to edit the {topic} slides in real-time. Split the workload, align on the narrative before class.` },
+    'viewer-analytics': { title: 'Did they actually study?', body: `See which {audience} opened your {topic} slides, how long they spent per section, and who hasn't looked at all. Know who to check in with before the test.` },
+    'slide-gen':        { title: 'Finish the full lesson plan', body: `Your {topic} module needs more slides and you're running low. Pro gives you unlimited generation to build out the complete curriculum without stopping.` }
+  },
+  'Corporate': {
+    'ai-edit':          { title: 'Tighten it before the meeting', body: `{audience} have 30 minutes and want the headline on slide 1. Run a quick polish on your {topic} update so every slide earns its spot in the deck.` },
+    'ai-enhance':       { title: 'Make it executive-ready', body: `Restructure your {topic} deck so the key decisions and metrics are upfront. {audience} shouldn't need to hunt for the point — it should be obvious by slide 3.` },
+    'brand-colors':     { title: 'Stay on brand guidelines', body: `Your {topic} deck is going to {audience}. Off-brand colors in an internal presentation signal sloppiness. Lock in company colors across every slide.` },
+    'remove-watermark': { title: 'Not a good look internally', body: `Sending a {topic} update to {audience} with a third-party watermark raises eyebrows. Remove it — internal decks should look internal.` },
+    'pro-templates':    { title: 'QBR and strategy templates', body: `Pre-built layouts for quarterly reviews, roadmap presentations, and team updates. The structures {audience} already expect — just fill in your numbers.` },
+    'pdf-export':       { title: 'Pre-read before the meeting', body: `{audience} want to review your {topic} deck before the room. Send a clean PDF so they come prepared and the meeting is a discussion, not a presentation.` },
+    'pptx-export':      { title: 'Need it in PowerPoint?', body: `Most corporate environments run on PPT. Download your {topic} deck as PPTX for full compatibility with your company's standard tooling.` },
+    'share-no-watermark': { title: 'Share without the third-party badge', body: `When this {topic} update circulates to {audience} and beyond, it should look like an internal document — not something made on a free tool.` },
+    'invite-collab':    { title: 'Get sign-off before presenting', body: `Pull in your manager or stakeholder to review the {topic} deck before it hits {audience}. Real-time editing beats 5 rounds of email feedback.` },
+    'viewer-analytics': { title: 'Did leadership read it?', body: `You sent the {topic} update to {audience} last week. Did they open it? Which slides did they actually spend time on? Know before the follow-up meeting.` },
+    'slide-gen':        { title: 'Finish the full update', body: `Your {topic} deck needs the appendix, the data slides, the team section. Pro gives unlimited generation so you can ship the complete picture to {audience}.` }
+  },
+  'Creative': {
+    'ai-edit':          { title: 'Polish before you send it out', body: `{audience} judge the details. Run a quick cleanup on your {topic} deck — fix the copy, tighten the spacing, make sure nothing looks accidental.` },
+    'ai-enhance':       { title: 'Make the work the hero', body: `Restructure your {topic} showcase so each project flows into the next. {audience} should feel pulled through your portfolio, not just clicking through slides.` },
+    'brand-colors':     { title: 'Your brand IS the product', body: `When {audience} see your portfolio, the color palette, typography, and consistency tell a story before the work does. Lock in your brand across every slide.` },
+    'remove-watermark': { title: 'Your name, nobody else\'s', body: `A third-party watermark on a creative portfolio is a contradiction. You're showing your craft — make sure the only name on it is yours.` },
+    'pro-templates':    { title: 'Built to show off the work', body: `Minimal, clean portfolio layouts designed to let your projects breathe. Full-bleed imagery, case study structures, and before/after formats.` },
+    'pdf-export':       { title: 'Give them something worth saving', body: `{audience} want a PDF they can save, review later, and share with their team when the project comes up. Give them something worth bookmarking.` },
+    'pptx-export':      { title: 'Present in person?', body: `Client meetings, portfolio reviews, agency pitches — sometimes you need to present on someone else's screen. PPTX export gives you full control.` },
+    'share-no-watermark': { title: 'Send a link worth clicking', body: `When {audience} click your portfolio link, every pixel should feel intentional. A third-party watermark breaks that illusion instantly.` },
+    'invite-collab':    { title: 'Get feedback before sending', body: `Pull in your creative partner or art director to review the {topic} deck. Better to catch the kerning issue now than after {audience} see it.` },
+    'viewer-analytics': { title: 'Did they look at your work?', body: `Turn on tracking to see exactly which {audience} opened your link, which case studies they spent the most time on, and when they came back for a second look.` },
+    'slide-gen':        { title: 'Add the rest of your projects', body: `Your {topic} portfolio needs more case studies. Pro gives unlimited generation to build out the full showcase {audience} need to see before hiring you.` }
+  },
+  'Student': {
+    'ai-edit':          { title: 'Quick proofread before you submit', body: `Catch the typos, fix the formatting, tighten the flow. Your {topic} presentation will look like you spent twice as long on it.` },
+    'ai-enhance':       { title: 'Make it look like you tried', body: `Your {audience} can tell when slides are thrown together. One click restructures your {topic} deck with proper hierarchy, spacing, and visual flow.` },
+    'brand-colors':     { title: 'Stand out from everyone else', body: `Every other student is using the default color scheme. Apply a custom palette to your {topic} slides and look like the one who actually cared.` },
+    'remove-watermark': { title: 'Clean it up before presenting', body: `Presenting to {audience} with a "made with" watermark is like submitting an essay with the template name still in the header. Small detail, big impression.` },
+    'pro-templates':    { title: 'Templates nobody else is using', body: `Modern layouts your {audience} haven't seen before. Professional enough for a thesis defense, clean enough for a class project.` },
+    'pdf-export':       { title: 'Submit it as PDF', body: `Most professors want a PDF. Export your {topic} deck and submit it without worrying about fonts breaking or layouts shifting.` },
+    'pptx-export':      { title: 'Download for class', body: `Need to present on the classroom projector? PPTX export gives you a file that works everywhere — no WiFi, no login, no issues.` },
+    'share-no-watermark': { title: 'Share without the badge', body: `Sending your {topic} presentation to {audience}? A clean link without a third-party watermark looks more intentional and professional.` },
+    'invite-collab':    { title: 'Group project? Work together', body: `Stop emailing versions back and forth. Get your teammates into the {topic} slides for real-time editing. One deck, everyone contributes.` },
+    'viewer-analytics': { title: 'See if they watched it', body: `Shared your {topic} presentation with {audience}? See who actually opened it, how far they got, and whether they skipped to the end.` },
+    'slide-gen':        { title: 'Keep going, finish it', body: `Your {topic} project needs more slides and you're running out of credits. Pro gives unlimited generation so you can finish without cutting content.` }
+  },
+  'Fallback': {
+    'ai-edit':          { title: 'Tighten it up before sharing', body: `A quick AI pass catches the awkward phrasing, fixes spacing issues, and makes your deck feel like you spent hours polishing it. Takes about 3 seconds.` },
+    'ai-enhance':       { title: 'Make it feel professional', body: `One click restructures your slides with proper visual hierarchy, consistent spacing, and a flow that guides your audience through the story.` },
+    'brand-colors':     { title: 'Make it look intentional', body: `Default colors scream "I made this in 10 minutes." Apply a custom palette and suddenly the whole deck feels designed, not assembled.` },
+    'remove-watermark': { title: 'Remove the "made with" badge', body: `When you share this deck, the focus should be on your content — not on advertising someone else's tool. Clean it up with one click.` },
+    'pro-templates':    { title: 'Start with something better', body: `Professionally designed layouts that make any topic look polished. Not the templates everyone else is using — something that actually feels fresh.` },
+    'pdf-export':       { title: 'Save it, send it, keep it', body: `Export as a clean PDF you can email, print, or upload anywhere. No links to break, no logins to share — just the deck.` },
+    'pptx-export':      { title: 'Download for offline use', body: `Need to present without internet or open it in PowerPoint? PPTX export gives you a fully editable file that works everywhere.` },
+    'share-no-watermark': { title: 'Share it without the badge', body: `When people open your link, they should see YOUR deck — not a third-party watermark in the corner reminding them it was made for free.` },
+    'invite-collab':    { title: 'Get a second pair of eyes', body: `Invite a colleague, friend, or teammate to edit the deck with you in real-time. Two perspectives make a better presentation every time.` },
+    'viewer-analytics': { title: 'Did anyone actually open it?', body: `Stop wondering. See who opened your deck, which slides they viewed, how long they spent, and whether they came back. Data, not guesswork.` },
+    'slide-gen':        { title: 'Keep building', body: `You're on a roll and running low on credits. Pro gives unlimited generation so you can finish the full deck without stopping to count slides.` }
+  }
+};
+
+// ── COPY STRATEGY ENGINE ──
+// 5 strategies, selected based on behavioral context
+const STRATEGIES = {
+  'outcome':    'Lead with the result they want to achieve',
+  'investment': 'Acknowledge what they have already built/spent',
+  'social':     'Reference what others like them do',
+  'scarcity':   'Highlight credit limits or time pressure',
+  'peer':       'Mention what similar users typically do'
+};
+
+function pickCopyStrategy(feature, nudgeType) {
+  const mins = Math.floor((Date.now() - state.sessionStart) / 60000);
+  const creditsUsed = state.maxCredits - state.credits;
+
+  // Scarcity: when credits are getting low
+  if (state.credits < 30 && state.credits > 0) return 'scarcity';
+  // Investment: when they have spent significant time or credits
+  if (mins >= 10 || creditsUsed >= 40 || state.decksCreated >= 2) return 'investment';
+  // Social: on 2nd+ gate hit (they are exploring, show what others do)
+  if (state.totalGateHits >= 3) return 'social';
+  // Peer: if they dismissed a previous nudge (softer angle)
+  if (state.nudgesShown >= 2) return 'peer';
+  // Default: outcome-led
+  return 'outcome';
+}
+
+function getContextSnippet() {
+  const mins = Math.floor((Date.now() - state.sessionStart) / 60000);
+  const creditsUsed = state.maxCredits - state.credits;
+  const slidesEst = Math.floor(creditsUsed / 3);
+  const hitsArr = Object.entries(state.gateHits).filter(([k,v]) => v > 0).map(([k]) => featureMeta[k]?.label);
+
+  return { mins, creditsUsed, slidesEst, hitsArr };
+}
+
+function getCopy(feature, strategy) {
+  const arch = state.archetype;
+  const ctx = getContextSnippet();
+  const templates = copyTemplates[arch] || copyTemplates['Fallback'];
+  const base = templates[feature] || copyTemplates['Fallback'][feature];
+  if (!base) return { title: 'Unlock this feature', body: 'This feature is part of Pro.', strategy };
+
+  const fill = (s) => s
+    .replace(/\{name\}/g, state.name || 'there')
+    .replace(/\{audience\}/g, state.audience || 'your audience')
+    .replace(/\{topic\}/g, state.topic || 'your presentation')
+    .replace(/\{role\}/g, state.role || 'professional');
+
+  let title = fill(base.title);
+  let body = fill(base.body);
+
+  // Layer behavioral context on top based on strategy
+  if (strategy === 'investment') {
+    if (ctx.mins >= 10) {
+      body = `You have been working on this for ${ctx.mins} minutes. ` + body;
+    } else if (ctx.creditsUsed >= 20) {
+      body = `You have used ${ctx.creditsUsed} credits across ${state.decksCreated} deck${state.decksCreated > 1 ? 's' : ''} so far. ` + body;
+    }
+  } else if (strategy === 'scarcity') {
+    const slidesLeft = Math.floor(state.credits / 3);
+    body = `${state.credits} credits left — roughly ${slidesLeft} more slides. ` + body;
+  } else if (strategy === 'social') {
+    const socialProofs = {
+      'Founder':   'Most founders who reach this point end up upgrading before the pitch.',
+      'Sales':     '72% of sales teams using Pro close their first deal within 2 weeks.',
+      'Educator':  'Teachers who upgrade save an average of 3 hours per week on materials.',
+      'Corporate': 'Teams that brand their internal decks report higher engagement from leadership.',
+      'Creative':  'Freelancers with branded portfolios get 2x more callbacks.',
+      'Student':   'Students using Pro templates score 15% higher on presentation grades.',
+      'Fallback':  'Users who upgrade create 3x more decks in their first month.'
+    };
+    body = body + ' ' + (socialProofs[arch] || socialProofs['Fallback']);
+  } else if (strategy === 'peer') {
+    body = body + ' Most users in your situation find this worth it.';
+  }
+
+  return { title, body, strategy };
+}
+
+// ── FEATURE METADATA ──
+const featureMeta = {
+  'slide-gen':         { label: 'Slide Generation', category: 'credit', visual: false },
+  'ai-edit':           { label: 'AI Edit', category: 'credit', visual: false },
+  'ai-enhance':        { label: 'AI Enhance', category: 'pro', visual: false },
+  'brand-colors':      { label: 'Custom Brand Colors', category: 'pro', visual: true },
+  'remove-watermark':  { label: 'Remove Watermark', category: 'pro', visual: true },
+  'pro-templates':     { label: 'Pro Templates', category: 'pro', visual: false },
+  'pdf-export':        { label: 'PDF Export', category: 'pro', visual: false },
+  'pptx-export':       { label: 'PPTX Export', category: 'paywall', visual: false },
+  'share-no-watermark':{ label: 'Share (No Watermark)', category: 'pro', visual: true },
+  'invite-collab':     { label: 'Invite Collaborators', category: 'pro', visual: false },
+  'viewer-analytics':  { label: 'Viewer Analytics', category: 'pro', visual: false }
+};
+
+// ── OVERLAY LOGIC (simplified: 4 types) ──
+function getNudgeType() {
+  if (state.credits === 0) return 'upgrade';       // functional blocker
+  if (state.intentScore >= 20) return 'upgrade';    // high intent
+  return 'nudge';                                   // default gate response
+}
+
+// Milestone is triggered by events, not gate hits (handled separately)
+
+function shouldSuppress(feature, nudgeType, userInitiated) {
+  if (state.upgraded) return 'User already upgraded';
+  // User-initiated gate hits are never capped
+  if (!userInitiated && state.systemNudgesShown >= state.maxNudges) return `System nudge cap reached (${state.maxNudges}/${state.maxNudges})`;
+  return null;
+}
+
+// ── SCORING ──
+function addScore(points, reason) {
+  state.intentScore = Math.max(0, state.intentScore + points);
+  log(points >= 0 ? 'signal' : 'suppress', `${points >= 0 ? '+' : ''}${points} → Score now ${state.intentScore} (${reason})`);
+  updateDebug();
+}
+
+// ── TRIGGER FEATURE ──
+function triggerFeature(feature) {
+  if (state.upgraded) return;
+
+  const meta = featureMeta[feature];
+  if (!meta) return;
+
+  // Score the gate hit
+  const prevHits = state.gateHits[feature] || 0;
+  if (prevHits === 0) {
+    addScore(3, `First gate hit: ${meta.label}`);
+  } else {
+    addScore(2, `Repeat gate hit: ${meta.label}`);
+  }
+  state.gateHits[feature] = prevHits + 1;
+  state.totalGateHits++;
+
+  // Determine nudge type
+  const nudgeType = getNudgeType();
+
+  // Rules engine — gate hits are user-initiated, never capped
+  const suppressReason = shouldSuppress(feature, nudgeType, true);
+  if (suppressReason) {
+    log('suppress', `SUPPRESSED: ${nudgeType} for ${meta.label} — ${suppressReason}`);
+    flashStatus(`Nudge suppressed: ${suppressReason}`);
+    return;
+  }
+
+  // Fire!
+  const strategy = pickCopyStrategy(feature, nudgeType);
+  log('fire', `FIRING: ${nudgeType} for ${meta.label} | strategy: ${strategy} | score: ${state.intentScore}`);
+  showOverlay(feature, nudgeType, strategy);
+}
+
+// ── SPEND CREDITS ──
+function spendCredits() {
+  if (state.credits <= 0) return;
+  const spend = Math.min(15, state.credits);
+  state.credits -= spend;
+  updateCredits();
+
+  addScore(0, `Used ${spend} credits (${state.credits} remaining)`);
+
+  // Credit threshold signals (fire once per session)
+  if (state.credits < 50 && !state.creditThreshold50Fired) {
+    state.creditThreshold50Fired = true;
+    addScore(3, 'Credits crossed below 50');
+
+    // Credit reminder (max 1 per session, system-initiated)
+    if (!state.creditReminderShown && !state.upgraded) {
+      state.creditReminderShown = true;
+      state.systemNudgesShown++;
+      showCreditToast();
+    }
+  }
+  if (state.credits === 0 && !state.creditThreshold0Fired) {
+    state.creditThreshold0Fired = true;
+    addScore(5, 'Credits hit 0 — hard blocker');
+  }
+}
+
+// ── SHOW OVERLAY ──
+function showOverlay(feature, nudgeType, strategy) {
+  const copy = getCopy(feature, strategy);
+  const meta = featureMeta[feature];
+  const ctx = getContextSnippet();
+  const el = document.getElementById('nudge-overlay');
+  const backdrop = document.getElementById('overlay-backdrop');
+
+  let sizeClass = nudgeType === 'upgrade' ? 'upgrade-style' : '';
+
+  let html = `<button class="nudge-close" onclick="dismissNudge('${feature}','${nudgeType}','close')">x</button>`;
+
+  if (nudgeType === 'upgrade') {
+    // Full upgrade panel
+    html += `<div class="nudge-title">${state.credits === 0 ? 'You have used all your free credits' : copy.title}</div>`;
+    html += `<div class="nudge-body">${state.credits === 0 ? 'Upgrade to keep creating — unlimited generation, exports, branding, and more.' : copy.body}</div>`;
+    html += `<ul class="upgrade-features">
+      <li>Unlimited AI generation</li>
+      <li>Remove watermark</li>
+      <li>Brand colors & Pro templates</li>
+      <li>PDF & PPTX export</li>
+      <li>Viewer analytics</li>
+      <li>Invite collaborators</li>
+    </ul>`;
+    html += `<button class="nudge-cta" onclick="dismissNudge('${feature}','${nudgeType}','cta')">Upgrade to Pro</button>`;
+    html += `<button class="nudge-dismiss" onclick="dismissNudge('${feature}','${nudgeType}','not-now')">Not now</button>`;
+  } else {
+    // Standard nudge — compact, contextual
+    sizeClass = 'tooltip-style';
+    html += `<div class="nudge-title">${copy.title}</div>`;
+    html += `<div class="nudge-body">${copy.body}</div>`;
+    html += `<button class="nudge-cta" onclick="dismissNudge('${feature}','${nudgeType}','cta')">See Pro Plans</button>`;
+    html += `<button class="nudge-dismiss" onclick="dismissNudge('${feature}','${nudgeType}','not-now')">Not now</button>`;
+  }
+
+  // Engine meta (debug — visible in simulator)
+  const strategyLabels = {
+    outcome: 'Outcome-led',
+    investment: 'Investment-led',
+    social: 'Social proof-led',
+    scarcity: 'Scarcity-led',
+    peer: 'Peer-led'
+  };
+  html += `<div class="nudge-meta">
+    <strong>Engine:</strong> Score ${state.intentScore} → ${nudgeType} | Strategy: ${strategyLabels[strategy] || strategy}<br>
+    Trigger: ${meta.label} | Archetype: ${state.archetype}<br>
+    Context: ${ctx.mins}m in editor, ${ctx.creditsUsed} credits used, ${state.decksCreated} deck(s), ${state.totalGateHits} gate hits<br>
+    Pro features explored: ${ctx.hitsArr.length > 0 ? ctx.hitsArr.join(', ') : 'none yet'}
+  </div>`;
+
+  // Log the impression for tracking
+  state.impressionLog.push({
+    time: Date.now(),
+    feature,
+    nudgeType,
+    strategy,
+    title: copy.title,
+    body: copy.body,
+    score: state.intentScore,
+    archetype: state.archetype,
+    credits: state.credits,
+    outcome: null // filled on dismiss
+  });
+
+  el.className = 'nudge-overlay ' + sizeClass;
+  el.innerHTML = html;
+  backdrop.classList.add('active');
+  state.nudgesShown++;
+  updateDebug();
+}
+
+function dismissNudge(feature, nudgeType, action) {
+  const backdrop = document.getElementById('overlay-backdrop');
+  backdrop.classList.remove('active');
+
+  // Log the outcome on the last impression
+  const lastImp = state.impressionLog[state.impressionLog.length - 1];
+  if (lastImp) lastImp.outcome = action;
+
+  if (action === 'cta') {
+    log('fire', `CTA clicked → Pricing flow (${featureMeta[feature]?.label})`);
+    flashStatus('Routing to pricing...');
+    setTimeout(() => {
+      if (confirm('Simulate: User upgrades to Pro?')) {
+        state.upgraded = true;
+        log('fire', 'USER UPGRADED — Kill switch activated. All nudges suppressed.');
+        flashStatus('Upgraded to Pro! All nudges disabled.');
+        updateDebug();
+      }
+    }, 300);
+  } else if (action === 'not-now') {
+    addScore(-1, `Dismissed "${featureMeta[feature]?.label}" with "Not now"`);
+  } else {
+    addScore(-0.5, `Closed "${featureMeta[feature]?.label}" nudge`);
+  }
+}
+
+// ── CREDIT TOAST ──
+function showCreditToast() {
+  const el = document.getElementById('credit-toast');
+  el.innerHTML = `
+    <div class="ct-text"><strong>${state.credits} credits</strong> remaining (~${Math.floor(state.credits / 3)} slides left)</div>
+    <a class="ct-link" onclick="showOverlay('slide-gen','upgrade')">See Pro for unlimited →</a>
+  `;
+  el.classList.add('active');
+  log('fire', `Credit Reminder toast shown (${state.credits} credits)`);
+
+  setTimeout(() => {
+    el.classList.remove('active');
+    addScore(-0.5, 'Credit toast auto-dismissed (ignored)');
+  }, 5000);
+}
+
+// ── UI UPDATES ──
+function updateCredits() {
+  const pct = (state.credits / state.maxCredits) * 100;
+  document.getElementById('credit-count').textContent = state.credits;
+  document.getElementById('panel-credits').textContent = state.credits;
+  document.getElementById('panel-slides').textContent = Math.floor(state.credits / 3);
+  document.getElementById('credit-bar').style.width = pct + '%';
+
+  const meter = document.getElementById('credit-meter');
+  meter.classList.remove('low', 'critical');
+  if (state.credits < 25) meter.classList.add('critical');
+  else if (state.credits < 50) meter.classList.add('low');
+}
+
+function updateDebug() {
+  document.getElementById('dbg-score').textContent = state.intentScore;
+  document.getElementById('dbg-arch').textContent = state.archetype;
+  document.getElementById('dbg-nudges').textContent = `${state.systemNudgesShown}/${state.maxNudges}`;
+  document.getElementById('dbg-total').textContent = state.nudgesShown;
+}
+
+function flashStatus(msg) {
+  const el = document.getElementById('status-text');
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = 'Ready'; }, 3000);
+}
+
+// ── LOGGING ──
+function log(type, msg) {
+  const time = ((Date.now() - state.sessionStart) / 1000).toFixed(1);
+  state.logs.push({ type, msg, time });
+  const panel = document.getElementById('log-panel');
+  panel.innerHTML += `<div class="log-entry"><span class="log-time">${time}s</span><span class="log-${type}">${msg}</span></div>`;
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function toggleLog() {
+  document.getElementById('log-panel').classList.toggle('active');
+}
+
+// ── START ──
+function startEditor() {
+  state.name = document.getElementById('inp-name').value || 'User';
+  state.role = document.getElementById('inp-role').value || 'other';
+  state.audience = document.getElementById('inp-audience').value || 'audience';
+  state.topic = document.getElementById('inp-topic').value || 'presentation';
+
+  // Detect archetype
+  state.archetype = detectArchetype();
+
+  // Set slide content
+  document.getElementById('slide-title').textContent = state.topic || 'Your Presentation';
+  document.getElementById('slide-subtitle').textContent = `By ${state.name} | For ${state.audience}`;
+  document.getElementById('deck-title').textContent = state.topic || 'Untitled Presentation';
+
+  // Show editor
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('editor').classList.add('active');
+  document.getElementById('log-toggle').style.display = 'block';
+  document.getElementById('spend-btn').style.display = 'flex';
+
+  state.sessionStart = Date.now();
+  log('signal', `Session started — ${state.name}, ${state.role}, ${state.audience}`);
+  log('signal', `Archetype detected: ${state.archetype}`);
+  log('signal', `Credits: ${state.credits} | Intent score: ${state.intentScore}`);
+
+  updateDebug();
+  updateCredits();
+
+  // Time signal after 10 min (simulated as 30s for demo)
+  setTimeout(() => {
+    if (!state.upgraded) {
+      addScore(1, 'Time in editor > 10 min (simulated at 30s)');
+    }
+  }, 30000);
+}
+</script>
+</body>
+</html>
