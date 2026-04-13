@@ -234,6 +234,22 @@
     font-style: italic;
     padding: 8px 0;
   }
+  .prompt-shuffle-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .prompt-shuffle-btn:hover { background: var(--border-light); color: var(--text); border-color: var(--border); }
 
   /* Actions */
   .action-grid {
@@ -1858,9 +1874,12 @@ function renderPromptAnalysis() {
 
   var html = '';
 
-  // Raw prompt
+  // Raw prompt with shuffle button
   html += '<div class="prompt-section-label">User Prompt</div>';
-  html += '<div class="prompt-raw">\u201c' + u.topic + '\u201d</div>';
+  html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
+  html += '<div class="prompt-raw" style="flex:1;margin-bottom:0">\u201c' + u.topic + '\u201d</div>';
+  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Try a different prompt for this user">&#x21BB;</button>';
+  html += '</div>';
 
   // LLM extraction
   var synthesis = PROMPT_SYNTHESIS[u.topic];
@@ -1894,6 +1913,42 @@ function renderPromptAnalysis() {
   html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">These scores feed directly into the Feature Score Matrix as the <strong>prompt-synthesis</strong> signal. A score of 5 means the LLM considers this feature highly relevant to the user\u2019s prompt.</div>';
 
   el.innerHTML = html;
+}
+
+function shufflePrompt() {
+  // Collect all available prompts from PROMPT_SYNTHESIS
+  var allPrompts = Object.keys(PROMPT_SYNTHESIS);
+  // Filter out current topic
+  var others = allPrompts.filter(function(p) { return p !== state.user.topic; });
+  if (others.length === 0) return;
+  // Pick a random one
+  var newTopic = others[Math.floor(Math.random() * others.length)];
+
+  // Update user topic
+  state.user.topic = newTopic;
+
+  // Re-run prompt synthesis (Layer 3)
+  var synthesis = PROMPT_SYNTHESIS[newTopic];
+  if (synthesis) {
+    state.user.promptSynthesis = synthesis;
+    DIRECT_MAP['prompt-synthesis'] = synthesis;
+    state.activeSignals.add('prompt-synthesis');
+  } else {
+    delete state.user.promptSynthesis;
+    DIRECT_MAP['prompt-synthesis'] = {};
+    state.activeSignals.delete('prompt-synthesis');
+  }
+
+  // Rebuild all signals (keeps action toggles intact)
+  rebuildSignalsFromActions();
+
+  // Re-render everything affected
+  renderUserContext();
+  renderPromptAnalysis();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  evaluateAndFire();
 }
 
 // ── Action tooltip helpers ──
