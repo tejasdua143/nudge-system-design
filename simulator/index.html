@@ -740,11 +740,11 @@
       </div>
       <div class="panel" id="panel-actions">
         <div class="panel-title">Actions</div>
-        <div id="action-grid"></div>
+        <div class="action-grid" id="action-grid"></div>
       </div>
       <div class="panel" id="panel-signals">
         <div class="panel-title">Active Signals</div>
-        <div id="signal-list"></div>
+        <div class="signal-list" id="signal-list"></div>
       </div>
     </div>
     <div class="right-col">
@@ -777,7 +777,7 @@
       </div>
     </div>
   </div>
-  <div class="nudge-overlay" id="nudge-overlay">
+  <div class="nudge-overlay" id="nudge-overlay" onclick="if(event.target===this)closeNudgeModal()">
     <div class="nudge-modal" id="nudge-modal"></div>
   </div>
 
@@ -1549,21 +1549,416 @@ function resetSimulator() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 14. Render Stubs — placeholder functions (Task 7 will implement these)
+// 14. Render Functions
 // ══════════════════════════════════════════════════════════════════════════════
 
-function renderUserContext() {}
-function renderActions() {}
-function renderSignals() {}
-function renderMatrix() {}
-function renderGuardrails() {}
-function renderFeed() {}
-function renderNudgePreview() {}
-function closeNudgeModal() {}
-function skipCooldown() {}
+// ── renderUserContext ──
+function renderUserContext() {
+  const u = state.user;
+  const rows = [
+    ['Name', u.name],
+    ['Email', u.name.toLowerCase() + u.email, u.isCompanyDomain],
+    ['Country', u.country + ' (Tier ' + u.countryTier + ')', u.countryTier === 1],
+    ['Role', u.role],
+    ['Archetype', u.archetype, true],
+    ['Audience', u.audience],
+    ['Audience Stakes', u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '—', u.audienceStakes === 'high-external'],
+    ['Mindset Key', u.role + ' | ' + (u.audienceStakes || '—')],
+    ['Topic', u.topic],
+    ['Credits', u.credits + ' / 100'],
+    ['Session', u.sessionNum === 1 ? '1st visit' : 'Session ' + u.sessionNum],
+    ['Deck history', u.decksCompleted + ' made \u00b7 ' + u.decksShared + ' shared \u00b7 ' + u.decksPublished + ' published', u.decksCompleted >= 5],
+    ['Acquisition', u.acqChannel === 'paid' ? 'Paid ad' : u.acqChannel === 'referral' ? 'Referral' : 'Organic', u.acqChannel !== 'organic'],
+    ['Bought export', u.boughtExport ? 'Yes ($4.99)' : 'No'],
+    ['Past dismissals', u.dismissals],
+  ];
+
+  document.getElementById('user-context').innerHTML = rows.map(function(r) {
+    return '<div class="user-row"><span class="user-label">' + r[0] + '</span><span class="user-value' + (r[2] ? ' highlight' : '') + '">' + r[1] + '</span></div>';
+  }).join('');
+}
+
+// ── Action tooltip helpers ──
+function getActionImpact(action) {
+  var featureMap = {};
+  var universals = [];
+
+  action.signals.forEach(function(sig) {
+    if (DIRECT_MAP[sig]) {
+      Object.entries(DIRECT_MAP[sig]).forEach(function(entry) {
+        featureMap[entry[0]] = (featureMap[entry[0]] || 0) + entry[1];
+      });
+    }
+    if (UNIVERSAL_MAP[sig]) {
+      universals.push({ signal: sig, weight: UNIVERSAL_MAP[sig] });
+    }
+  });
+
+  var directImpacts = Object.entries(featureMap)
+    .map(function(entry) {
+      var f = FEATURES.find(function(feat) { return feat.id === entry[0]; });
+      return { name: f ? f.name : entry[0], icon: f ? f.icon : '', weight: entry[1] };
+    })
+    .sort(function(a, b) { return b.weight - a.weight; });
+
+  return { directImpacts: directImpacts, universals: universals };
+}
+
+function buildTooltipHTML(action) {
+  var impact = getActionImpact(action);
+  var html = '<div class="action-tooltip">';
+  html += '<div class="tooltip-title">Score Impact</div>';
+
+  if (impact.directImpacts.length === 0 && impact.universals.length === 0) {
+    html += '<div class="tooltip-empty">No scoring impact</div>';
+    html += '</div>';
+    return html;
+  }
+
+  impact.directImpacts.forEach(function(d) {
+    var cls = d.weight >= 5 ? 'high' : d.weight >= 3 ? 'med' : 'low';
+    html += '<div class="tooltip-row">' +
+      '<span class="tooltip-feature">' + d.icon + ' ' + d.name + '</span>' +
+      '<span class="tooltip-weight ' + cls + '">+' + d.weight + '</span>' +
+    '</div>';
+  });
+
+  if (impact.universals.length > 0) {
+    html += '<div class="tooltip-divider"></div>';
+    html += '<div class="tooltip-uni-label">Universal (\u00d70.4 all features)</div>';
+    impact.universals.forEach(function(u) {
+      html += '<div class="tooltip-row">' +
+        '<span class="tooltip-feature" style="color:var(--text-muted)">' + u.signal.replace(/-/g, ' ') + '</span>' +
+        '<span class="tooltip-weight low">+' + u.weight + '</span>' +
+      '</div>';
+    });
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ── renderActions ──
+function renderActions() {
+  var grid = document.getElementById('action-grid');
+  var catLabels = {
+    edit: 'Editing',
+    content: 'Content',
+    preview: 'Navigation & Preview',
+    share: 'Sharing & Export',
+    prompt: 'Prompt & Creation',
+    session: 'Session & Journey',
+  };
+  var cats = ['edit', 'content', 'preview', 'share', 'prompt', 'session'];
+
+  grid.innerHTML = cats.map(function(cat) {
+    var actions = ACTIONS.filter(function(a) { return a.cat === cat; });
+    return '<div class="action-cat-label">' + catLabels[cat] + '</div>' +
+      '<div class="action-cat-grid">' +
+      actions.map(function(a) {
+        return '<button class="action-btn" id="act-' + a.id + '" onclick="performAction(\'' + a.id + '\')">' + a.label + buildTooltipHTML(a) + '</button>';
+      }).join('') +
+      '</div>';
+  }).join('');
+}
+
+// ── renderSignals ──
+function renderSignals() {
+  var allSignals = [
+    // Editing
+    { id: 'manual-edit', label: 'Manual edit', type: 'direct' },
+    { id: 'edits-5plus', label: '5+ manual edits', type: 'direct' },
+    { id: 're-edit-3x', label: 'Same slide re-edited 3x', type: 'direct' },
+    { id: 'format-edits', label: 'Formatting edits', type: 'direct' },
+    { id: 'undo-redo', label: 'Undo/redo repeatedly', type: 'direct' },
+    { id: 'style-change', label: 'Font/style change', type: 'direct' },
+    { id: 'slide-delete', label: 'Slide deleted', type: 'direct' },
+    // Content
+    { id: 'slides-15plus', label: '15+ slides generated', type: 'direct' },
+    { id: 'media-added', label: 'Image/media added', type: 'direct' },
+    { id: 'slide-duplicate', label: 'Slide duplicated', type: 'direct' },
+    { id: 'manual-slide-add', label: 'Manual slide added', type: 'direct' },
+    { id: 'slide-reorder', label: 'Slides reordered', type: 'direct' },
+    { id: 'data-content', label: 'Data/metrics content', type: 'direct' },
+    // Preview
+    { id: 'slideshow', label: 'Slideshow played', type: 'direct' },
+    { id: 'slideshow-then-edit', label: 'Edit after preview', type: 'direct' },
+    { id: 'idle-on-slide', label: 'Idle 30s on slide', type: 'direct' },
+    { id: 'template-switch', label: 'Template/layout changed', type: 'direct' },
+    // Sharing
+    { id: 'share-clicked', label: 'Share clicked', type: 'direct' },
+    { id: 'link-copied', label: 'Deck link copied', type: 'direct' },
+    { id: 'export-attempt', label: 'Export attempt (paywall)', type: 'both' },
+    // Prompt
+    { id: 'brand-mention', label: 'Brand/company in prompt', type: 'direct' },
+    { id: 'team-language', label: 'Team/we/our language', type: 'direct' },
+    { id: 'started-blank', label: 'Started from blank', type: 'direct' },
+    { id: 'deck-edited', label: 'Deck edited post-gen', type: 'direct' },
+    // Session
+    { id: 'multi-deck', label: '2+ decks created', type: 'both' },
+    { id: 'new-deck-session2', label: 'New deck in session 2+', type: 'direct' },
+    { id: 'deck-switch', label: 'Switched between decks', type: 'direct' },
+    { id: 'gate-hit', label: 'Pro feature tapped', type: 'universal' },
+    { id: 'time-15', label: '15+ min in editor', type: 'universal' },
+    { id: 'time-20', label: '20+ min editing', type: 'direct' },
+    { id: 'pricing-visit', label: 'Visited pricing', type: 'universal' },
+    // Layer 1: Mindset vector (role x stakes composite)
+    { id: 'mindset-vector', label: 'Mindset Vector (role \u00d7 stakes)', type: 'direct' },
+    // Layer 2: Audience stakes
+    { id: 'stakes-high-external', label: 'Stakes: High External', type: 'direct' },
+    { id: 'stakes-low-external', label: 'Stakes: Low External', type: 'direct' },
+    { id: 'stakes-internal', label: 'Stakes: Internal', type: 'direct' },
+    // Layer 3: Prompt synthesis
+    { id: 'prompt-synthesis', label: 'Prompt Synthesis (LLM)', type: 'direct' },
+    // Universal context
+    { id: 'credits-low', label: 'Credits < 30', type: 'universal' },
+    { id: 'credits-zero', label: 'Credits = 0', type: 'universal' },
+    { id: 'returning-user', label: 'Returning user', type: 'universal' },
+    { id: 'bought-export', label: 'Bought single export', type: 'both' },
+    { id: 'zero-dismissals', label: '0 dismissals', type: 'universal' },
+    { id: 'company-domain', label: 'Company email domain', type: 'universal' },
+    { id: 'tier-1-country', label: 'Tier 1 country', type: 'universal' },
+    // Deck history
+    { id: 'deck-veteran', label: '5+ decks completed', type: 'both' },
+    { id: 'deck-sharer', label: '2+ decks shared', type: 'direct' },
+    { id: 'deck-publisher', label: '1+ deck published', type: 'direct' },
+    // Acquisition channel
+    { id: 'acq-paid', label: 'Paid ad traffic', type: 'both' },
+    { id: 'acq-referral', label: 'Referral traffic', type: 'both' },
+  ];
+
+  var list = document.getElementById('signal-list');
+  var activeList = allSignals.filter(function(s) { return state.activeSignals.has(s.id); });
+
+  if (activeList.length === 0) {
+    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No behavioral signals yet</div>';
+    return;
+  }
+
+  list.innerHTML = activeList.map(function(s) {
+    var badgeClass = s.type === 'universal' ? 'uni' : s.type === 'both' ? 'both' : 'dir';
+    var typeLabel = s.type === 'universal' ? 'UNI' : s.type === 'both' ? 'D+U' : 'DIR';
+    return '<div class="signal-row active"><span class="signal-name">' + s.label + '</span><span class="signal-type-badge ' + badgeClass + '">' + typeLabel + '</span></div>';
+  }).join('');
+}
+
+// ── renderMatrix ──
+function renderMatrix() {
+  var scores = calculateScores();
+  var ranked = FEATURES
+    .map(function(f) { return Object.assign({}, f, scores[f.id]); })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  var topId = ranked.length > 0 && ranked[0].total >= CONFIG.THRESHOLD && !state.featuresShownThisSession.has(ranked[0].id) ? ranked[0].id : null;
+
+  var body = document.getElementById('matrix-body');
+  body.innerHTML = ranked.map(function(f) {
+    var pct = Math.min((f.total / CONFIG.MAX_SCORE) * 100, 100);
+    var threshPct = (CONFIG.THRESHOLD / CONFIG.MAX_SCORE) * 100;
+    var isAbove = f.total >= CONFIG.THRESHOLD;
+    var isTop = f.id === topId;
+    var isShown = state.featuresShownThisSession.has(f.id);
+
+    var barClass = 'low';
+    var numClass = 'below';
+    if (f.total >= CONFIG.THRESHOLD) { barClass = 'high'; numClass = 'above'; }
+    else if (f.total >= CONFIG.THRESHOLD * 0.7) { barClass = 'mid'; numClass = 'near'; }
+    if (isTop) { barClass = 'top'; numClass = 'top'; }
+
+    var badge = '';
+    if (isShown) badge = '<span class="badge shown">SHOWN</span>';
+    else if (isTop && isAbove) badge = '<span class="badge fire">NEXT</span>';
+    else if (isAbove) badge = '<span class="badge queued">QUEUED</span>';
+
+    var rowClass = isTop && isAbove ? 'top-pick' : isAbove && !isShown ? 'qualified' : '';
+
+    return '<tr class="' + rowClass + '">' +
+      '<td class="feature-name">' + f.icon + ' ' + f.name + '</td>' +
+      '<td class="direct-val">' + f.direct + '</td>' +
+      '<td class="universal-val">' + f.universalContrib + '</td>' +
+      '<td class="score-bar-cell"><div class="score-bar-wrap">' +
+        '<div class="score-bar-bg">' +
+          '<div class="score-bar-fill ' + barClass + '" style="width:' + pct + '%"></div>' +
+          '<div class="threshold-line" style="left:' + threshPct + '%"></div>' +
+        '</div>' +
+        '<span class="score-num ' + numClass + '">' + f.total + '</span>' +
+      '</div></td>' +
+      '<td>' + badge + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ── renderGuardrails ──
+function renderGuardrails() {
+  var now = Date.now();
+  var cooldownLeft = state.lastMilestoneTime > 0 ? Math.max(0, Math.ceil((CONFIG.COOLDOWN_MS - (now - state.lastMilestoneTime)) / 1000)) : 0;
+
+  var intentFloor = 0;
+  state.activeSignals.forEach(function(sig) { if (UNIVERSAL_MAP[sig]) intentFloor += UNIVERSAL_MAP[sig]; });
+
+  var bar = document.getElementById('guardrail-bar');
+  bar.innerHTML = [
+    { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
+    { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
+    { label: 'Features shown', value: state.featuresShownThisSession.size + '/9', status: 'ok' },
+    { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+  ].map(function(g) {
+    return '<div class="gr-item"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
+  }).join('');
+}
+
+// ── renderFeed ──
+function renderFeed() {
+  var content = document.getElementById('feed-content');
+
+  if (state.milestoneLog.length === 0) {
+    content.innerHTML = '<div class="empty-feed">Perform actions to trigger milestones.</div>';
+    return;
+  }
+
+  content.innerHTML = state.milestoneLog.map(function(m) {
+    var directTags = m.directSignals.map(function(s) {
+      return '<span class="milestone-signal-tag">' + s.name + ' (+' + s.weight + ')</span>';
+    }).join('');
+    var uniTags = m.universalSignals.map(function(s) {
+      return '<span class="milestone-signal-tag universal">' + s.name + ' (+' + s.weight + ' x0.4)</span>';
+    }).join('');
+
+    return '<div class="milestone-item">' +
+      '<div class="milestone-icon">' + m.feature.icon + '</div>' +
+      '<div class="milestone-content">' +
+        '<div class="milestone-feature">' + m.feature.name + '</div>' +
+        '<div class="milestone-title">' + m.copy.title + '</div>' +
+        '<div class="milestone-body">' + m.copy.body + '</div>' +
+        '<div class="milestone-meta">' +
+          '<span>Score: <strong>' + m.score + '</strong></span>' +
+          '<span>Direct: <strong>' + m.direct + '</strong></span>' +
+          '<span>Universal: <strong>' + m.universal + '</strong></span>' +
+          '<span>' + m.time + '</span>' +
+        '</div>' +
+        '<div class="milestone-signals">' + directTags + uniTags + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Nudge card + breakdown helpers ──
+function buildNudgeCardHTML(feature, copy) {
+  var isService = feature.type === 'service';
+  var tagLabel = isService ? 'Service' : 'Milestone';
+  var ctaLabel = isService ? 'Talk to our team' : 'Upgrade to Pro';
+  var badgeLabel = isService ? 'SERVICE' : 'PRO';
+  var cssClass = isService ? 'nudge-ui service' : 'nudge-ui';
+  var ctaClass = isService ? 'nudge-ui-cta service' : 'nudge-ui-cta';
+  var badgeClass = isService ? 'nudge-ui-pro-badge service' : 'nudge-ui-pro-badge';
+
+  return '<div class="' + cssClass + '">' +
+    '<div class="nudge-ui-header">' +
+      '<div class="nudge-ui-icon">' + feature.icon + '</div>' +
+      '<div class="nudge-ui-tag">' + tagLabel + '</div>' +
+    '</div>' +
+    '<div class="nudge-ui-body">' +
+      '<div class="nudge-ui-title">' + copy.title + '</div>' +
+      '<div class="nudge-ui-desc">' + copy.body + '</div>' +
+      '<div class="nudge-ui-actions">' +
+        '<button class="' + ctaClass + '">' + ctaLabel + '</button>' +
+        '<button class="nudge-ui-dismiss">Not now</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="nudge-ui-footer">' +
+      '<span class="' + badgeClass + '">' + badgeLabel + '</span>' +
+      '<span class="nudge-ui-feature-label">' + feature.name + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+function buildBreakdownHTML(milestone) {
+  var html = '';
+  html += '<div class="breakdown-section-label">Direct signals</div>';
+  if (milestone.directSignals.length > 0) {
+    html += milestone.directSignals.map(function(s) {
+      return '<div class="breakdown-row"><span class="breakdown-signal">' + s.name.replace(/-/g, ' ') + '</span><span class="breakdown-weight direct">+' + s.weight + '</span></div>';
+    }).join('');
+  } else {
+    html += '<div class="breakdown-row"><span class="breakdown-signal" style="opacity:0.4">None</span><span class="breakdown-weight">0</span></div>';
+  }
+  html += '<div class="breakdown-section-label">Universal signals (\u00d70.4)</div>';
+  if (milestone.universalSignals.length > 0) {
+    html += milestone.universalSignals.map(function(s) {
+      return '<div class="breakdown-row"><span class="breakdown-signal">' + s.name.replace(/-/g, ' ') + '</span><span class="breakdown-weight universal">+' + s.weight + ' \u2192 ' + (s.weight * CONFIG.UNIVERSAL_MULTIPLIER).toFixed(1) + '</span></div>';
+    }).join('');
+  } else {
+    html += '<div class="breakdown-row"><span class="breakdown-signal" style="opacity:0.4">None</span><span class="breakdown-weight">0</span></div>';
+  }
+  html += '<div class="breakdown-total-row"><span>Total Score</span><span class="breakdown-total-score">' + milestone.score + '</span></div>';
+  return html;
+}
+
+function buildContextHTML(u) {
+  return '<div class="breakdown-section-label" style="margin-top:18px">User context</div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">User</span><span style="font-size:12px;color:var(--text)">' + u.name + ' \u2014 ' + u.role + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Audience</span><span style="font-size:12px;color:var(--text)">' + u.audience + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Topic</span><span style="font-size:12px;color:var(--text)">' + u.topic + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Credits</span><span style="font-size:12px;color:var(--text)">' + u.credits + ' / 100</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Session</span><span style="font-size:12px;color:var(--text)">' + u.sessionNum + '</span></div>';
+}
+
+// ── renderNudgePreview ──
+function renderNudgePreview(feature, copy) {
+  var previewEl = document.getElementById('nudge-preview');
+
+  // Called with no args on reset — show empty state
+  if (!feature || !copy) {
+    previewEl.innerHTML = '<div class="nudge-preview-empty">No milestone triggered yet. Perform actions to build up feature scores.</div>';
+    return;
+  }
+
+  var u = state.user;
+  var m = state.milestoneLog[0];
+  var breakdownHTML = buildBreakdownHTML(m);
+
+  // Update inline preview (below the matrix)
+  previewEl.innerHTML =
+    '<div class="nudge-preview-container">' +
+      buildNudgeCardHTML(feature, copy) +
+      '<div class="nudge-breakdown">' +
+        '<div class="breakdown-title">Why this nudge fired</div>' +
+        breakdownHTML +
+        buildContextHTML(u) +
+      '</div>' +
+    '</div>';
+
+  // Show modal overlay
+  var modal = document.getElementById('nudge-modal');
+  modal.innerHTML =
+    buildNudgeCardHTML(feature, copy) +
+    '<div class="nudge-breakdown">' +
+      '<div class="breakdown-title">Why this nudge fired</div>' +
+      breakdownHTML +
+      buildContextHTML(u) +
+      '<div class="nudge-modal-controls">' +
+        '<button class="nudge-modal-close" onclick="closeNudgeModal()">Dismiss</button>' +
+        '<button class="nudge-modal-skip-cooldown" onclick="skipCooldown()">Skip Cooldown</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('nudge-overlay').classList.add('active');
+}
+
+// ── closeNudgeModal ──
+function closeNudgeModal() {
+  document.getElementById('nudge-overlay').classList.remove('active');
+}
+
+// ── skipCooldown ──
+function skipCooldown() {
+  state.lastMilestoneTime = 0;
+  closeNudgeModal();
+  renderGuardrails();
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Init
+// 15. Init
 // ══════════════════════════════════════════════════════════════════════════════
 
 resetSimulator();
