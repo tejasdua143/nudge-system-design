@@ -711,6 +711,18 @@
     background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A;
   }
 
+  /* Service variant milestone feed items */
+  .milestone-item.service {
+    border-color: #FDBA74;
+  }
+  .milestone-item.service .milestone-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .milestone-item.service .milestone-feature {
+    color: var(--accent-service);
+  }
+
   /* Empty states */
   .empty-state {
     text-align: center;
@@ -1824,7 +1836,8 @@ function renderFeed() {
       return '<span class="milestone-signal-tag universal">' + s.name + ' (+' + s.weight + ' x0.4)</span>';
     }).join('');
 
-    return '<div class="milestone-item">' +
+    var itemClass = m.feature.type === 'service' ? 'milestone-item service' : 'milestone-item';
+    return '<div class="' + itemClass + '">' +
       '<div class="milestone-icon">' + m.feature.icon + '</div>' +
       '<div class="milestone-content">' +
         '<div class="milestone-feature">' + m.feature.name + '</div>' +
