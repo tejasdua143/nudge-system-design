@@ -160,6 +160,81 @@
   }
   .reshuffle-btn:hover { opacity: 0.85; }
 
+  /* Prompt Analysis */
+  .prompt-raw {
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+  .prompt-section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+  .prompt-section-label:first-child { margin-top: 0; }
+  .prompt-feature-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .prompt-feature-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .prompt-feature-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+  }
+  .prompt-feature-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prompt-feature-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.2s;
+  }
+  .prompt-feature-bar-fill.s0 { width: 0%; background: var(--border); }
+  .prompt-feature-bar-fill.s1 { width: 20%; background: var(--text-dim); }
+  .prompt-feature-bar-fill.s2 { width: 40%; background: var(--blue); }
+  .prompt-feature-bar-fill.s3 { width: 60%; background: var(--blue); }
+  .prompt-feature-bar-fill.s4 { width: 80%; background: var(--accent); }
+  .prompt-feature-bar-fill.s5 { width: 100%; background: var(--accent); }
+  .prompt-feature-score {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 16px;
+    text-align: right;
+  }
+  .prompt-feature-score.dim { color: var(--text-dim); }
+  .prompt-feature-score.active { color: var(--accent); }
+  .prompt-no-signal {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
   /* Actions */
   .action-grid {
     display: flex;
@@ -797,6 +872,10 @@
         <div class="panel-title">User Context</div>
         <div id="user-context"></div>
         <button class="reshuffle-btn" onclick="resetSimulator()">Reshuffle User</button>
+      </div>
+      <div class="panel" id="panel-prompt">
+        <div class="panel-title">Prompt Analysis</div>
+        <div id="prompt-analysis"></div>
       </div>
       <div class="panel" id="panel-actions">
         <div class="panel-title">Actions</div>
@@ -1625,6 +1704,7 @@ function resetSimulator() {
 
   generateUser();
   renderUserContext();
+  renderPromptAnalysis();
   renderActions();
   renderSignals();
   renderMatrix();
@@ -1769,6 +1849,51 @@ function renderUserContext() {
     var tooltipHTML = hasImpact ? buildUserTooltipHTML(impact) : '';
     return '<div class="user-row' + (hasImpact ? ' has-impact' : '') + '"><span class="user-label">' + r[0] + '</span><span class="user-value' + (r[2] ? ' highlight' : '') + '">' + r[1] + '</span>' + tooltipHTML + '</div>';
   }).join('');
+}
+
+function renderPromptAnalysis() {
+  var u = state.user;
+  var el = document.getElementById('prompt-analysis');
+  if (!u.topic) { el.innerHTML = ''; return; }
+
+  var html = '';
+
+  // Raw prompt
+  html += '<div class="prompt-section-label">User Prompt</div>';
+  html += '<div class="prompt-raw">\u201c' + u.topic + '\u201d</div>';
+
+  // LLM extraction
+  var synthesis = PROMPT_SYNTHESIS[u.topic];
+  if (!synthesis) {
+    html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
+    html += '<div class="prompt-no-signal">No prompt synthesis available for this topic. In production, the LLM would analyze this in real-time.</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
+
+  // Sort features by synthesis score descending
+  var entries = FEATURES.map(function(f) {
+    return { id: f.id, name: f.name, icon: f.icon, score: synthesis[f.id] || 0 };
+  }).sort(function(a, b) { return b.score - a.score; });
+
+  entries.forEach(function(e) {
+    var scoreClass = e.score > 0 ? 'active' : 'dim';
+    html += '<div class="prompt-feature-row">';
+    html += '<span class="prompt-feature-name">' + e.icon + ' ' + e.name + '</span>';
+    html += '<div class="prompt-feature-bar-wrap">';
+    html += '<div class="prompt-feature-bar"><div class="prompt-feature-bar-fill s' + e.score + '"></div></div>';
+    html += '<span class="prompt-feature-score ' + scoreClass + '">' + e.score + '</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  // Contribution note
+  html += '<div class="prompt-section-label" style="margin-top:14px">How it contributes</div>';
+  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">These scores feed directly into the Feature Score Matrix as the <strong>prompt-synthesis</strong> signal. A score of 5 means the LLM considers this feature highly relevant to the user\u2019s prompt.</div>';
+
+  el.innerHTML = html;
 }
 
 // ── Action tooltip helpers ──
