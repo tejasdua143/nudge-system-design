@@ -1480,7 +1480,7 @@ function synthesizeFromKeywords(prompt) {
     'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send'],
     'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our '],
     'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi'],
-    'gen-speed':     ['fast', 'quick', 'urgent', 'tomorrow', 'deadline', 'asap', 'hurry', 'rush', 'tonight'],
+    'gen-speed':     ['fast', 'quick', 'speed', 'slow', 'waiting', 'generate'],
     'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version'],
     'hire-team':     ['help me', 'struggle', "can't", 'complicated', 'too hard', 'do it for', 'build it for'],
   };
@@ -1497,12 +1497,11 @@ function synthesizeFromKeywords(prompt) {
     scores[featureId] = Math.min(matches * 2, 5);
   });
 
-  // Urgency boosts gen-speed, export, hire-team
+  // Urgency boosts export, hire-team, ai-models (not gen-speed — speed isn't about urgency)
   if (hasUrgency) {
-    scores['gen-speed'] = Math.min(scores['gen-speed'] + 3, 5);
-    scores['export'] = Math.min(scores['export'] + 2, 5);
-    scores['hire-team'] = Math.min(scores['hire-team'] + 2, 5);
-    scores['ai-models'] = Math.min(scores['ai-models'] + 1, 5);
+    scores['export'] = Math.min(scores['export'] + 3, 5);
+    scores['hire-team'] = Math.min(scores['hire-team'] + 3, 5);
+    scores['ai-models'] = Math.min(scores['ai-models'] + 2, 5);
   }
 
   return scores;
