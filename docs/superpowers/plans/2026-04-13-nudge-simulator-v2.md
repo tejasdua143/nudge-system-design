@@ -1,6 +1,6 @@
 # Nudge Simulator v2 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Rebuild the milestone simulator as a clean, modular single-page app with proper separation of concerns — each engine as an independent JS module wired through a shared state bus.
 
@@ -62,7 +62,7 @@ All tunable values, extracted from the current simulator and updated for v2 (9 f
 - Create: `config/prompt-synthesis-examples.json`
 - Create: `config/guardrails.json`
 
-- [ ] **Step 1: Create direct-signal-map.json**
+- [x] **Step 1: Create direct-signal-map.json**
 
 All ~40+ signal → feature weight mappings. Carried forward from the current simulator's `DIRECT_MAP`, with `hire-team` weights added.
 
@@ -124,7 +124,7 @@ All ~40+ signal → feature weight mappings. Carried forward from the current si
 }
 ```
 
-- [ ] **Step 2: Create universal-signal-map.json**
+- [x] **Step 2: Create universal-signal-map.json**
 
 ```json
 {
@@ -147,7 +147,7 @@ All ~40+ signal → feature weight mappings. Carried forward from the current si
 }
 ```
 
-- [ ] **Step 3: Create mindset-vectors.json**
+- [x] **Step 3: Create mindset-vectors.json**
 
 The new Layer 1: role × audience → per-feature weight vector. Replaces the flat `MINDSET_MAP` from the current simulator.
 
@@ -211,7 +211,7 @@ The new Layer 1: role × audience → per-feature weight vector. Replaces the fl
 }
 ```
 
-- [ ] **Step 4: Create prompt-synthesis-examples.json**
+- [x] **Step 4: Create prompt-synthesis-examples.json**
 
 Carry forward from current simulator's `PROMPT_SYNTHESIS` object, adding `hire-team` scores. Include rich, weak, and urgent prompt categories.
 
@@ -301,7 +301,7 @@ Carry forward from current simulator's `PROMPT_SYNTHESIS` object, adding `hire-t
 }
 ```
 
-- [ ] **Step 5: Create guardrails.json**
+- [x] **Step 5: Create guardrails.json**
 
 ```json
 {
@@ -315,7 +315,7 @@ Carry forward from current simulator's `PROMPT_SYNTHESIS` object, adding `hire-t
 }
 ```
 
-- [ ] **Step 6: Commit config files**
+- [x] **Step 6: Commit config files**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -332,9 +332,9 @@ The page layout, CSS variables, panel structure, and all visual styling. No Java
 **Files:**
 - Create: `simulator/index.html` (HTML + CSS only, ~350 lines)
 
-- [ ] **Step 1: Create the HTML shell with layout**
+- [x] **Step 1: Create the HTML shell with layout**
 
-Two-column layout: left sidebar (user context + actions + signals) and right main area (guardrail bar + score matrix + nudge preview + milestone feed).
+Three-column layout: left sidebar (user context + prompt analysis), center main area (guardrail bar + score matrix + nudge preview + milestone feed), and right sidebar (actions + signals).
 
 ```html
 <!DOCTYPE html>
@@ -358,16 +358,12 @@ Two-column layout: left sidebar (user context + actions + signals) and right mai
         <div id="user-context"></div>
         <button class="reshuffle-btn" onclick="resetSimulator()">Reshuffle User</button>
       </div>
-      <div class="panel" id="panel-actions">
-        <div class="panel-title">Actions</div>
-        <div id="action-grid"></div>
-      </div>
-      <div class="panel" id="panel-signals">
-        <div class="panel-title">Active Signals</div>
-        <div id="signal-list"></div>
+      <div class="panel" id="panel-prompt">
+        <div class="panel-title">Prompt Analysis</div>
+        <div id="prompt-analysis"></div>
       </div>
     </div>
-    <div class="right-col">
+    <div class="center-col">
       <div class="panel" id="panel-guardrails">
         <div class="panel-title">Guardrails</div>
         <div class="guardrail-bar" id="guardrail-bar"></div>
@@ -396,6 +392,16 @@ Two-column layout: left sidebar (user context + actions + signals) and right mai
         <div id="feed-content"></div>
       </div>
     </div>
+    <div class="right-col">
+      <div class="panel" id="panel-actions">
+        <div class="panel-title">Actions</div>
+        <div id="action-grid"></div>
+      </div>
+      <div class="panel" id="panel-signals">
+        <div class="panel-title">Active Signals</div>
+        <div id="signal-list"></div>
+      </div>
+    </div>
   </div>
   <div class="nudge-overlay" id="nudge-overlay">
     <div class="nudge-modal" id="nudge-modal"></div>
@@ -404,7 +410,7 @@ Two-column layout: left sidebar (user context + actions + signals) and right mai
 </html>
 ```
 
-- [ ] **Step 2: Add the CSS design system**
+- [x] **Step 2: Add the CSS design system**
 
 Carry forward the Paper design system from the current simulator (`:root` variables, panel styles, matrix table, action buttons, nudge card, guardrail bar, signal list, tooltips, modal overlay). Insert as `<style>` block in `<head>`.
 
@@ -413,7 +419,7 @@ Copy the full `<style>` block from the current simulator (`milestone-simulator.h
 - Add a `.nudge-ui.service` variant class with a distinct border/accent (e.g., warm orange instead of purple)
 - Ensure the 9th feature row fits the matrix table
 
-- [ ] **Step 3: Verify the shell renders**
+- [x] **Step 3: Verify the shell renders**
 
 ```bash
 open "/Users/tejasdeck/Nudge System Design/simulator/index.html"
@@ -421,7 +427,7 @@ open "/Users/tejasdeck/Nudge System Design/simulator/index.html"
 
 Expected: Browser shows the two-column layout with empty panels labeled "User Context", "Actions", "Active Signals", "Guardrails", "Feature Score Matrix", "Nudge Preview", "Milestone Feed". No JS errors in console.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -438,7 +444,7 @@ Embed all config data and define the 9 features and ~30 user actions. This is th
 **Files:**
 - Modify: `simulator/index.html` (add `<script>` block)
 
-- [ ] **Step 1: Add the CONFIG object**
+- [x] **Step 1: Add the CONFIG object**
 
 At the top of the `<script>` block, embed all config values from the JSON files:
 
@@ -458,7 +464,7 @@ const CONFIG = {
 };
 ```
 
-- [ ] **Step 2: Add FEATURES array**
+- [x] **Step 2: Add FEATURES array**
 
 9 features including hire-team:
 
@@ -476,7 +482,7 @@ const FEATURES = [
 ];
 ```
 
-- [ ] **Step 3: Add ACTIONS array**
+- [x] **Step 3: Add ACTIONS array**
 
 Carry forward from current simulator, same structure:
 
@@ -523,7 +529,7 @@ const ACTIONS = [
 ];
 ```
 
-- [ ] **Step 4: Add signal maps (DIRECT_MAP, UNIVERSAL_MAP, MINDSET_VECTORS, PROMPT_SYNTHESIS)**
+- [x] **Step 4: Add signal maps (DIRECT_MAP, UNIVERSAL_MAP, MINDSET_VECTORS, PROMPT_SYNTHESIS)**
 
 Embed the data from the config JSON files as JS objects. These are the scoring tables the engines will read.
 
@@ -532,7 +538,7 @@ Copy `UNIVERSAL_MAP` from `config/universal-signal-map.json`.
 Copy `MINDSET_VECTORS` from `config/mindset-vectors.json` (removing `_doc` and `_fallback`, keeping `_fallback` as a separate `MINDSET_FALLBACK` const).
 Copy `PROMPT_SYNTHESIS` from `config/prompt-synthesis-examples.json` (removing `_doc`).
 
-- [ ] **Step 5: Add ROLES, AUDIENCES, TOPICS, and user generation data**
+- [x] **Step 5: Add ROLES, AUDIENCES, TOPICS, and user generation data**
 
 Carry forward from current simulator. Same structure — roles map to archetypes, audiences and topics are per-archetype pools.
 
@@ -556,7 +562,7 @@ const ROLES = [
 
 Plus `AUDIENCES`, `TOPICS`, `COMPANY_DOMAINS`, `TIER_1`, `TIER_2` — same as current simulator.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -573,7 +579,7 @@ The state object, user generation, and 3-layer context profiling with the new mi
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Add NudgeState object**
+- [x] **Step 1: Add NudgeState object**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -592,7 +598,7 @@ let state = {
 };
 ```
 
-- [ ] **Step 2: Add SignalCollector — generateUser() function**
+- [x] **Step 2: Add SignalCollector — generateUser() function**
 
 Carry forward from current simulator's `generateUser()`. This is the Signal Collector for the simulator — it generates a random user profile and writes initial signals to `state.activeSignals`.
 
@@ -628,7 +634,7 @@ function generateUser() {
 }
 ```
 
-- [ ] **Step 3: Add ContextProfiler — profileUser() function**
+- [x] **Step 3: Add ContextProfiler — profileUser() function**
 
 The new 3-layer profiling with mindset vectors.
 
@@ -693,7 +699,7 @@ function addStateSignals() {
 }
 ```
 
-- [ ] **Step 4: Verify — open browser, reshuffle user, check console**
+- [x] **Step 4: Verify — open browser, reshuffle user, check console**
 
 ```bash
 open "/Users/tejasdeck/Nudge System Design/simulator/index.html"
@@ -701,7 +707,7 @@ open "/Users/tejasdeck/Nudge System Design/simulator/index.html"
 
 Expected: User context panel populates with randomized user. Console shows no errors. Active signals panel shows initial context signals (mindset-vector, stakes-*, prompt-synthesis, plus any state signals).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -718,7 +724,7 @@ The core decision pipeline: calculate per-feature scores, pick the winner, check
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Add ScoringEngine — calculateScores() function**
+- [x] **Step 1: Add ScoringEngine — calculateScores() function**
 
 Same algorithm as current simulator, now reading from `state.activeSignals` and scoring all 9 features.
 
@@ -765,7 +771,7 @@ function calculateScores() {
 }
 ```
 
-- [ ] **Step 2: Add Guardrails — checkGuardrails() function**
+- [x] **Step 2: Add Guardrails — checkGuardrails() function**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -806,7 +812,7 @@ function checkGuardrails(featureId) {
 }
 ```
 
-- [ ] **Step 3: Add MilestoneSelector — evaluateAndFire() + fireMilestone()**
+- [x] **Step 3: Add MilestoneSelector — evaluateAndFire() + fireMilestone()**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -857,7 +863,7 @@ function fireMilestone(feature) {
 }
 ```
 
-- [ ] **Step 4: Add performAction() — wires action buttons to the pipeline**
+- [x] **Step 4: Add performAction() — wires action buttons to the pipeline**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -880,7 +886,7 @@ function performAction(actionId) {
 }
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -897,7 +903,7 @@ Personalized copy generation with topic, audience, and country tier modifiers. U
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Add generateCopy() function**
+- [x] **Step 1: Add generateCopy() function**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -984,7 +990,7 @@ function generateCopy(feature) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -1001,7 +1007,7 @@ All render functions that read from state and update the DOM. Each function rend
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Add renderUserContext()**
+- [x] **Step 1: Add renderUserContext()**
 
 Carry forward from current simulator, reading from `state.user`. Add `Mindset Vector` row showing the role × audience key used.
 
@@ -1036,7 +1042,7 @@ function renderUserContext() {
 }
 ```
 
-- [ ] **Step 2: Add renderActions() with hover tooltips**
+- [x] **Step 2: Add renderActions() with hover tooltips**
 
 Carry forward from current simulator. Shows action buttons grouped by category with score impact tooltips on hover.
 
@@ -1096,7 +1102,7 @@ function renderActions() {
 }
 ```
 
-- [ ] **Step 3: Add renderSignals()**
+- [x] **Step 3: Add renderSignals()**
 
 Shows all currently active signals with type labels (DIR / UNI / D+U).
 
@@ -1109,13 +1115,13 @@ function renderSignals() {
 }
 ```
 
-- [ ] **Step 4: Add renderMatrix()**
+- [x] **Step 4: Add renderMatrix()**
 
 Score matrix table with bar visualization, threshold line, NEXT/QUEUED/SHOWN badges. Now shows 9 rows (including hire-team).
 
 Carry forward from current simulator's `renderMatrix()`, reading from `state.featureScores`. The hire-team row gets a distinct badge color (warm orange) when it's the top scorer.
 
-- [ ] **Step 5: Add renderGuardrails()**
+- [x] **Step 5: Add renderGuardrails()**
 
 Guardrail status bar showing milestones fired, cooldown, features shown, intent floor.
 
@@ -1135,7 +1141,7 @@ function renderGuardrails() {
 }
 ```
 
-- [ ] **Step 6: Add renderNudgePreview() + renderFeed() + nudge modal**
+- [x] **Step 6: Add renderNudgePreview() + renderFeed() + nudge modal**
 
 Two render targets for a milestone fire:
 1. Inline preview below the matrix (nudge card + "why this fired" breakdown)
@@ -1176,7 +1182,7 @@ function buildNudgeCardHTML(feature, copy) {
 
 Plus `renderNudgePreview()`, `renderFeed()`, `closeNudgeModal()`, `skipCooldown()` — carry forward from current simulator, updated to use `state.*` and the two-variant card.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -1193,7 +1199,7 @@ Bootstrap the simulator, wire up reset, and verify the complete flow.
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Add resetSimulator() and init**
+- [x] **Step 1: Add resetSimulator() and init**
 
 ```javascript
 // ══════════════════════════════════════════════════════
@@ -1227,7 +1233,7 @@ function resetSimulator() {
 resetSimulator();
 ```
 
-- [ ] **Step 2: Verify full flow in browser**
+- [x] **Step 2: Verify full flow in browser**
 
 ```bash
 open "/Users/tejasdeck/Nudge System Design/simulator/index.html"
@@ -1244,7 +1250,7 @@ Test sequence:
 8. Fire 3 milestones → guardrail bar shows "3/3 BLOCKED"
 9. Reshuffle → verify hire-team appears as top scorer for an urgent + struggling user profile
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -1261,7 +1267,7 @@ Clean up any visual issues, verify the Paper design system looks right, add the 
 **Files:**
 - Modify: `simulator/index.html`
 
-- [ ] **Step 1: Visual polish pass in browser**
+- [x] **Step 1: Visual polish pass in browser**
 
 Open the simulator and check:
 - Score matrix fits 9 rows without overflow
@@ -1273,7 +1279,7 @@ Open the simulator and check:
 
 Fix any CSS issues found.
 
-- [ ] **Step 2: Add skip-cooldown button to nudge modal**
+- [x] **Step 2: Add skip-cooldown button to nudge modal**
 
 ```javascript
 function skipCooldown() {
@@ -1285,7 +1291,7 @@ function skipCooldown() {
 
 Add a "Skip Cooldown" button in the modal controls (same as current simulator).
 
-- [ ] **Step 3: Final commit**
+- [x] **Step 3: Final commit**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -1293,7 +1299,7 @@ git add simulator/index.html
 git commit -m "Polish simulator v2: visual fixes, skip-cooldown, hire-team styling"
 ```
 
-- [ ] **Step 4: Verify git log**
+- [x] **Step 4: Verify git log**
 
 ```bash
 cd "/Users/tejasdeck/Nudge System Design"
@@ -1312,3 +1318,41 @@ Add config, features, actions, and signal maps to simulator
 Add simulator HTML shell with Paper design system CSS
 Add v2 config files: signal maps, mindset vectors, prompt synthesis, guardrails
 ```
+
+---
+
+### Task 10: Post-Plan Additions (Implemented)
+
+Features added after the original plan was executed.
+
+- [x] **Step 1: Prompt Analysis panel**
+
+Added `renderPromptAnalysis()` function showing the raw user prompt with a shuffle button (&#x21BB;) and LLM signal extraction bar chart (0-5 per feature). Includes explanation of how prompt-synthesis feeds into scoring.
+
+- [x] **Step 2: Prompt shuffler**
+
+Added `shufflePrompt()` function that cycles through all available prompts in PROMPT_SYNTHESIS for the same user profile. Re-runs Layer 3 profiling, rebuilds signals from active actions, and re-renders all affected panels.
+
+- [x] **Step 3: Activity pause guardrail**
+
+Added `isUserActive` to state, activity pause check in `checkGuardrails()`, clickable toggle in guardrail bar, and `toggleUserActive()` function. When user is "active," nudges are held until they go idle.
+
+- [x] **Step 4: Feedback loop wiring**
+
+Wired nudge card buttons: "Not now" calls `handleDismiss()` (increments dismissals, removes zero-dismissals signal), "Upgrade to Pro" calls `handleUpgrade()` (sets isProUser, kills all nudges), "Talk to our team" routes to service booking flow.
+
+- [x] **Step 5: Pro user kill switch guardrail**
+
+Added Pro user check as the first guardrail in `checkGuardrails()` — returns immediately with blocked if `state.user.isProUser === true`. Added "Pro user" indicator to guardrail status bar.
+
+- [x] **Step 6: 3-column layout**
+
+Changed grid from `320px 1fr` to `300px 1fr 300px`. Moved Actions and Active Signals to a new right column. Added `.center-col` CSS class. Increased max-width to 1600px.
+
+- [x] **Step 7: Per-engine spec files**
+
+Created specs/01-nudge-state.md through specs/08-renderer.md — detailed specs for each engine matching the actual implementation.
+
+- [x] **Step 8: Missing config files**
+
+Created config/context-layers.json (audience stakes classification) and config/copy-templates.json (externalized copy templates with tier modifiers).
