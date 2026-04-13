@@ -85,8 +85,8 @@ state.isUserActive === true
 
 - **Blocked** if the user is currently active (typing, dragging, generating).
 - Reason: `"User is active (needs 3s idle)"`
-- In the simulator, this is controlled via a **clickable toggle** in the guardrail status bar. In production, it would be driven by real-time activity detection with a 3-second idle threshold (`CONFIG.ACTIVITY_PAUSE_MS`).
-- When the user goes from active → idle (via `toggleUserActive()`), `evaluateAndFire()` is called to check if any pending nudge can now fire.
+- In the simulator, activity pause is **automatic** — clicking any action button sets `isUserActive = true` and starts a 3-second debounced timer (`activityTimer`). After 3 seconds of no clicks, `isUserActive` resets to false and `evaluateAndFire()` is called. The guardrail bar also has a manual toggle override for testing.
+- In production, it would be driven by real-time activity detection with a 3-second idle threshold (`CONFIG.ACTIVITY_PAUSE_MS`).
 
 ---
 

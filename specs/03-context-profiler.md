@@ -106,6 +106,28 @@ Simulates LLM-driven analysis of the user's raw prompt/topic to produce per-feat
 
 ---
 
+### Fallback: `synthesizeFromKeywords(prompt)`
+
+When the user's prompt/topic is not found in the `PROMPT_SYNTHESIS` lookup table, this fallback function generates approximate per-feature relevance scores (0-5) using keyword matching.
+
+**How it works:**
+1. Scans the prompt string for feature-relevant keywords.
+2. Each keyword match contributes a score increment to one or more features.
+3. Returns a per-feature score object in the same shape as a lookup table entry (0-5 per feature).
+
+**Keyword-to-feature mapping examples:**
+- "brand", "colors", "fonts" → `brand-kit`
+- "urgent", "asap", "due tomorrow", "tonight" → `gen-speed`, `export`, `hire-team` (urgency keywords get extra boost)
+- "team", "collaborate" → `invite-collab`
+- "investor", "pitch", "funding" → `unbranded`, `analytics`, `export`
+- "help", "struggle", "can you just" → `hire-team`
+
+**Urgency handling:** When urgency keywords are detected, `gen-speed`, `export`, and `hire-team` receive an additional boost beyond the base keyword weight.
+
+**In the simulator:** The Prompt Analysis panel indicates the source of the synthesis scores — `(LLM)` when the prompt matched the lookup table, or `(keyword fallback)` when `synthesizeFromKeywords()` was used.
+
+---
+
 ### addStateSignals()
 
 Reads raw user attributes and writes boolean-style signals to `state.activeSignals`.

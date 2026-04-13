@@ -43,6 +43,8 @@ Displays the raw user prompt and LLM signal extraction results.
 - **Per-feature bar chart** showing prompt-synthesis scores (0-5 per feature).
 - **Explanation text** describing how prompt-synthesis feeds into the scoring pipeline.
 
+**Source indicator:** Shows "(LLM)" next to the prompt when the prompt matched the `PROMPT_SYNTHESIS` lookup table, or "(keyword fallback)" when the heuristic `synthesizeFromKeywords()` function was used to generate scores.
+
 **`shufflePrompt()` behavior:**
 1. Picks a random different prompt from the `PROMPT_SYNTHESIS` dataset.
 2. Re-runs Layer 3 profiling on the new prompt.
@@ -152,6 +154,8 @@ Triggered when a milestone fires. Renders two things:
 - **Dismiss** — closes the modal (`closeNudgeModal()`)
 - **Skip Cooldown** — calls `skipCooldown()` to reset the cooldown timer for testing
 
+**Auto-dismiss timer:** When a nudge modal opens, a 10-second timer starts. If the user doesn't interact with the modal within 10 seconds, it auto-closes and a toast notification is shown. The feature is already suppressed from fire time, so auto-dismiss has no additional state side effects.
+
 **Important: dismiss behaviors differ.** The inline nudge card's "Not now" button calls `handleDismiss()`, which updates state (increments dismissals, removes the `zero-dismissals` signal, re-renders multiple panels). The modal's "Dismiss" button calls `closeNudgeModal()`, which only closes the overlay without changing state. These are intentionally different — inline dismiss reflects a real user action, while modal dismiss is just UI cleanup.
 
 ---
@@ -210,6 +214,7 @@ Built by `buildNudgeCardHTML(feature, copy)`.
 | `buildTooltipHTML()` | Generates tooltip markup for action button hover |
 | `shufflePrompt()` | Picks a new random prompt and re-runs the full pipeline |
 | `handleDismiss(featureId)` | Called by "Not now" button on inline nudge card. Increments `state.user.dismissals`, removes `zero-dismissals` signal, closes modal, re-renders UserContext/Signals/Matrix/Guardrails |
+| `showToast(title, body, type)` | Creates an animated toast notification in the top-right corner. Types: `service` (orange border), `success` (green border), or default (purple). Auto-fades after 4 seconds |
 | `handleUpgrade(featureId)` | Called by "Upgrade to Pro" / "Talk to our team" CTA button. For Pro features: sets `state.user.isProUser = true` and kills all future nudges. For hire-team: routes to service booking flow |
 | `toggleUserActive()` | Called by clicking the Activity indicator in the guardrail bar. Toggles `state.isUserActive`, re-renders guardrails, and triggers `evaluateAndFire()` when going from active→idle |
 

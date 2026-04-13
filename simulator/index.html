@@ -1186,7 +1186,7 @@ const MINDSET_VECTORS = {
   'Student|internal':              { 'gen-speed': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 };
 
-const MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
+var MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
 
 // Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
 const PROMPT_SYNTHESIS = {
@@ -1568,6 +1568,9 @@ function calculateScores() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function evaluateAndFire() {
+  // Don't fire a new nudge while a modal is already open
+  if (document.getElementById('nudge-overlay').classList.contains('active')) return;
+
   const scores = calculateScores();
 
   // Rank features by score, filter above threshold and not already shown
@@ -1806,6 +1809,11 @@ function performAction(actionId) {
 }
 
 function resetSimulator() {
+  // Clear any pending timers from previous simulation
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
+  closeNudgeModal();
+
   state = {
     user: {},
     activeSignals: new Set(),
@@ -2371,6 +2379,8 @@ function buildContextHTML(u) {
     '<div class="breakdown-row"><span class="breakdown-signal">Session</span><span style="font-size:12px;color:var(--text)">' + u.sessionNum + '</span></div>';
 }
 
+var autoDismissTimer = null;
+
 // ── renderNudgePreview ──
 function renderNudgePreview(feature, copy) {
   var previewEl = document.getElementById('nudge-preview');
@@ -2422,11 +2432,10 @@ function renderNudgePreview(feature, copy) {
   }, 10000);
 }
 
-var autoDismissTimer = null;
-
 // ── closeNudgeModal ──
 function closeNudgeModal() {
-  document.getElementById('nudge-overlay').classList.remove('active');
+  var overlay = document.getElementById('nudge-overlay');
+  if (overlay) overlay.classList.remove('active');
   if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
 }
 
@@ -2537,13 +2546,13 @@ async function loadConfigsFromFiles() {
 
     // Guardrails
     var grData = data[4];
-    CONFIG.THRESHOLD = grData.threshold || CONFIG.THRESHOLD;
-    CONFIG.MAX_SCORE = grData.maxScore || CONFIG.MAX_SCORE;
-    CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier || CONFIG.UNIVERSAL_MULTIPLIER;
-    CONFIG.SESSION_CAP = grData.sessionCap || CONFIG.SESSION_CAP;
-    CONFIG.COOLDOWN_MS = grData.cooldownMs || CONFIG.COOLDOWN_MS;
-    CONFIG.INTENT_FLOOR = grData.intentFloor || CONFIG.INTENT_FLOOR;
-    CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs || CONFIG.ACTIVITY_PAUSE_MS;
+    CONFIG.THRESHOLD = grData.threshold != null ? grData.threshold : CONFIG.THRESHOLD;
+    CONFIG.MAX_SCORE = grData.maxScore != null ? grData.maxScore : CONFIG.MAX_SCORE;
+    CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier != null ? grData.universalMultiplier : CONFIG.UNIVERSAL_MULTIPLIER;
+    CONFIG.SESSION_CAP = grData.sessionCap != null ? grData.sessionCap : CONFIG.SESSION_CAP;
+    CONFIG.COOLDOWN_MS = grData.cooldownMs != null ? grData.cooldownMs : CONFIG.COOLDOWN_MS;
+    CONFIG.INTENT_FLOOR = grData.intentFloor != null ? grData.intentFloor : CONFIG.INTENT_FLOOR;
+    CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs != null ? grData.activityPauseMs : CONFIG.ACTIVITY_PAUSE_MS;
 
     return true;
   } catch (e) {

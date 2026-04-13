@@ -195,6 +195,8 @@ The LLM reads the raw user prompt and returns per-feature relevance scores (0-5)
 
 Re-runs when the user creates a new deck with a different prompt.
 
+For prompts not in the lookup table, a keyword-based fallback (`synthesizeFromKeywords()`) generates approximate 0-5 scores by matching keywords like 'urgent', 'brand', 'team', etc. The Prompt Analysis panel shows '(LLM)' or '(keyword fallback)' to indicate the source.
+
 ---
 
 ## Guardrails
@@ -206,7 +208,7 @@ Re-runs when the user creates a new deck with a different prompt.
 | Cooldown | 60 seconds between milestones | Hold until elapsed | Yes (skip button for testing) |
 | Feature repeat | Feature already shown this session | Block (try next ranked feature) | Yes |
 | Intent floor | Universal signal sum < 3 | Block (not enough general engagement) | Yes |
-| Activity pause | Currently typing/dragging/generating | Hold until 3s idle | Yes (toggle in simulator) |
+| Activity pause | Currently typing/dragging/generating | Hold until 3s idle | Yes (auto 3s debounce on action + manual toggle) |
 
 ---
 
@@ -307,10 +309,14 @@ A unified, modular interactive simulator at `simulator/index.html` — single po
 - **Prompt Analysis** — shows raw user prompt with shuffle button (cycles through all available prompts for the same user profile), plus LLM signal extraction bar chart (0-5 per feature).
 - **Actions** — ~32 toggleable action buttons grouped by 6 categories (Editing, Content, Navigation & Preview, Sharing & Export, Prompt & Creation, Session & Journey). Each has a hover tooltip showing score impact per feature.
 - **Active Signals** — lists all currently active signals with type badges (DIR / UNI / D+U).
-- **Guardrails** — status bar showing Pro user kill switch, milestones fired, cooldown, features shown, intent floor, and activity pause (clickable toggle).
+- **Guardrails** — status bar showing Pro user kill switch, milestones fired, cooldown, features shown, intent floor, and activity pause (auto 3s debounce on action click + manual toggle override).
 - **Feature Score Matrix** — 9-row table sorted by total score, with bar visualization, threshold line, and badges (NEXT / QUEUED / SHOWN).
 - **Nudge Preview** — inline card preview + modal overlay with "Why this fired" breakdown. Two card variants: Pro (purple) and Service/hire-team (orange).
 - **Milestone Feed** — reverse-chronological log of all fired milestones with full signal breakdown.
+
+**Config loading** — when served via HTTP (e.g., `python3 -m http.server`), the simulator fetches configs from `../config/*.json` at startup. When opened directly as a file, it uses inline embedded defaults. Config changes take effect on HTTP reload.
+
+**Toast notifications** — upgrade and service booking actions show inline animated toast notifications instead of browser alerts.
 
 **Feedback loop:** Nudge card buttons are wired — "Not now" increments dismissals and removes zero-dismissals signal; "Upgrade to Pro" sets isProUser and kills all future nudges; "Talk to our team" (hire-team) routes to service booking flow.
 
