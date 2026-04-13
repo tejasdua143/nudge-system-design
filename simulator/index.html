@@ -173,6 +173,23 @@
     margin-bottom: 12px;
     word-break: break-word;
   }
+  .prompt-input {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .prompt-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
   .prompt-section-label {
     font-family: 'Montserrat', sans-serif;
     font-size: 9px;
@@ -1983,11 +2000,11 @@ function renderPromptAnalysis() {
 
   var html = '';
 
-  // Raw prompt with shuffle button
+  // Editable prompt with shuffle button
   html += '<div class="prompt-section-label">User Prompt</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
-  html += '<div class="prompt-raw" style="flex:1;margin-bottom:0">\u201c' + u.topic + '\u201d</div>';
-  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Try a different prompt for this user">&#x21BB;</button>';
+  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" onchange="applyCustomPrompt(this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" placeholder="Type any prompt..." />';
+  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
   html += '</div>';
 
   // LLM extraction — always available (lookup or keyword fallback)
@@ -2016,6 +2033,31 @@ function renderPromptAnalysis() {
   html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">These scores feed directly into the Feature Score Matrix as the <strong>prompt-synthesis</strong> signal. A score of 5 means the LLM considers this feature highly relevant to the user\u2019s prompt.</div>';
 
   el.innerHTML = html;
+}
+
+function applyCustomPrompt(text) {
+  var prompt = (text || '').trim();
+  if (!prompt) return;
+
+  state.user.topic = prompt;
+
+  // Re-run prompt synthesis — lookup or keyword fallback
+  var synthesis = PROMPT_SYNTHESIS[prompt] || synthesizeFromKeywords(prompt);
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+
+  rebuildSignalsFromActions();
+  renderUserContext();
+  renderPromptAnalysis();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  evaluateAndFire();
+
+  // Re-focus the input after re-render
+  var input = document.getElementById('prompt-input');
+  if (input) input.focus();
 }
 
 function shufflePrompt() {
