@@ -265,13 +265,16 @@ The hire-team nudge routes to a service booking flow, not the Pro pricing page.
 
 ## Feedback Loop
 
+Feature suppression and milestone counting happen at **fire time** (in `fireMilestone()`), not at dismiss time. The user's response determines additional side effects:
+
 | User action | System response |
 |-------------|----------------|
-| Clicks "Upgrade to Pro" | Route to pricing flow |
-| Clicks "Talk to our team" | Route to service booking flow |
-| Clicks "Not now" | Feature suppressed for session. milestonesThisSession++ |
-| Ignores (auto-dismiss) | Feature suppressed for session |
-| Upgrades | `isProUser = true`. All engines stop permanently. |
+| Clicks "Upgrade to Pro" | `isProUser = true`. All nudges disabled permanently. Toast notification shown. |
+| Clicks "Talk to our team" | Route to service booking flow (hire-team only). Toast notification shown. |
+| Clicks "Not now" | `dismissals++`. Removes `zero-dismissals` signal. Closes modal. |
+| Ignores (auto-dismiss, 10s) | Modal auto-closes. Feature already suppressed from fire time. Toast shown. |
+
+**Note:** `milestonesThisSession` is incremented and the feature is added to `featuresShownThisSession` when the milestone fires, not when the user reacts. This ensures the session cap and repeat-block guardrails take effect immediately.
 
 ---
 

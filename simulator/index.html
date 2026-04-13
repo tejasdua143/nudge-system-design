@@ -880,6 +880,30 @@
 
   /* Cooldown state */
   .cooldown-active .action-btn { opacity: 0.5; pointer-events: none; }
+
+  /* Toast notifications */
+  .toast-container {
+    position: fixed; top: 24px; right: 24px; z-index: 2000;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    font-size: 13px; color: var(--text);
+    max-width: 360px;
+    animation: toast-in 0.3s ease-out;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .toast.service { border-left-color: var(--accent-service); }
+  .toast.success { border-left-color: var(--green); }
+  .toast.fade-out { opacity: 0; transform: translateX(20px); }
+  .toast-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+  .toast-body { color: var(--text-muted); line-height: 1.5; }
+  @keyframes toast-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 </style>
 </head>
 <body>
@@ -942,6 +966,7 @@
   <div class="nudge-overlay" id="nudge-overlay" onclick="if(event.target===this)closeNudgeModal()">
     <div class="nudge-modal" id="nudge-modal"></div>
   </div>
+  <div class="toast-container" id="toast-container"></div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1415,12 +1440,55 @@ function profileUser() {
   else state.activeSignals.add('stakes-internal');
 
   // ── LAYER 3: Prompt Synthesis ──
-  const synthesis = PROMPT_SYNTHESIS[u.topic];
-  if (synthesis) {
-    u.promptSynthesis = synthesis;
-    DIRECT_MAP['prompt-synthesis'] = synthesis;
-    state.activeSignals.add('prompt-synthesis');
+  var synthesis = PROMPT_SYNTHESIS[u.topic];
+  if (!synthesis) {
+    // Keyword-based fallback for prompts not in the lookup table
+    synthesis = synthesizeFromKeywords(u.topic);
   }
+  u.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+}
+
+// Keyword-based prompt synthesis fallback
+function synthesizeFromKeywords(prompt) {
+  var p = (prompt || '').toLowerCase();
+  var scores = {};
+  FEATURES.forEach(function(f) { scores[f.id] = 0; });
+
+  var keywords = {
+    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional'],
+    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system'],
+    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template'],
+    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send'],
+    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our '],
+    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi'],
+    'gen-speed':     ['fast', 'quick', 'urgent', 'tomorrow', 'deadline', 'asap', 'hurry', 'rush', 'tonight'],
+    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version'],
+    'hire-team':     ['help me', 'struggle', "can't", 'complicated', 'too hard', 'do it for', 'build it for'],
+  };
+
+  // Urgency boosters
+  var urgencyWords = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush', 'needed by', 'end of day'];
+  var hasUrgency = urgencyWords.some(function(w) { return p.indexOf(w) !== -1; });
+
+  Object.keys(keywords).forEach(function(featureId) {
+    var matches = 0;
+    keywords[featureId].forEach(function(kw) {
+      if (p.indexOf(kw) !== -1) matches++;
+    });
+    scores[featureId] = Math.min(matches * 2, 5);
+  });
+
+  // Urgency boosts gen-speed, export, hire-team
+  if (hasUrgency) {
+    scores['gen-speed'] = Math.min(scores['gen-speed'] + 3, 5);
+    scores['export'] = Math.min(scores['export'] + 2, 5);
+    scores['hire-team'] = Math.min(scores['hire-team'] + 2, 5);
+    scores['ai-models'] = Math.min(scores['ai-models'] + 1, 5);
+  }
+
+  return scores;
 }
 
 function getAudienceStakes(audience) {
@@ -1700,6 +1768,8 @@ function rebuildSignalsFromActions() {
   actionSignals.forEach(function(s) { state.activeSignals.add(s); });
 }
 
+var activityTimer = null;
+
 function performAction(actionId) {
   var action = ACTIONS.find(function(a) { return a.id === actionId; });
   if (!action) return;
@@ -1716,14 +1786,23 @@ function performAction(actionId) {
     if (btn) btn.classList.add('done');
   }
 
+  // Simulate activity pause: user is "active" while clicking actions
+  state.isUserActive = true;
+  if (activityTimer) clearTimeout(activityTimer);
+  activityTimer = setTimeout(function() {
+    state.isUserActive = false;
+    activityTimer = null;
+    renderGuardrails();
+    evaluateAndFire();
+  }, CONFIG.ACTIVITY_PAUSE_MS);
+
   // Rebuild signals from scratch based on active actions
   rebuildSignalsFromActions();
 
-  // Re-render and evaluate
+  // Re-render (nudge won't fire yet — activity pause blocks it)
   renderSignals();
   renderMatrix();
   renderGuardrails();
-  evaluateAndFire();
 }
 
 function resetSimulator() {
@@ -1903,16 +1982,10 @@ function renderPromptAnalysis() {
   html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Try a different prompt for this user">&#x21BB;</button>';
   html += '</div>';
 
-  // LLM extraction
-  var synthesis = PROMPT_SYNTHESIS[u.topic];
-  if (!synthesis) {
-    html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
-    html += '<div class="prompt-no-signal">No prompt synthesis available for this topic. In production, the LLM would analyze this in real-time.</div>';
-    el.innerHTML = html;
-    return;
-  }
-
-  html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
+  // LLM extraction — always available (lookup or keyword fallback)
+  var synthesis = u.promptSynthesis || {};
+  var isLookup = PROMPT_SYNTHESIS[u.topic] !== undefined;
+  html += '<div class="prompt-section-label">Signal Extraction' + (isLookup ? ' (LLM)' : ' (keyword fallback)') + '</div>';
 
   // Sort features by synthesis score descending
   var entries = FEATURES.map(function(f) {
@@ -1949,17 +2022,11 @@ function shufflePrompt() {
   // Update user topic
   state.user.topic = newTopic;
 
-  // Re-run prompt synthesis (Layer 3)
-  var synthesis = PROMPT_SYNTHESIS[newTopic];
-  if (synthesis) {
-    state.user.promptSynthesis = synthesis;
-    DIRECT_MAP['prompt-synthesis'] = synthesis;
-    state.activeSignals.add('prompt-synthesis');
-  } else {
-    delete state.user.promptSynthesis;
-    DIRECT_MAP['prompt-synthesis'] = {};
-    state.activeSignals.delete('prompt-synthesis');
-  }
+  // Re-run prompt synthesis (Layer 3) — lookup or keyword fallback
+  var synthesis = PROMPT_SYNTHESIS[newTopic] || synthesizeFromKeywords(newTopic);
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
 
   // Rebuild all signals (keeps action toggles intact)
   rebuildSignalsFromActions();
@@ -2344,11 +2411,23 @@ function renderNudgePreview(feature, copy) {
     '</div>';
 
   document.getElementById('nudge-overlay').classList.add('active');
+
+  // Auto-dismiss after 10 seconds (simulates "user ignores" from spec)
+  if (autoDismissTimer) clearTimeout(autoDismissTimer);
+  autoDismissTimer = setTimeout(function() {
+    if (document.getElementById('nudge-overlay').classList.contains('active')) {
+      closeNudgeModal();
+      showToast('Auto-dismissed', 'Nudge auto-dismissed after 10s (user ignored). Feature suppressed for session.', '');
+    }
+  }, 10000);
 }
+
+var autoDismissTimer = null;
 
 // ── closeNudgeModal ──
 function closeNudgeModal() {
   document.getElementById('nudge-overlay').classList.remove('active');
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
 }
 
 // ── skipCooldown ──
@@ -2370,18 +2449,29 @@ function handleDismiss(featureId) {
   renderGuardrails();
 }
 
+// ── showToast — inline notification replacing alert() ──
+function showToast(title, body, type) {
+  var container = document.getElementById('toast-container');
+  var toast = document.createElement('div');
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.innerHTML = '<div class="toast-title">' + title + '</div><div class="toast-body">' + body + '</div>';
+  container.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('fade-out');
+    setTimeout(function() { toast.remove(); }, 300);
+  }, 4000);
+}
+
 // ── handleUpgrade — user clicked "Upgrade to Pro" or "Talk to our team" ──
 function handleUpgrade(featureId) {
   var feature = FEATURES.find(function(f) { return f.id === featureId; });
   if (feature && feature.type === 'service') {
-    // hire-team routes to service booking flow
     closeNudgeModal();
-    alert('Routed to service booking flow (hire-team).');
+    showToast('Service Booking', 'Routed to service booking flow. Our team will build this presentation for ' + state.user.audience + '.', 'service');
   } else {
-    // Pro upgrade — kill all nudges permanently
     state.user.isProUser = true;
     closeNudgeModal();
-    alert('User upgraded to Pro. All nudges disabled for this session.');
+    showToast('Upgraded to Pro', 'All nudges disabled for this session. User is now a Pro subscriber.', 'success');
     renderGuardrails();
   }
 }
@@ -2389,6 +2479,8 @@ function handleUpgrade(featureId) {
 // ── toggleUserActive ──
 function toggleUserActive() {
   state.isUserActive = !state.isUserActive;
+  // Clear auto-activity timer if manually toggling
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
   renderGuardrails();
   if (!state.isUserActive) {
     evaluateAndFire();
@@ -2396,10 +2488,77 @@ function toggleUserActive() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 15. Init
+// 15. Config Loader — fetch from ../config/ with inline fallback
 // ══════════════════════════════════════════════════════════════════════════════
 
-resetSimulator();
+var configLoaded = false;
+
+async function loadConfigsFromFiles() {
+  // Only works when served via HTTP (not file:// protocol)
+  if (window.location.protocol === 'file:') return false;
+
+  try {
+    var files = {
+      direct: '../config/direct-signal-map.json',
+      universal: '../config/universal-signal-map.json',
+      mindset: '../config/mindset-vectors.json',
+      prompt: '../config/prompt-synthesis-examples.json',
+      guardrails: '../config/guardrails.json',
+    };
+
+    var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
+    if (responses.some(function(r) { return !r.ok; })) return false;
+
+    var data = await Promise.all(responses.map(function(r) { return r.json(); }));
+
+    // Direct signal map
+    var directData = data[0];
+    delete directData._doc;
+    Object.keys(directData).forEach(function(key) { DIRECT_MAP[key] = directData[key]; });
+
+    // Universal signal map
+    var universalData = data[1];
+    delete universalData._doc;
+    Object.keys(universalData).forEach(function(key) { UNIVERSAL_MAP[key] = universalData[key]; });
+
+    // Mindset vectors
+    var mindsetData = data[2];
+    delete mindsetData._doc;
+    if (mindsetData._fallback) {
+      MINDSET_FALLBACK = mindsetData._fallback;
+      delete mindsetData._fallback;
+    }
+    Object.keys(mindsetData).forEach(function(key) { MINDSET_VECTORS[key] = mindsetData[key]; });
+
+    // Prompt synthesis
+    var promptData = data[3];
+    delete promptData._doc;
+    Object.keys(promptData).forEach(function(key) { PROMPT_SYNTHESIS[key] = promptData[key]; });
+
+    // Guardrails
+    var grData = data[4];
+    CONFIG.THRESHOLD = grData.threshold || CONFIG.THRESHOLD;
+    CONFIG.MAX_SCORE = grData.maxScore || CONFIG.MAX_SCORE;
+    CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier || CONFIG.UNIVERSAL_MULTIPLIER;
+    CONFIG.SESSION_CAP = grData.sessionCap || CONFIG.SESSION_CAP;
+    CONFIG.COOLDOWN_MS = grData.cooldownMs || CONFIG.COOLDOWN_MS;
+    CONFIG.INTENT_FLOOR = grData.intentFloor || CONFIG.INTENT_FLOOR;
+    CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs || CONFIG.ACTIVITY_PAUSE_MS;
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 16. Init
+// ══════════════════════════════════════════════════════════════════════════════
+
+(async function init() {
+  configLoaded = await loadConfigsFromFiles();
+  resetSimulator();
+})();
 </script>
 </body>
 </html>
