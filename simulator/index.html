@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge Simulator v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@300;400;500;600;700&family=PT+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #F5F0EB;
+    --surface: #FFFFFF;
+    --surface-2: #FAF8F5;
+    --border: #E5DDD4;
+    --border-light: #EDE8E2;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --primary: #111111;
+    --accent: #8B5CF6;
+    --accent-service: #EA580C;
+    --green: #16A34A;
+    --yellow: #D97706;
+    --red: #DC2626;
+    --blue: #2563EB;
+    --cyan: #0891B2;
+    --paper-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --paper-shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  /* Header */
+  .header { max-width: 1400px; margin: 0 auto 24px; }
+  .header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 800px;
+    font-weight: 400;
+  }
+
+  /* Layout */
+  .layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--paper-shadow);
+  }
+  .panel-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* Left column */
+  .left-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* User context */
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .user-row:last-child { border-bottom: none; }
+  .user-label { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+  .user-value { font-size: 12px; font-weight: 600; color: var(--text); }
+  .user-value.highlight { color: var(--accent); }
+  .reshuffle-btn {
+    padding: 8px 16px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    width: 100%;
+    transition: opacity 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .reshuffle-btn:hover { opacity: 0.85; }
+
+  /* Actions */
+  .action-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .action-cat-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: -4px;
+  }
+  .action-cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .action-btn {
+    position: relative;
+    padding: 7px 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    line-height: 1.3;
+  }
+  .action-btn:hover { background: #F0ECE6; color: var(--text); border-color: var(--border); }
+  .action-btn.done {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* Action tooltips */
+  .action-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 220px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .action-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border);
+  }
+  .action-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--surface);
+    z-index: 1;
+  }
+  .action-btn:hover .action-tooltip {
+    display: block;
+  }
+  .tooltip-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 11px;
+  }
+  .tooltip-feature {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .tooltip-weight {
+    font-family: 'PT Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .tooltip-weight.high { color: var(--accent); }
+  .tooltip-weight.med { color: var(--blue); }
+  .tooltip-weight.low { color: var(--text-dim); }
+  .tooltip-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 6px 0;
+  }
+  .tooltip-uni-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .tooltip-empty {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* Active signals */
+  .signal-list { display: flex; flex-direction: column; gap: 4px; }
+  .signal-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .signal-row.active {
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+  }
+  .signal-row.inactive {
+    opacity: 0.3;
+  }
+  .signal-name { color: var(--text-muted); font-weight: 500; }
+  .signal-weight { font-weight: 700; color: var(--accent); font-size: 10px; }
+
+  /* Signal type badges (DIR / UNI / D+U) */
+  .signal-type-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+  .signal-type-badge.dir {
+    background: #EFF6FF;
+    color: var(--blue);
+    border: 1px solid #BFDBFE;
+  }
+  .signal-type-badge.uni {
+    background: #FFFBEB;
+    color: var(--yellow);
+    border: 1px solid #FDE68A;
+  }
+  .signal-type-badge.both {
+    background: #F5F3FF;
+    color: var(--accent);
+    border: 1px solid #DDD6FE;
+  }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Guardrail bar */
+  .guardrail-bar {
+    display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+  }
+  .gr-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+  }
+  .gr-value {
+    font-family: 'PT Mono', monospace;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .gr-value.ok { color: var(--green); background: #F0FDF4; }
+  .gr-value.warn { color: var(--yellow); background: #FFFBEB; }
+  .gr-value.blocked { color: var(--red); background: #FEF2F2; }
+
+  /* Score matrix */
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .matrix-table th {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .matrix-table td {
+    padding: 12px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s;
+  }
+  .matrix-table tr.qualified {
+    background: #F0FDF4;
+  }
+  .matrix-table tr.top-pick {
+    background: #F5F3FF;
+  }
+  .feature-name { font-weight: 600; }
+  .score-bar-cell { width: 200px; }
+  .score-bar-wrap {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .score-bar-bg {
+    flex: 1; height: 6px; background: #EDE8E2; border-radius: 3px; overflow: hidden; position: relative;
+  }
+  .score-bar-fill {
+    height: 100%; border-radius: 3px; transition: width 0.4s ease, background 0.3s;
+    background: var(--text-dim);
+  }
+  .score-bar-fill.low { background: #D1D5DB; }
+  .score-bar-fill.mid { background: var(--yellow); }
+  .score-bar-fill.high { background: var(--green); }
+  .score-bar-fill.top { background: var(--accent); }
+  .score-num {
+    font-family: 'PT Mono', monospace;
+    font-size: 13px; font-weight: 700; min-width: 32px; text-align: right;
+  }
+  .score-num.below { color: var(--text-dim); }
+  .score-num.near { color: var(--yellow); }
+  .score-num.above { color: var(--green); }
+  .score-num.top { color: var(--accent); }
+  .threshold-line {
+    position: absolute;
+    left: 46.7%;
+    top: -2px; bottom: -2px;
+    width: 2px;
+    background: var(--red);
+    opacity: 0.5;
+  }
+  .direct-val, .universal-val {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: center;
+  }
+  .badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 4px;
+  }
+  .badge.fire { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
+  .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
+  .badge.shown { background: rgba(0,0,0,0.03); color: var(--text-dim); border: 1px solid var(--border-light); }
+
+  /* ── Nudge Preview ── */
+  .nudge-preview-empty {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-dim);
+    font-size: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    background: var(--surface-2);
+  }
+  .nudge-preview-container {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  /* The actual nudge card (what the user sees) */
+  .nudge-ui {
+    flex: 1;
+    max-width: 420px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--paper-shadow-lg);
+    animation: nudgeIn 0.4s ease;
+  }
+  @keyframes nudgeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nudge-ui-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge-ui-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .nudge-ui-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+  .nudge-ui-body {
+    padding: 16px 24px 24px;
+  }
+  .nudge-ui-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .nudge-ui-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+  .nudge-ui-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .nudge-ui-cta {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .nudge-ui-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* Service variant CTA — orange */
+  .nudge-ui-cta.service {
+    background: var(--accent-service);
+  }
+
+  .nudge-ui-dismiss {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nudge-ui-dismiss:hover { color: var(--text-muted); border-color: var(--text-dim); }
+  .nudge-ui-footer {
+    padding: 0 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nudge-ui-pro-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: var(--accent);
+  }
+
+  /* Service variant PRO badge — orange, reads "SERVICE" */
+  .nudge-ui-pro-badge.service {
+    background: #FFF7ED;
+    border: 1px solid #FDBA74;
+    color: var(--accent-service);
+  }
+
+  /* Service variant nudge card — orange accent border */
+  .nudge-ui.service {
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-tag {
+    color: var(--accent-service);
+  }
+
+  .nudge-ui-feature-label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Score breakdown next to nudge */
+  .nudge-breakdown {
+    flex: 1;
+    min-width: 0;
+  }
+  .breakdown-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-signal { color: var(--text-muted); }
+  .breakdown-weight { font-family: 'PT Mono', monospace; font-weight: 700; }
+  .breakdown-weight.direct { color: var(--blue); }
+  .breakdown-weight.universal { color: var(--yellow); }
+  .breakdown-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 0;
+    margin-top: 8px;
+    border-top: 2px solid var(--border);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .breakdown-total-score { font-family: 'PT Mono', monospace; color: var(--accent); font-size: 20px; }
+  .breakdown-section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    margin-bottom: 6px;
+  }
+  .breakdown-section-label:first-child { margin-top: 0; }
+
+  /* ── Nudge Modal Overlay ── */
+  .nudge-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: overlayIn 0.25s ease;
+    backdrop-filter: blur(4px);
+  }
+  .nudge-overlay.active {
+    display: flex;
+  }
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .nudge-modal {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    max-width: 820px;
+    width: 90%;
+    animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nudge-modal .nudge-ui {
+    flex: 0 0 420px;
+    max-width: 420px;
+  }
+  .nudge-modal .nudge-breakdown {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--paper-shadow-lg);
+    flex: 1;
+    min-width: 0;
+  }
+  .nudge-modal-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+  }
+  .nudge-modal-close {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .nudge-modal-close:hover { border-color: var(--text-dim); color: var(--text); }
+  .nudge-modal-skip-cooldown {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: #F5F3FF;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .nudge-modal-skip-cooldown:hover { background: #EDE9FE; }
+
+  /* Milestone feed */
+  .milestone-item {
+    background: var(--surface);
+    border: 1px solid #DDD6FE;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+    box-shadow: var(--paper-shadow);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .milestone-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .milestone-content { flex: 1; }
+  .milestone-feature {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--accent); margin-bottom: 4px;
+  }
+  .milestone-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; color: var(--primary); }
+  .milestone-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .milestone-meta {
+    font-family: 'PT Mono', monospace;
+    font-size: 10px; color: var(--text-dim); margin-top: 8px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .milestone-meta span { display: flex; align-items: center; gap: 4px; }
+  .milestone-signals {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .milestone-signal-tag {
+    font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+    background: #EFF6FF; color: var(--blue); border: 1px solid #BFDBFE;
+  }
+  .milestone-signal-tag.universal {
+    background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A;
+  }
+
+  /* Empty states */
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .empty-feed {
+    text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px;
+  }
+
+  /* Cooldown state */
+  .cooldown-active .action-btn { opacity: 0.5; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Nudge Simulator v2</h1>
+    <p>Milestone-driven, per-feature scoring. Each action adds signals that score toward specific Pro features. Highest scorer above threshold fires.</p>
+  </div>
+  <div class="layout">
+    <div class="left-col">
+      <div class="panel" id="panel-user">
+        <div class="panel-title">User Context</div>
+        <div id="user-context"></div>
+        <button class="reshuffle-btn" onclick="resetSimulator()">Reshuffle User</button>
+      </div>
+      <div class="panel" id="panel-actions">
+        <div class="panel-title">Actions</div>
+        <div id="action-grid"></div>
+      </div>
+      <div class="panel" id="panel-signals">
+        <div class="panel-title">Active Signals</div>
+        <div id="signal-list"></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="panel" id="panel-guardrails">
+        <div class="panel-title">Guardrails</div>
+        <div class="guardrail-bar" id="guardrail-bar"></div>
+      </div>
+      <div class="panel" id="panel-matrix">
+        <div class="panel-title">Feature Score Matrix</div>
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Direct</th>
+              <th>Uni (×0.4)</th>
+              <th>Score</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+      <div class="panel" id="panel-nudge-preview">
+        <div class="panel-title">Nudge Preview</div>
+        <div id="nudge-preview"></div>
+      </div>
+      <div class="panel" id="panel-feed">
+        <div class="panel-title">Milestone Feed</div>
+        <div id="feed-content"></div>
+      </div>
+    </div>
+  </div>
+  <div class="nudge-overlay" id="nudge-overlay">
+    <div class="nudge-modal" id="nudge-modal"></div>
+  </div>
+</body>
+</html>
