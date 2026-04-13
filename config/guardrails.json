@@ -1,0 +1,9 @@
+{
+  "sessionCap": 3,
+  "cooldownMs": 60000,
+  "threshold": 14,
+  "maxScore": 30,
+  "universalMultiplier": 0.4,
+  "intentFloor": 3,
+  "activityPauseMs": 3000
+}

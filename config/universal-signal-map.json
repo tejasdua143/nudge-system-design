@@ -1,0 +1,19 @@
+{
+  "_doc": "Universal signals that boost ALL features at 0.4x multiplier. Each key is a signal name, value is the base score before multiplier.",
+
+  "credits-low":      3,
+  "credits-zero":     5,
+  "returning-user":   4,
+  "pricing-visit":    3,
+  "bought-export":    4,
+  "time-15":          3,
+  "multi-deck":       3,
+  "zero-dismissals":  1,
+  "gate-hit":         3,
+  "export-attempt":   2,
+  "company-domain":   2,
+  "tier-1-country":   2,
+  "deck-veteran":     3,
+  "acq-paid":         2,
+  "acq-referral":     3
+}

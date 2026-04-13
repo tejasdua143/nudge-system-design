@@ -1,0 +1,57 @@
+{
+  "_doc": "Layer 1 mindset vectors. Key = 'role|audienceStakes'. Value = per-feature weights (0-5). audienceStakes is one of: high-external, low-external, internal.",
+
+  "Leadership|high-external":      { "unbranded": 4, "analytics": 4, "export": 3, "brand-kit": 3, "ai-models": 2, "hire-team": 2, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0 },
+  "Leadership|low-external":       { "unbranded": 3, "brand-kit": 3, "export": 3, "analytics": 2, "ai-models": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0 },
+  "Leadership|internal":           { "gen-speed": 3, "invite-collab": 3, "pres-refresh": 2, "ai-models": 2, "export": 1, "unbranded": 1, "brand-kit": 1, "analytics": 0, "hire-team": 0 },
+
+  "Sales|high-external":           { "analytics": 4, "unbranded": 4, "export": 3, "brand-kit": 3, "ai-models": 2, "hire-team": 2, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0 },
+  "Sales|low-external":            { "unbranded": 3, "analytics": 3, "export": 3, "brand-kit": 2, "ai-models": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0 },
+  "Sales|internal":                { "gen-speed": 2, "ai-models": 2, "invite-collab": 2, "pres-refresh": 2, "export": 1, "unbranded": 1, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Marketing|high-external":       { "brand-kit": 4, "unbranded": 4, "analytics": 3, "export": 3, "ai-models": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0 },
+  "Marketing|low-external":        { "brand-kit": 4, "unbranded": 3, "export": 2, "analytics": 2, "ai-models": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0 },
+  "Marketing|internal":            { "brand-kit": 3, "gen-speed": 2, "invite-collab": 2, "ai-models": 2, "pres-refresh": 1, "unbranded": 1, "export": 1, "analytics": 0, "hire-team": 0 },
+
+  "Product|high-external":         { "unbranded": 3, "export": 3, "ai-models": 3, "brand-kit": 2, "analytics": 2, "invite-collab": 2, "hire-team": 1, "gen-speed": 1, "pres-refresh": 0 },
+  "Product|low-external":          { "ai-models": 3, "unbranded": 2, "export": 2, "invite-collab": 2, "brand-kit": 1, "gen-speed": 1, "analytics": 1, "hire-team": 0, "pres-refresh": 0 },
+  "Product|internal":              { "invite-collab": 4, "gen-speed": 3, "pres-refresh": 3, "ai-models": 2, "export": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Design|high-external":          { "brand-kit": 5, "unbranded": 4, "export": 3, "ai-models": 2, "analytics": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0 },
+  "Design|low-external":           { "brand-kit": 4, "unbranded": 4, "export": 3, "ai-models": 2, "analytics": 1, "hire-team": 0, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0 },
+  "Design|internal":               { "brand-kit": 3, "invite-collab": 2, "pres-refresh": 2, "ai-models": 2, "gen-speed": 1, "unbranded": 1, "export": 0, "analytics": 0, "hire-team": 0 },
+
+  "Engineering|high-external":     { "ai-models": 3, "export": 3, "unbranded": 2, "invite-collab": 2, "gen-speed": 2, "brand-kit": 1, "analytics": 1, "hire-team": 1, "pres-refresh": 0 },
+  "Engineering|low-external":      { "ai-models": 3, "gen-speed": 2, "export": 2, "invite-collab": 2, "unbranded": 1, "brand-kit": 0, "analytics": 0, "hire-team": 0, "pres-refresh": 0 },
+  "Engineering|internal":          { "invite-collab": 3, "gen-speed": 3, "ai-models": 2, "pres-refresh": 2, "export": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Data Analytics|high-external":  { "analytics": 4, "export": 4, "ai-models": 3, "unbranded": 2, "brand-kit": 1, "invite-collab": 1, "hire-team": 1, "gen-speed": 1, "pres-refresh": 0 },
+  "Data Analytics|low-external":   { "analytics": 3, "export": 3, "ai-models": 2, "unbranded": 2, "brand-kit": 1, "gen-speed": 1, "invite-collab": 0, "hire-team": 0, "pres-refresh": 0 },
+  "Data Analytics|internal":       { "analytics": 3, "gen-speed": 2, "ai-models": 2, "invite-collab": 2, "pres-refresh": 2, "export": 1, "unbranded": 0, "brand-kit": 0, "hire-team": 0 },
+
+  "Consulting|high-external":      { "unbranded": 3, "brand-kit": 3, "export": 3, "ai-models": 2, "analytics": 2, "hire-team": 2, "invite-collab": 1, "gen-speed": 1, "pres-refresh": 0 },
+  "Consulting|low-external":       { "unbranded": 3, "brand-kit": 2, "export": 3, "ai-models": 2, "analytics": 1, "hire-team": 1, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0 },
+  "Consulting|internal":           { "invite-collab": 3, "gen-speed": 2, "pres-refresh": 2, "ai-models": 2, "export": 1, "unbranded": 1, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Operations|high-external":      { "export": 3, "unbranded": 2, "ai-models": 2, "gen-speed": 2, "invite-collab": 2, "brand-kit": 1, "analytics": 1, "hire-team": 1, "pres-refresh": 0 },
+  "Operations|low-external":       { "gen-speed": 2, "export": 2, "ai-models": 2, "invite-collab": 2, "unbranded": 1, "brand-kit": 0, "analytics": 0, "hire-team": 0, "pres-refresh": 0 },
+  "Operations|internal":           { "gen-speed": 3, "invite-collab": 3, "pres-refresh": 2, "ai-models": 2, "export": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Finance|high-external":         { "analytics": 3, "export": 4, "unbranded": 3, "ai-models": 2, "brand-kit": 2, "gen-speed": 1, "invite-collab": 1, "hire-team": 1, "pres-refresh": 0 },
+  "Finance|low-external":          { "export": 3, "analytics": 2, "unbranded": 2, "ai-models": 2, "brand-kit": 1, "gen-speed": 1, "invite-collab": 0, "hire-team": 0, "pres-refresh": 0 },
+  "Finance|internal":              { "gen-speed": 2, "ai-models": 2, "invite-collab": 2, "export": 2, "pres-refresh": 2, "analytics": 1, "unbranded": 0, "brand-kit": 0, "hire-team": 0 },
+
+  "Creator|high-external":         { "brand-kit": 4, "unbranded": 4, "export": 3, "ai-models": 3, "analytics": 2, "hire-team": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0 },
+  "Creator|low-external":          { "brand-kit": 4, "unbranded": 3, "ai-models": 3, "export": 2, "analytics": 1, "gen-speed": 1, "hire-team": 0, "invite-collab": 0, "pres-refresh": 0 },
+  "Creator|internal":              { "brand-kit": 3, "ai-models": 2, "pres-refresh": 2, "gen-speed": 2, "invite-collab": 1, "unbranded": 1, "export": 0, "analytics": 0, "hire-team": 0 },
+
+  "Teacher|high-external":         { "export": 4, "gen-speed": 3, "ai-models": 3, "unbranded": 2, "pres-refresh": 2, "hire-team": 1, "brand-kit": 1, "analytics": 0, "invite-collab": 0 },
+  "Teacher|low-external":          { "export": 3, "gen-speed": 3, "ai-models": 2, "pres-refresh": 2, "unbranded": 2, "brand-kit": 1, "hire-team": 0, "analytics": 0, "invite-collab": 0 },
+  "Teacher|internal":              { "export": 3, "gen-speed": 3, "pres-refresh": 3, "ai-models": 2, "unbranded": 1, "invite-collab": 1, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "Student|high-external":         { "export": 4, "ai-models": 3, "unbranded": 3, "gen-speed": 2, "invite-collab": 2, "brand-kit": 1, "hire-team": 1, "analytics": 0, "pres-refresh": 0 },
+  "Student|low-external":          { "export": 3, "ai-models": 2, "gen-speed": 2, "unbranded": 2, "invite-collab": 1, "brand-kit": 0, "hire-team": 0, "analytics": 0, "pres-refresh": 0 },
+  "Student|internal":              { "gen-speed": 3, "ai-models": 2, "invite-collab": 2, "export": 1, "pres-refresh": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
+
+  "_fallback":                     { "ai-models": 1, "gen-speed": 1, "export": 1, "unbranded": 1, "brand-kit": 0, "analytics": 0, "invite-collab": 0, "hire-team": 0, "pres-refresh": 0 }
+}
