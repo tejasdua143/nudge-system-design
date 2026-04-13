@@ -199,14 +199,14 @@ Re-runs when the user creates a new deck with a different prompt.
 
 ## Guardrails
 
-| Check | Threshold | Behavior |
-|-------|-----------|----------|
-| Pro user | `isProUser === true` | Kill all nudges permanently |
-| Session cap | 3 milestones per session | Block additional nudges |
-| Cooldown | 60 seconds between milestones | Hold until elapsed |
-| Feature repeat | Feature already shown this session | Block (try next ranked feature) |
-| Intent floor | Universal signal sum < 3 | Block (not enough general engagement) |
-| User activity | Currently typing/dragging/generating | Hold until 3s pause |
+| Check | Threshold | Behavior | Implemented |
+|-------|-----------|----------|-------------|
+| Pro user | `isProUser === true` | Kill all nudges permanently | Yes |
+| Session cap | 3 milestones per session | Block additional nudges | Yes |
+| Cooldown | 60 seconds between milestones | Hold until elapsed | Yes (skip button for testing) |
+| Feature repeat | Feature already shown this session | Block (try next ranked feature) | Yes |
+| Intent floor | Universal signal sum < 3 | Block (not enough general engagement) | Yes |
+| Activity pause | Currently typing/dragging/generating | Hold until 3s idle | Yes (toggle in simulator) |
 
 ---
 
@@ -292,13 +292,24 @@ Each engine has a detailed spec document:
 
 ## Simulator
 
-A unified, modular interactive simulator at `simulator/index.html` with panels per engine:
-- User context panel (randomized profiles)
-- Action buttons (trigger signals)
-- Active signals display
-- Per-feature score matrix with direct/universal breakdown
-- Guardrail status bar
-- Milestone nudge preview with "why this fired" breakdown
+A unified, modular interactive simulator at `simulator/index.html` — single portable HTML file (~2400 lines), vanilla JS, no build tools.
+
+**3-column layout:**
+- Left (300px): User Context + Prompt Analysis
+- Center (fluid): Guardrails + Feature Score Matrix + Nudge Preview + Milestone Feed
+- Right (300px): Actions + Active Signals
+
+**Panels:**
+- **User Context** — randomized profiles with scoring impact tooltips on hover. "Reshuffle User" button generates a new random profile.
+- **Prompt Analysis** — shows raw user prompt with shuffle button (cycles through all available prompts for the same user profile), plus LLM signal extraction bar chart (0-5 per feature).
+- **Actions** — ~32 toggleable action buttons grouped by 6 categories (Editing, Content, Navigation & Preview, Sharing & Export, Prompt & Creation, Session & Journey). Each has a hover tooltip showing score impact per feature.
+- **Active Signals** — lists all currently active signals with type badges (DIR / UNI / D+U).
+- **Guardrails** — status bar showing Pro user kill switch, milestones fired, cooldown, features shown, intent floor, and activity pause (clickable toggle).
+- **Feature Score Matrix** — 9-row table sorted by total score, with bar visualization, threshold line, and badges (NEXT / QUEUED / SHOWN).
+- **Nudge Preview** — inline card preview + modal overlay with "Why this fired" breakdown. Two card variants: Pro (purple) and Service/hire-team (orange).
+- **Milestone Feed** — reverse-chronological log of all fired milestones with full signal breakdown.
+
+**Feedback loop:** Nudge card buttons are wired — "Not now" increments dismissals and removes zero-dismissals signal; "Upgrade to Pro" sets isProUser and kills all future nudges; "Talk to our team" (hire-team) routes to service booking flow.
 
 ---
 
@@ -310,7 +321,8 @@ All tunable values are externalized as config:
 |------|----------|
 | `direct-signal-map.json` | Signal → feature weight mappings (~40+ entries) |
 | `universal-signal-map.json` | Signal → universal weight mappings (~15 entries) |
-| `prompt-synthesis-examples.json` | Example LLM outputs per topic type |
-| `context-layers.json` | Mindset map + audience stakes map |
-| `copy-templates.json` | Per-feature copy templates + tier modifiers |
-| `guardrails.json` | Session cap, cooldown, threshold, intent floor |
+| `mindset-vectors.json` | Layer 1 mindset vectors: role × audienceStakes → per-feature weights (39 combos + fallback) |
+| `prompt-synthesis-examples.json` | Example LLM outputs per topic type (30+ prompts) |
+| `context-layers.json` | Audience stakes classification rules (high-external / low-external / internal audiences) |
+| `copy-templates.json` | Per-feature copy templates with {topic}/{audience} variables + tier modifiers |
+| `guardrails.json` | Session cap, cooldown, threshold, intent floor, activity pause |
