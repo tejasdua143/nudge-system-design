@@ -38,7 +38,7 @@
   }
 
   /* Header */
-  .header { max-width: 1400px; margin: 0 auto 24px; }
+  .header { max-width: 1600px; margin: 0 auto 24px; }
   .header h1 {
     font-family: 'Montserrat', sans-serif;
     font-size: 24px;
@@ -57,10 +57,10 @@
 
   /* Layout */
   .layout {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 300px 1fr 300px;
     gap: 24px;
   }
 
@@ -423,6 +423,9 @@
     border: 1px solid #DDD6FE;
   }
 
+  /* Center column */
+  .center-col { display: flex; flex-direction: column; gap: 16px; }
+
   /* Right column */
   .right-col { display: flex; flex-direction: column; gap: 16px; }
 
@@ -444,6 +447,8 @@
   .gr-value.ok { color: var(--green); background: #F0FDF4; }
   .gr-value.warn { color: var(--yellow); background: #FFFBEB; }
   .gr-value.blocked { color: var(--red); background: #FEF2F2; }
+  .gr-toggle { cursor: pointer; border-radius: 6px; padding: 4px 8px; margin: -4px -8px; }
+  .gr-toggle:hover { background: var(--surface-2); }
 
   /* Score matrix */
   .matrix-table {
@@ -893,16 +898,8 @@
         <div class="panel-title">Prompt Analysis</div>
         <div id="prompt-analysis"></div>
       </div>
-      <div class="panel" id="panel-actions">
-        <div class="panel-title">Actions</div>
-        <div class="action-grid" id="action-grid"></div>
-      </div>
-      <div class="panel" id="panel-signals">
-        <div class="panel-title">Active Signals</div>
-        <div class="signal-list" id="signal-list"></div>
-      </div>
     </div>
-    <div class="right-col">
+    <div class="center-col">
       <div class="panel" id="panel-guardrails">
         <div class="panel-title">Guardrails</div>
         <div class="guardrail-bar" id="guardrail-bar"></div>
@@ -929,6 +926,16 @@
       <div class="panel" id="panel-feed">
         <div class="panel-title">Milestone Feed</div>
         <div id="feed-content"></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="panel" id="panel-actions">
+        <div class="panel-title">Actions</div>
+        <div class="action-grid" id="action-grid"></div>
+      </div>
+      <div class="panel" id="panel-signals">
+        <div class="panel-title">Active Signals</div>
+        <div class="signal-list" id="signal-list"></div>
       </div>
     </div>
   </div>
@@ -1311,6 +1318,7 @@ let state = {
   featuresShownThisSession: new Set(),
   lastMilestoneTime: 0,
   milestoneLog: [],
+  isUserActive: false,
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1544,6 +1552,13 @@ function checkGuardrails(featureId) {
   const reasons = [];
   let pass = true;
 
+  // Pro user kill switch
+  if (state.user.isProUser) {
+    reasons.push('User is Pro — all nudges disabled');
+    pass = false;
+    return { pass, reasons };
+  }
+
   // Session cap
   if (state.milestonesThisSession >= CONFIG.SESSION_CAP) {
     reasons.push('Session cap reached (' + state.milestonesThisSession + '/' + CONFIG.SESSION_CAP + ')');
@@ -1571,6 +1586,12 @@ function checkGuardrails(featureId) {
   });
   if (intentFloor < CONFIG.INTENT_FLOOR) {
     reasons.push('Global intent too low (' + intentFloor + ' < ' + CONFIG.INTENT_FLOOR + ')');
+    pass = false;
+  }
+
+  // Activity pause — user must be idle for 3s before nudge fires
+  if (state.isUserActive) {
+    reasons.push('User is active (needs ' + (CONFIG.ACTIVITY_PAUSE_MS / 1000) + 's idle)');
     pass = false;
   }
 
@@ -1716,6 +1737,7 @@ function resetSimulator() {
     featuresShownThisSession: new Set(),
     lastMilestoneTime: 0,
     milestoneLog: [],
+    isUserActive: false,
   };
 
   generateUser();
@@ -2171,11 +2193,16 @@ function renderGuardrails() {
 
   var bar = document.getElementById('guardrail-bar');
   bar.innerHTML = [
+    { label: 'Pro user', value: state.user.isProUser ? 'Yes' : 'No', status: state.user.isProUser ? 'blocked' : 'ok' },
     { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
     { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
     { label: 'Features shown', value: state.featuresShownThisSession.size + '/9', status: 'ok' },
     { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+    { label: 'Activity', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
   ].map(function(g) {
+    if (g.toggle) {
+      return '<div class="gr-item gr-toggle" onclick="toggleUserActive()"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
+    }
     return '<div class="gr-item"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
   }).join('');
 }
@@ -2235,8 +2262,8 @@ function buildNudgeCardHTML(feature, copy) {
       '<div class="nudge-ui-title">' + copy.title + '</div>' +
       '<div class="nudge-ui-desc">' + copy.body + '</div>' +
       '<div class="nudge-ui-actions">' +
-        '<button class="' + ctaClass + '">' + ctaLabel + '</button>' +
-        '<button class="nudge-ui-dismiss">Not now</button>' +
+        '<button class="' + ctaClass + '" onclick="handleUpgrade(\'' + feature.id + '\')">' + ctaLabel + '</button>' +
+        '<button class="nudge-ui-dismiss" onclick="handleDismiss(\'' + feature.id + '\')">Not now</button>' +
       '</div>' +
     '</div>' +
     '<div class="nudge-ui-footer">' +
@@ -2329,6 +2356,43 @@ function skipCooldown() {
   state.lastMilestoneTime = 0;
   closeNudgeModal();
   renderGuardrails();
+}
+
+// ── handleDismiss — user clicked "Not now" on a nudge ──
+function handleDismiss(featureId) {
+  state.user.dismissals = (state.user.dismissals || 0) + 1;
+  // Remove zero-dismissals signal since they've now dismissed at least once
+  state.activeSignals.delete('zero-dismissals');
+  closeNudgeModal();
+  renderUserContext();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+}
+
+// ── handleUpgrade — user clicked "Upgrade to Pro" or "Talk to our team" ──
+function handleUpgrade(featureId) {
+  var feature = FEATURES.find(function(f) { return f.id === featureId; });
+  if (feature && feature.type === 'service') {
+    // hire-team routes to service booking flow
+    closeNudgeModal();
+    alert('Routed to service booking flow (hire-team).');
+  } else {
+    // Pro upgrade — kill all nudges permanently
+    state.user.isProUser = true;
+    closeNudgeModal();
+    alert('User upgraded to Pro. All nudges disabled for this session.');
+    renderGuardrails();
+  }
+}
+
+// ── toggleUserActive ──
+function toggleUserActive() {
+  state.isUserActive = !state.isUserActive;
+  renderGuardrails();
+  if (!state.isUserActive) {
+    evaluateAndFire();
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
