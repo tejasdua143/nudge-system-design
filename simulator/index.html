@@ -1540,25 +1540,37 @@ function profileUser() {
 
 // Keyword-based prompt synthesis fallback
 function synthesizeFromKeywords(prompt) {
-  var p = (prompt || '').toLowerCase();
+  // Normalize: lowercase, split joined words, add spaces around numbers
+  var p = (prompt || '').toLowerCase()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')             // camelCase → camel Case
+    .replace(/([a-z])(\d)/g, '$1 $2')                 // word2 → word 2
+    .replace(/(\d)([a-z])/g, '$1 $2')                 // 2days → 2 days
+    .replace(/[_\-]/g, ' ')                            // underscores/hyphens → spaces
+    .replace(/\s+/g, ' ').trim();
+
   var scores = {};
   FEATURES.forEach(function(f) { scores[f.id] = 0; });
 
   var keywords = {
-    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional'],
-    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system'],
-    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template'],
-    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send'],
-    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our '],
-    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi'],
+    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional', 'good', 'premium'],
+    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system', 'corporate', 'theme'],
+    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template', 'pitch', 'proposal', 'formal'],
+    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
+    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
+    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
     'gen-speed':     ['fast', 'quick', 'speed', 'slow', 'waiting', 'generate'],
-    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version'],
-    'hire-team':     ['help me', 'struggle', "can't", 'complicated', 'too hard', 'do it for', 'build it for'],
+    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version', 'improve', 'fix'],
+    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'],
   };
 
-  // Urgency boosters
-  var urgencyWords = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush', 'needed by', 'end of day'];
-  var hasUrgency = urgencyWords.some(function(w) { return p.indexOf(w) !== -1; });
+  // Urgency detection — broader patterns
+  var urgencyPatterns = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush',
+    'needed by', 'end of day', 'eod', 'within', 'days', 'hours', 'hours left', 'by friday',
+    'by monday', 'by tuesday', 'by wednesday', 'by thursday', 'this week', 'right now', 'immediately'];
+  var hasUrgency = urgencyPatterns.some(function(w) { return p.indexOf(w) !== -1; });
+
+  // Pitch/presentation detection — baseline scoring
+  var isPitch = ['pitch', 'pitch deck', 'pitchdeck', 'deck', 'presentation', 'ppt', 'slides'].some(function(w) { return p.indexOf(w) !== -1; });
 
   Object.keys(keywords).forEach(function(featureId) {
     var matches = 0;
@@ -1568,7 +1580,14 @@ function synthesizeFromKeywords(prompt) {
     scores[featureId] = Math.min(matches * 2, 5);
   });
 
-  // Urgency boosts export, hire-team, ai-models (not gen-speed — speed isn't about urgency)
+  // Baseline: if it's a pitch/deck, give baseline scores to core features
+  if (isPitch) {
+    scores['unbranded'] = Math.max(scores['unbranded'], 2);
+    scores['export'] = Math.max(scores['export'], 2);
+    scores['ai-models'] = Math.max(scores['ai-models'], 2);
+  }
+
+  // Urgency boosts export, hire-team, ai-models
   if (hasUrgency) {
     scores['export'] = Math.min(scores['export'] + 3, 5);
     scores['hire-team'] = Math.min(scores['hire-team'] + 3, 5);
