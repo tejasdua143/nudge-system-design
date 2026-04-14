@@ -2111,16 +2111,16 @@ function renderPromptAnalysis() {
 
   var html = '';
 
-  // API key input
-  var savedKey = localStorage.getItem('anthropic_api_key') || '';
-  var keyStatus = savedKey ? 'connected' : 'none';
-  var keyLabel = savedKey ? 'API connected' : 'No API key';
-  if (state._llmLoading) { keyStatus = 'loading'; keyLabel = 'Analyzing...'; }
-  if (state._llmError) { keyStatus = 'error'; keyLabel = state._llmError; }
+  // Ollama status
+  var ollamaStatus = 'none';
+  var ollamaLabel = 'Ollama not checked';
+  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Ollama connected'; }
+  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Ollama not running'; }
+  if (state._llmLoading) { ollamaStatus = 'loading'; ollamaLabel = 'Analyzing...'; }
+  if (state._llmError) { ollamaStatus = 'error'; ollamaLabel = state._llmError; }
 
   html += '<div class="api-key-row">';
-  html += '<input type="password" class="api-key-input" id="api-key-input" value="' + savedKey + '" oninput="saveApiKey(this.value)" placeholder="sk-ant-... (Anthropic API key)" />';
-  html += '<span class="api-status ' + keyStatus + '">' + keyLabel + '</span>';
+  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + '</span>';
   html += '</div>';
 
   // Editable prompt with shuffle button
@@ -2134,7 +2134,7 @@ function renderPromptAnalysis() {
   var synthesis = u.promptSynthesis || {};
   var sourceLabel = '(keyword fallback)';
   if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '(pre-analyzed)';
-  if (state._llmSource === u.topic) sourceLabel = '(live Claude API)';
+  if (state._llmSource === u.topic) sourceLabel = '(local LLM via Ollama)';
   if (state._llmLoading) sourceLabel = '(analyzing...)';
   html += '<div class="prompt-section-label">Signal Extraction ' + sourceLabel + '</div>';
 
@@ -2161,26 +2161,10 @@ function renderPromptAnalysis() {
   el.innerHTML = html;
 }
 
-function saveApiKey(value) {
-  if (value && value.trim()) {
-    localStorage.setItem('anthropic_api_key', value.trim());
-  } else {
-    localStorage.removeItem('anthropic_api_key');
-  }
-  state._llmError = null;
-  // Re-render just the status badge
-  var statusEl = document.querySelector('.api-status');
-  if (statusEl) {
-    statusEl.className = 'api-status ' + (value.trim() ? 'connected' : 'none');
-    statusEl.textContent = value.trim() ? 'API connected' : 'No API key';
-  }
-}
-
 var promptDebounceTimer = null;
 function debouncePrompt(text) {
   if (promptDebounceTimer) clearTimeout(promptDebounceTimer);
-  // Longer debounce when API key is set (avoid hammering the API)
-  var delay = localStorage.getItem('anthropic_api_key') ? 800 : 300;
+  var delay = state._ollamaAvailable ? 800 : 300;
   promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, delay);
 }
 
@@ -2190,16 +2174,11 @@ function applyCustomPrompt(text) {
 
   state.user.topic = prompt;
 
-  // Try: 1) pre-analyzed lookup, 2) live Claude API, 3) keyword fallback
+  // Apply keyword fallback immediately for instant feedback
   var lookup = PROMPT_SYNTHESIS[prompt];
-  if (lookup) {
-    applyPromptSynthesis(lookup);
-  } else {
-    // Apply keyword fallback immediately for instant feedback
-    applyPromptSynthesis(synthesizeFromKeywords(prompt));
-    // Then try live API in background
-    synthesizeWithLLM(prompt);
-  }
+  applyPromptSynthesis(lookup || synthesizeFromKeywords(prompt));
+  // Then try local LLM in background (overwrites with better analysis)
+  synthesizeWithLLM(prompt);
 }
 
 function applyPromptSynthesis(synthesis) {
@@ -2234,9 +2213,14 @@ function applyPromptSynthesis(synthesis) {
 // ── Live Claude API prompt synthesis ──
 var llmRequestId = 0;
 
+function checkOllama() {
+  fetch('http://localhost:11434/api/tags')
+    .then(function(res) { state._ollamaAvailable = res.ok; })
+    .catch(function() { state._ollamaAvailable = false; });
+}
+
 function synthesizeWithLLM(prompt) {
-  var apiKey = localStorage.getItem('anthropic_api_key');
-  if (!apiKey) return;
+  if (state._ollamaAvailable !== true) return;
 
   var requestId = ++llmRequestId;
   state._llmLoading = true;
@@ -2246,44 +2230,64 @@ function synthesizeWithLLM(prompt) {
   var hasDoc = state.activeSignals.has('doc-uploaded');
   var hasLongDoc = state.activeSignals.has('doc-long');
   var docContext = '';
-  if (hasLongDoc) docContext = '\n\nIMPORTANT: The user uploaded a LONG document (20+ pages) with their prompt. They have existing content and need help presenting it — not generating from scratch. Boost export, brand-kit, unbranded, pres-refresh, hire-team. Reduce ai-models (they have content already). Long docs especially boost hire-team (complex to convert).';
-  else if (hasDoc) docContext = '\n\nIMPORTANT: The user uploaded a document/file with their prompt. They have existing content and need help presenting it — not generating from scratch. Boost export, brand-kit, unbranded, pres-refresh. Reduce ai-models (they already have content).';
+  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, pres-refresh, hire-team. Reduce ai-models.';
+  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded, pres-refresh. Reduce ai-models.';
 
-  var systemPrompt = 'You score user prompts for a presentation tool. Given a prompt describing what presentation a user wants to create, score how relevant each of these 9 Pro features would be to them on a 0-5 scale.\n\nFeatures:\n- ai-models: Better AI for higher quality slides (lower if user has their own content)\n- brand-kit: Custom brand colors and fonts\n- unbranded: Templates without watermark\n- export: PowerPoint/PDF download\n- invite-collab: Real-time collaboration\n- analytics: Viewer engagement tracking\n- gen-speed: Faster generation speed (NOT related to urgency)\n- pres-refresh: Regenerate with improvements\n- hire-team: Our team builds it for you (for struggling/overwhelmed users, or complex source docs)' + docContext + '\n\nRespond ONLY with a JSON object mapping feature IDs to integer scores 0-5. No explanation.';
+  var role = state.user.role || 'unknown';
 
-  fetch('https://api.anthropic.com/v1/messages', {
+  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "gen-speed": 0-5,\n    "pres-refresh": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Templates without watermark (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- gen-speed: Faster generation (NOT related to urgency)\n- pres-refresh: Regenerate/improve existing deck\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
+
+  fetch('http://localhost:11434/api/generate', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5',
-      max_tokens: 256,
-      messages: [{ role: 'user', content: 'Score this prompt: "' + prompt + '"' }],
-      system: systemPrompt,
+      model: 'gemma3:4b',
+      prompt: ollamaPrompt,
+      stream: false,
     }),
   })
   .then(function(res) {
-    if (!res.ok) return res.json().then(function(err) { throw new Error(err.error?.message || 'API error ' + res.status); });
+    if (!res.ok) throw new Error('Ollama error ' + res.status);
     return res.json();
   })
   .then(function(data) {
-    if (requestId !== llmRequestId) return; // stale request
+    if (requestId !== llmRequestId) return;
     state._llmLoading = false;
 
-    var text = '';
-    for (var i = 0; i < data.content.length; i++) {
-      if (data.content[i].type === 'text') { text = data.content[i].text; break; }
+    var text = (data.response || '').trim();
+    // Extract JSON from response (handle markdown code blocks)
+    var jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    // Find the first { and last }
+    var start = jsonStr.indexOf('{');
+    var end = jsonStr.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON in response');
+    jsonStr = jsonStr.substring(start, end + 1);
+
+    var result = JSON.parse(jsonStr);
+
+    // Extract audience and stakes from LLM response
+    if (result.audience) {
+      state.user.audience = result.audience;
+      // Update audience stakes from LLM
+      var newStakes = result.audience_stakes;
+      if (['high-external', 'low-external', 'internal'].indexOf(newStakes) !== -1) {
+        // Remove old stakes signal
+        state.activeSignals.delete('stakes-high-external');
+        state.activeSignals.delete('stakes-low-external');
+        state.activeSignals.delete('stakes-internal');
+        // Add new one
+        state.activeSignals.add('stakes-' + newStakes);
+        state.user.audienceStakes = newStakes;
+        // Update mindset vector with new stakes
+        var mindsetKey = state.user.role + '|' + newStakes;
+        var mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+        state.user.mindsetVector = mindsetVector;
+        DIRECT_MAP['mindset-vector'] = mindsetVector;
+      }
     }
 
-    // Parse JSON from response (handle markdown code blocks)
-    var jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    var scores = JSON.parse(jsonStr);
-
-    // Validate and clamp scores
+    // Extract feature scores
+    var scores = result.scores || result;
     var synthesis = {};
     FEATURES.forEach(function(f) {
       var s = parseInt(scores[f.id]) || 0;
@@ -2291,7 +2295,9 @@ function synthesizeWithLLM(prompt) {
     });
 
     state._llmSource = prompt;
+    computeRelevantFeatures();
     applyPromptSynthesis(synthesis);
+    renderUserContext();
   })
   .catch(function(err) {
     if (requestId !== llmRequestId) return;
@@ -2915,6 +2921,7 @@ async function loadConfigsFromFiles() {
 
 (async function init() {
   configLoaded = await loadConfigsFromFiles();
+  checkOllama();
   resetSimulator();
 })();
 </script>
