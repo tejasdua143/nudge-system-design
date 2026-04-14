@@ -2083,11 +2083,6 @@ function renderUserContext() {
     ['Email', u.name.toLowerCase() + u.email, u.isCompanyDomain],
     ['Country', u.country + ' (Tier ' + u.countryTier + ')', u.countryTier === 1],
     ['Role', u.role],
-    ['Archetype', u.archetype, true],
-    ['Audience', u.audience],
-    ['Audience Stakes', u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014', u.audienceStakes === 'high-external'],
-    ['Mindset Key', u.role + ' | ' + (u.audienceStakes || '\u2014')],
-    ['Topic', u.topic],
     ['Credits', u.credits + ' / 100'],
     ['Session', u.sessionNum === 1 ? '1st visit' : 'Session ' + u.sessionNum],
     ['Deck history', u.decksCompleted + ' made \u00b7 ' + u.decksShared + ' shared \u00b7 ' + u.decksPublished + ' published', u.decksCompleted >= 5],
@@ -2132,6 +2127,18 @@ function renderPromptAnalysis() {
 
   // Signal extraction — LLM lookup, live API, or keyword fallback
   var synthesis = u.promptSynthesis || {};
+  // Derived context from prompt analysis
+  var audience = u.audience || '\u2014';
+  var stakes = u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014';
+  var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
+
+  html += '<div class="prompt-section-label">Inferred from Prompt</div>';
+  html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
+  html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Audience</span><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">' + audience + '</div></div>';
+  html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
+  html += '</div>';
+
+  // Signal extraction
   var sourceLabel = '(keyword fallback)';
   if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '(pre-analyzed)';
   if (state._llmSource === u.topic) sourceLabel = '(local LLM via Ollama)';
