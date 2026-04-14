@@ -1,0 +1,398 @@
+{
+  "_doc": "Feature-centric view: every signal, context layer, and condition that contributes to each feature's score. Direct signals add their weight to this feature only. Universal signals add weight × 0.4 to ALL features equally. Mindset and prompt synthesis vary per user.",
+
+  "ai-models": {
+    "name": "Better AI Models",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "manual-edit": 1,
+      "edits-5plus": 5,
+      "re-edit-3x": 5,
+      "format-edits": 4,
+      "undo-redo": 4,
+      "style-change": 2,
+      "slide-delete": 2,
+      "slides-15plus": 3,
+      "media-added": 3,
+      "manual-slide-add": 2,
+      "slide-reorder": 3,
+      "slideshow-then-edit": 4,
+      "idle-on-slide": 3,
+      "started-blank": 3,
+      "time-20": 3,
+      "stakes-internal": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Engineering|internal (2), Student|internal (2), Product|internal (2). Low in: Sales|high-external (2), Marketing|high-external (2).",
+      "audienceStakes": "stakes-internal adds +2",
+      "promptSynthesis": "LLM scores 0-5 based on prompt content. High for: editing-heavy, quality-focused, AI-related prompts."
+    },
+    "keywordTriggers": ["quality", "better", "improve", "upgrade", "ai", "smart", "polished", "professional"],
+    "urgencyBoost": 2,
+    "typicalScenario": "User is heavily editing slides, struggling with quality, re-editing the same content repeatedly."
+  },
+
+  "brand-kit": {
+    "name": "Brand Kit",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "style-change": 4,
+      "format-edits": 2,
+      "template-switch": 3,
+      "brand-mention": 5,
+      "deck-switch": 3,
+      "multi-deck": 3,
+      "deck-veteran": 3,
+      "stakes-high-external": 2,
+      "stakes-low-external": 1
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Design|high-external (5), Creator|high-external (4), Marketing|high-external (4). Low in: Engineering|internal (0), Finance|internal (0).",
+      "audienceStakes": "stakes-high-external adds +2, stakes-low-external adds +1",
+      "promptSynthesis": "LLM scores 0-5. High for: brand identity, portfolio, agency credentials, design-focused prompts."
+    },
+    "keywordTriggers": ["brand", "logo", "colors", "identity", "company", "style", "design system"],
+    "urgencyBoost": 0,
+    "typicalScenario": "User mentions their brand in the prompt, changes fonts/styles, switches templates, works across multiple decks."
+  },
+
+  "unbranded": {
+    "name": "Unbranded Pro Templates",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "template-switch": 5,
+      "share-clicked": 5,
+      "slideshow": 4,
+      "link-copied": 4,
+      "started-blank": 4,
+      "manual-slide-add": 3,
+      "new-deck-session2": 3,
+      "deck-publisher": 3,
+      "slide-duplicate": 2,
+      "deck-edited": 2,
+      "deck-sharer": 2,
+      "stakes-high-external": 3,
+      "stakes-low-external": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Design|high-external (4), Sales|high-external (4), Marketing|high-external (4), Creator|high-external (4). Low in: Engineering|internal (0), Operations|internal (0).",
+      "audienceStakes": "stakes-high-external adds +3, stakes-low-external adds +2",
+      "promptSynthesis": "LLM scores 0-5. High for: investor pitches, enterprise proposals, portfolio decks, client-facing work."
+    },
+    "keywordTriggers": ["professional", "clean", "client", "enterprise", "investor", "watermark", "template"],
+    "urgencyBoost": 0,
+    "typicalScenario": "User is sharing/presenting to external stakeholders, previewing slideshow, using templates for client-facing work."
+  },
+
+  "export": {
+    "name": "PowerPoint/PDF Export",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "export-attempt": 5,
+      "slideshow": 4,
+      "bought-export": 4,
+      "share-clicked": 3,
+      "deck-edited": 3,
+      "new-deck-session2": 0,
+      "acq-paid": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Data Analytics|high-external (4), Finance|high-external (4), Teacher|high-external (4), Student|high-external (4). Low in: most internal roles (1).",
+      "audienceStakes": "No direct stakes signal for export",
+      "promptSynthesis": "LLM scores 0-5. High for: thesis defense, investor meetings, enterprise proposals, anything needing offline delivery."
+    },
+    "keywordTriggers": ["download", "pdf", "powerpoint", "pptx", "email", "offline", "print", "send"],
+    "urgencyBoost": 3,
+    "typicalScenario": "User tries to download (hits paywall), plays slideshow, has previously bought a single export, needs to email the deck."
+  },
+
+  "invite-collab": {
+    "name": "Invite Collaborators",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "team-language": 5,
+      "slides-15plus": 3,
+      "acq-referral": 3,
+      "deck-sharer": 2,
+      "stakes-internal": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Product|internal (4), Engineering|internal (3), Operations|internal (3), Consulting|internal (3). Low in: Design|high-external (0), Creator|internal (1).",
+      "audienceStakes": "stakes-internal adds +2",
+      "promptSynthesis": "LLM scores 0-5. High for: team restructuring, product roadmap, group projects, collaborative work."
+    },
+    "keywordTriggers": ["team", "collaborate", "together", "review", "feedback", "we ", "our "],
+    "urgencyBoost": 0,
+    "typicalScenario": "User uses team/we/our language in prompt, creates large decks, works in internal/collaborative context."
+  },
+
+  "analytics": {
+    "name": "Viewer Analytics",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "data-content": 5,
+      "share-clicked": 4,
+      "link-copied": 4,
+      "deck-sharer": 3,
+      "deck-publisher": 2,
+      "stakes-high-external": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Sales|high-external (4), Data Analytics|high-external (4), Leadership|high-external (4). Low in: Student|internal (0), Teacher|internal (0).",
+      "audienceStakes": "stakes-high-external adds +2",
+      "promptSynthesis": "LLM scores 0-5. High for: enterprise proposals, ROI case studies, partnership pitches — anything where tracking engagement matters."
+    },
+    "keywordTriggers": ["track", "analytics", "metrics", "engagement", "data", "measure", "roi"],
+    "urgencyBoost": 0,
+    "typicalScenario": "User shares decks, adds data/charts, presents to external high-stakes audiences where follow-up tracking matters."
+  },
+
+  "gen-speed": {
+    "name": "Generation Speed",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "slides-15plus": 5,
+      "time-20": 4,
+      "new-deck-session2": 3,
+      "deck-veteran": 2,
+      "acq-paid": 2,
+      "stakes-internal": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Leadership|internal (3), Operations|internal (3), Engineering|internal (3), Student|internal (3). Low in: high-external roles typically 1.",
+      "audienceStakes": "stakes-internal adds +2",
+      "promptSynthesis": "LLM scores 0-5. High for: internal reviews, OKR planning, quick internal work. NOT related to urgency."
+    },
+    "keywordTriggers": ["fast", "quick", "speed", "slow", "waiting", "generate"],
+    "urgencyBoost": 0,
+    "typicalScenario": "User generates large decks, spends 20+ min in editor, creates multiple decks — they'd benefit from faster generation, not because they're in a rush but because they use the tool heavily."
+  },
+
+  "pres-refresh": {
+    "name": "Presentation Refresh",
+    "type": "pro",
+    "threshold": 14,
+    "directSignals": {
+      "slideshow-then-edit": 4,
+      "new-deck-session2": 4,
+      "re-edit-3x": 3,
+      "undo-redo": 3,
+      "slide-reorder": 3,
+      "idle-on-slide": 3,
+      "multi-deck": 3,
+      "deck-switch": 3,
+      "deck-veteran": 3,
+      "slide-delete": 2,
+      "edits-5plus": 2,
+      "slide-duplicate": 2,
+      "manual-edit": 1
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Product|internal (3), Engineering|internal (2), Teacher|internal (3), Data Analytics|internal (2). Low in: most high-external roles (0).",
+      "audienceStakes": "No direct stakes signal for pres-refresh",
+      "promptSynthesis": "LLM scores 0-5. High for: Q1 reviews, OKR planning, product roadmaps — iterative internal work."
+    },
+    "keywordTriggers": ["update", "refresh", "redo", "restructure", "revise", "iterate", "new version"],
+    "urgencyBoost": 0,
+    "typicalScenario": "User previews then re-edits, manages multiple decks, rearranges slides — they're iterating on content and would benefit from AI-powered refresh."
+  },
+
+  "hire-team": {
+    "name": "Hire Our Team",
+    "type": "service",
+    "threshold": 14,
+    "directSignals": {
+      "re-edit-3x": 4,
+      "undo-redo": 4,
+      "edits-5plus": 3,
+      "template-switch": 3,
+      "format-edits": 2,
+      "style-change": 2,
+      "slideshow-then-edit": 2,
+      "stakes-high-external": 2
+    },
+    "universalSignals": {
+      "_note": "Each universal signal contributes its weight × 0.4 to this feature",
+      "credits-low": 3,
+      "credits-zero": 5,
+      "returning-user": 4,
+      "pricing-visit": 3,
+      "bought-export": 4,
+      "time-15": 3,
+      "multi-deck": 3,
+      "zero-dismissals": 1,
+      "gate-hit": 3,
+      "export-attempt": 2,
+      "company-domain": 2,
+      "tier-1-country": 2,
+      "deck-veteran": 3,
+      "acq-paid": 2,
+      "acq-referral": 3
+    },
+    "contextLayers": {
+      "mindsetVector": "Varies by role × stakes. High in: Leadership|high-external (2), Sales|high-external (2), Consulting|high-external (2). Low in: most internal roles (0).",
+      "audienceStakes": "stakes-high-external adds +2",
+      "promptSynthesis": "LLM scores 0-5. High for: urgent deadlines, struggle language ('help me', 'can't'), high-stakes presentations."
+    },
+    "keywordTriggers": ["help me", "struggle", "can't", "complicated", "too hard", "do it for", "build it for"],
+    "urgencyBoost": 3,
+    "typicalScenario": "User is struggling — re-editing repeatedly, undo/redo, switching templates, high-stakes audience. The system detects frustration and offers the service team instead of a feature unlock.",
+    "distinctBehavior": {
+      "nudgeFraming": "Let us handle it (not 'unlock this feature')",
+      "cta": "Talk to our team",
+      "routesTo": "Service booking flow (not Pro pricing page)",
+      "cardAccent": "Orange (not purple)"
+    }
+  }
+}

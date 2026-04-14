@@ -38,7 +38,7 @@
   }
 
   /* Header */
-  .header { max-width: 1400px; margin: 0 auto 24px; }
+  .header { max-width: 1600px; margin: 0 auto 24px; }
   .header h1 {
     font-family: 'Montserrat', sans-serif;
     font-size: 24px;
@@ -57,10 +57,10 @@
 
   /* Layout */
   .layout {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 300px 1fr 300px;
     gap: 24px;
   }
 
@@ -172,6 +172,23 @@
     line-height: 1.5;
     margin-bottom: 12px;
     word-break: break-word;
+  }
+  .prompt-input {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .prompt-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
   }
   .prompt-section-label {
     font-family: 'Montserrat', sans-serif;
@@ -423,6 +440,9 @@
     border: 1px solid #DDD6FE;
   }
 
+  /* Center column */
+  .center-col { display: flex; flex-direction: column; gap: 16px; }
+
   /* Right column */
   .right-col { display: flex; flex-direction: column; gap: 16px; }
 
@@ -444,6 +464,8 @@
   .gr-value.ok { color: var(--green); background: #F0FDF4; }
   .gr-value.warn { color: var(--yellow); background: #FFFBEB; }
   .gr-value.blocked { color: var(--red); background: #FEF2F2; }
+  .gr-toggle { cursor: pointer; border-radius: 6px; padding: 4px 8px; margin: -4px -8px; }
+  .gr-toggle:hover { background: var(--surface-2); }
 
   /* Score matrix */
   .matrix-table {
@@ -875,6 +897,30 @@
 
   /* Cooldown state */
   .cooldown-active .action-btn { opacity: 0.5; pointer-events: none; }
+
+  /* Toast notifications */
+  .toast-container {
+    position: fixed; top: 24px; right: 24px; z-index: 2000;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    font-size: 13px; color: var(--text);
+    max-width: 360px;
+    animation: toast-in 0.3s ease-out;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .toast.service { border-left-color: var(--accent-service); }
+  .toast.success { border-left-color: var(--green); }
+  .toast.fade-out { opacity: 0; transform: translateX(20px); }
+  .toast-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+  .toast-body { color: var(--text-muted); line-height: 1.5; }
+  @keyframes toast-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 </style>
 </head>
 <body>
@@ -893,16 +939,8 @@
         <div class="panel-title">Prompt Analysis</div>
         <div id="prompt-analysis"></div>
       </div>
-      <div class="panel" id="panel-actions">
-        <div class="panel-title">Actions</div>
-        <div class="action-grid" id="action-grid"></div>
-      </div>
-      <div class="panel" id="panel-signals">
-        <div class="panel-title">Active Signals</div>
-        <div class="signal-list" id="signal-list"></div>
-      </div>
     </div>
-    <div class="right-col">
+    <div class="center-col">
       <div class="panel" id="panel-guardrails">
         <div class="panel-title">Guardrails</div>
         <div class="guardrail-bar" id="guardrail-bar"></div>
@@ -931,10 +969,21 @@
         <div id="feed-content"></div>
       </div>
     </div>
+    <div class="right-col">
+      <div class="panel" id="panel-actions">
+        <div class="panel-title">Actions</div>
+        <div class="action-grid" id="action-grid"></div>
+      </div>
+      <div class="panel" id="panel-signals">
+        <div class="panel-title">Active Signals</div>
+        <div class="signal-list" id="signal-list"></div>
+      </div>
+    </div>
   </div>
   <div class="nudge-overlay" id="nudge-overlay" onclick="if(event.target===this)closeNudgeModal()">
     <div class="nudge-modal" id="nudge-modal"></div>
   </div>
+  <div class="toast-container" id="toast-container"></div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1154,7 +1203,7 @@ const MINDSET_VECTORS = {
   'Student|internal':              { 'gen-speed': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 };
 
-const MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
+var MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
 
 // Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
 const PROMPT_SYNTHESIS = {
@@ -1311,6 +1360,7 @@ let state = {
   featuresShownThisSession: new Set(),
   lastMilestoneTime: 0,
   milestoneLog: [],
+  isUserActive: false,
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1407,12 +1457,54 @@ function profileUser() {
   else state.activeSignals.add('stakes-internal');
 
   // ── LAYER 3: Prompt Synthesis ──
-  const synthesis = PROMPT_SYNTHESIS[u.topic];
-  if (synthesis) {
-    u.promptSynthesis = synthesis;
-    DIRECT_MAP['prompt-synthesis'] = synthesis;
-    state.activeSignals.add('prompt-synthesis');
+  var synthesis = PROMPT_SYNTHESIS[u.topic];
+  if (!synthesis) {
+    // Keyword-based fallback for prompts not in the lookup table
+    synthesis = synthesizeFromKeywords(u.topic);
   }
+  u.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+}
+
+// Keyword-based prompt synthesis fallback
+function synthesizeFromKeywords(prompt) {
+  var p = (prompt || '').toLowerCase();
+  var scores = {};
+  FEATURES.forEach(function(f) { scores[f.id] = 0; });
+
+  var keywords = {
+    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional'],
+    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system'],
+    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template'],
+    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send'],
+    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our '],
+    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi'],
+    'gen-speed':     ['fast', 'quick', 'speed', 'slow', 'waiting', 'generate'],
+    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version'],
+    'hire-team':     ['help me', 'struggle', "can't", 'complicated', 'too hard', 'do it for', 'build it for'],
+  };
+
+  // Urgency boosters
+  var urgencyWords = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush', 'needed by', 'end of day'];
+  var hasUrgency = urgencyWords.some(function(w) { return p.indexOf(w) !== -1; });
+
+  Object.keys(keywords).forEach(function(featureId) {
+    var matches = 0;
+    keywords[featureId].forEach(function(kw) {
+      if (p.indexOf(kw) !== -1) matches++;
+    });
+    scores[featureId] = Math.min(matches * 2, 5);
+  });
+
+  // Urgency boosts export, hire-team, ai-models (not gen-speed — speed isn't about urgency)
+  if (hasUrgency) {
+    scores['export'] = Math.min(scores['export'] + 3, 5);
+    scores['hire-team'] = Math.min(scores['hire-team'] + 3, 5);
+    scores['ai-models'] = Math.min(scores['ai-models'] + 2, 5);
+  }
+
+  return scores;
 }
 
 function getAudienceStakes(audience) {
@@ -1492,6 +1584,9 @@ function calculateScores() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function evaluateAndFire() {
+  // Don't fire a new nudge while a modal is already open
+  if (document.getElementById('nudge-overlay').classList.contains('active')) return;
+
   const scores = calculateScores();
 
   // Rank features by score, filter above threshold and not already shown
@@ -1544,6 +1639,13 @@ function checkGuardrails(featureId) {
   const reasons = [];
   let pass = true;
 
+  // Pro user kill switch
+  if (state.user.isProUser) {
+    reasons.push('User is Pro — all nudges disabled');
+    pass = false;
+    return { pass, reasons };
+  }
+
   // Session cap
   if (state.milestonesThisSession >= CONFIG.SESSION_CAP) {
     reasons.push('Session cap reached (' + state.milestonesThisSession + '/' + CONFIG.SESSION_CAP + ')');
@@ -1571,6 +1673,12 @@ function checkGuardrails(featureId) {
   });
   if (intentFloor < CONFIG.INTENT_FLOOR) {
     reasons.push('Global intent too low (' + intentFloor + ' < ' + CONFIG.INTENT_FLOOR + ')');
+    pass = false;
+  }
+
+  // Activity pause — user must be idle for 3s before nudge fires
+  if (state.isUserActive) {
+    reasons.push('User is active (needs ' + (CONFIG.ACTIVITY_PAUSE_MS / 1000) + 's idle)');
     pass = false;
   }
 
@@ -1679,6 +1787,8 @@ function rebuildSignalsFromActions() {
   actionSignals.forEach(function(s) { state.activeSignals.add(s); });
 }
 
+var activityTimer = null;
+
 function performAction(actionId) {
   var action = ACTIONS.find(function(a) { return a.id === actionId; });
   if (!action) return;
@@ -1695,17 +1805,32 @@ function performAction(actionId) {
     if (btn) btn.classList.add('done');
   }
 
+  // Simulate activity pause: user is "active" while clicking actions
+  state.isUserActive = true;
+  if (activityTimer) clearTimeout(activityTimer);
+  activityTimer = setTimeout(function() {
+    state.isUserActive = false;
+    activityTimer = null;
+    renderGuardrails();
+    evaluateAndFire();
+  }, CONFIG.ACTIVITY_PAUSE_MS);
+
   // Rebuild signals from scratch based on active actions
   rebuildSignalsFromActions();
 
-  // Re-render and evaluate
+  // Re-render (nudge won't fire yet — activity pause blocks it)
   renderSignals();
   renderMatrix();
   renderGuardrails();
-  evaluateAndFire();
 }
 
 function resetSimulator() {
+  // Clear any pending timers from previous simulation
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
+  if (promptDebounceTimer) { clearTimeout(promptDebounceTimer); promptDebounceTimer = null; }
+  closeNudgeModal();
+
   state = {
     user: {},
     activeSignals: new Set(),
@@ -1716,6 +1841,7 @@ function resetSimulator() {
     featuresShownThisSession: new Set(),
     lastMilestoneTime: 0,
     milestoneLog: [],
+    isUserActive: false,
   };
 
   generateUser();
@@ -1874,23 +2000,17 @@ function renderPromptAnalysis() {
 
   var html = '';
 
-  // Raw prompt with shuffle button
+  // Editable prompt with shuffle button
   html += '<div class="prompt-section-label">User Prompt</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
-  html += '<div class="prompt-raw" style="flex:1;margin-bottom:0">\u201c' + u.topic + '\u201d</div>';
-  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Try a different prompt for this user">&#x21BB;</button>';
+  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
+  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
   html += '</div>';
 
-  // LLM extraction
-  var synthesis = PROMPT_SYNTHESIS[u.topic];
-  if (!synthesis) {
-    html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
-    html += '<div class="prompt-no-signal">No prompt synthesis available for this topic. In production, the LLM would analyze this in real-time.</div>';
-    el.innerHTML = html;
-    return;
-  }
-
-  html += '<div class="prompt-section-label">LLM Signal Extraction</div>';
+  // LLM extraction — always available (lookup or keyword fallback)
+  var synthesis = u.promptSynthesis || {};
+  var isLookup = PROMPT_SYNTHESIS[u.topic] !== undefined;
+  html += '<div class="prompt-section-label">Signal Extraction' + (isLookup ? ' (LLM)' : ' (keyword fallback)') + '</div>';
 
   // Sort features by synthesis score descending
   var entries = FEATURES.map(function(f) {
@@ -1915,6 +2035,44 @@ function renderPromptAnalysis() {
   el.innerHTML = html;
 }
 
+var promptDebounceTimer = null;
+function debouncePrompt(text) {
+  if (promptDebounceTimer) clearTimeout(promptDebounceTimer);
+  promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, 300);
+}
+
+function applyCustomPrompt(text) {
+  var prompt = (text || '').trim();
+  if (!prompt) return;
+
+  state.user.topic = prompt;
+
+  // Re-run prompt synthesis — lookup or keyword fallback
+  var synthesis = PROMPT_SYNTHESIS[prompt] || synthesizeFromKeywords(prompt);
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+
+  // Save cursor position before re-render destroys the input
+  var oldInput = document.getElementById('prompt-input');
+  var cursorPos = oldInput ? oldInput.selectionStart : null;
+
+  rebuildSignalsFromActions();
+  renderUserContext();
+  renderPromptAnalysis();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  evaluateAndFire();
+
+  // Restore focus and cursor position after re-render
+  var newInput = document.getElementById('prompt-input');
+  if (newInput && cursorPos !== null) {
+    newInput.focus();
+    newInput.setSelectionRange(cursorPos, cursorPos);
+  }
+}
+
 function shufflePrompt() {
   // Collect all available prompts from PROMPT_SYNTHESIS
   var allPrompts = Object.keys(PROMPT_SYNTHESIS);
@@ -1927,17 +2085,11 @@ function shufflePrompt() {
   // Update user topic
   state.user.topic = newTopic;
 
-  // Re-run prompt synthesis (Layer 3)
-  var synthesis = PROMPT_SYNTHESIS[newTopic];
-  if (synthesis) {
-    state.user.promptSynthesis = synthesis;
-    DIRECT_MAP['prompt-synthesis'] = synthesis;
-    state.activeSignals.add('prompt-synthesis');
-  } else {
-    delete state.user.promptSynthesis;
-    DIRECT_MAP['prompt-synthesis'] = {};
-    state.activeSignals.delete('prompt-synthesis');
-  }
+  // Re-run prompt synthesis (Layer 3) — lookup or keyword fallback
+  var synthesis = PROMPT_SYNTHESIS[newTopic] || synthesizeFromKeywords(newTopic);
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
 
   // Rebuild all signals (keeps action toggles intact)
   rebuildSignalsFromActions();
@@ -2171,11 +2323,16 @@ function renderGuardrails() {
 
   var bar = document.getElementById('guardrail-bar');
   bar.innerHTML = [
+    { label: 'Pro user', value: state.user.isProUser ? 'Yes' : 'No', status: state.user.isProUser ? 'blocked' : 'ok' },
     { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
     { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
     { label: 'Features shown', value: state.featuresShownThisSession.size + '/9', status: 'ok' },
     { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+    { label: 'Activity', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
   ].map(function(g) {
+    if (g.toggle) {
+      return '<div class="gr-item gr-toggle" onclick="toggleUserActive()"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
+    }
     return '<div class="gr-item"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
   }).join('');
 }
@@ -2235,8 +2392,8 @@ function buildNudgeCardHTML(feature, copy) {
       '<div class="nudge-ui-title">' + copy.title + '</div>' +
       '<div class="nudge-ui-desc">' + copy.body + '</div>' +
       '<div class="nudge-ui-actions">' +
-        '<button class="' + ctaClass + '">' + ctaLabel + '</button>' +
-        '<button class="nudge-ui-dismiss">Not now</button>' +
+        '<button class="' + ctaClass + '" onclick="handleUpgrade(\'' + feature.id + '\')">' + ctaLabel + '</button>' +
+        '<button class="nudge-ui-dismiss" onclick="handleDismiss(\'' + feature.id + '\')">Not now</button>' +
       '</div>' +
     '</div>' +
     '<div class="nudge-ui-footer">' +
@@ -2276,6 +2433,8 @@ function buildContextHTML(u) {
     '<div class="breakdown-row"><span class="breakdown-signal">Credits</span><span style="font-size:12px;color:var(--text)">' + u.credits + ' / 100</span></div>' +
     '<div class="breakdown-row"><span class="breakdown-signal">Session</span><span style="font-size:12px;color:var(--text)">' + u.sessionNum + '</span></div>';
 }
+
+var autoDismissTimer = null;
 
 // ── renderNudgePreview ──
 function renderNudgePreview(feature, copy) {
@@ -2317,11 +2476,22 @@ function renderNudgePreview(feature, copy) {
     '</div>';
 
   document.getElementById('nudge-overlay').classList.add('active');
+
+  // Auto-dismiss after 10 seconds (simulates "user ignores" from spec)
+  if (autoDismissTimer) clearTimeout(autoDismissTimer);
+  autoDismissTimer = setTimeout(function() {
+    if (document.getElementById('nudge-overlay').classList.contains('active')) {
+      closeNudgeModal();
+      showToast('Auto-dismissed', 'Nudge auto-dismissed after 10s (user ignored). Feature suppressed for session.', '');
+    }
+  }, 10000);
 }
 
 // ── closeNudgeModal ──
 function closeNudgeModal() {
-  document.getElementById('nudge-overlay').classList.remove('active');
+  var overlay = document.getElementById('nudge-overlay');
+  if (overlay) overlay.classList.remove('active');
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
 }
 
 // ── skipCooldown ──
@@ -2331,11 +2501,128 @@ function skipCooldown() {
   renderGuardrails();
 }
 
+// ── handleDismiss — user clicked "Not now" on a nudge ──
+function handleDismiss(featureId) {
+  state.user.dismissals = (state.user.dismissals || 0) + 1;
+  // Remove zero-dismissals signal since they've now dismissed at least once
+  state.activeSignals.delete('zero-dismissals');
+  closeNudgeModal();
+  renderUserContext();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+}
+
+// ── showToast — inline notification replacing alert() ──
+function showToast(title, body, type) {
+  var container = document.getElementById('toast-container');
+  var toast = document.createElement('div');
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.innerHTML = '<div class="toast-title">' + title + '</div><div class="toast-body">' + body + '</div>';
+  container.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('fade-out');
+    setTimeout(function() { toast.remove(); }, 300);
+  }, 4000);
+}
+
+// ── handleUpgrade — user clicked "Upgrade to Pro" or "Talk to our team" ──
+function handleUpgrade(featureId) {
+  var feature = FEATURES.find(function(f) { return f.id === featureId; });
+  if (feature && feature.type === 'service') {
+    closeNudgeModal();
+    showToast('Service Booking', 'Routed to service booking flow. Our team will build this presentation for ' + state.user.audience + '.', 'service');
+  } else {
+    state.user.isProUser = true;
+    closeNudgeModal();
+    showToast('Upgraded to Pro', 'All nudges disabled for this session. User is now a Pro subscriber.', 'success');
+    renderGuardrails();
+  }
+}
+
+// ── toggleUserActive ──
+function toggleUserActive() {
+  state.isUserActive = !state.isUserActive;
+  // Clear auto-activity timer if manually toggling
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  renderGuardrails();
+  if (!state.isUserActive) {
+    evaluateAndFire();
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
-// 15. Init
+// 15. Config Loader — fetch from ../config/ with inline fallback
 // ══════════════════════════════════════════════════════════════════════════════
 
-resetSimulator();
+var configLoaded = false;
+
+async function loadConfigsFromFiles() {
+  // Only works when served via HTTP (not file:// protocol)
+  if (window.location.protocol === 'file:') return false;
+
+  try {
+    var files = {
+      direct: '../config/direct-signal-map.json',
+      universal: '../config/universal-signal-map.json',
+      mindset: '../config/mindset-vectors.json',
+      prompt: '../config/prompt-synthesis-examples.json',
+      guardrails: '../config/guardrails.json',
+    };
+
+    var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
+    if (responses.some(function(r) { return !r.ok; })) return false;
+
+    var data = await Promise.all(responses.map(function(r) { return r.json(); }));
+
+    // Direct signal map
+    var directData = data[0];
+    delete directData._doc;
+    Object.keys(directData).forEach(function(key) { DIRECT_MAP[key] = directData[key]; });
+
+    // Universal signal map
+    var universalData = data[1];
+    delete universalData._doc;
+    Object.keys(universalData).forEach(function(key) { UNIVERSAL_MAP[key] = universalData[key]; });
+
+    // Mindset vectors
+    var mindsetData = data[2];
+    delete mindsetData._doc;
+    if (mindsetData._fallback) {
+      MINDSET_FALLBACK = mindsetData._fallback;
+      delete mindsetData._fallback;
+    }
+    Object.keys(mindsetData).forEach(function(key) { MINDSET_VECTORS[key] = mindsetData[key]; });
+
+    // Prompt synthesis
+    var promptData = data[3];
+    delete promptData._doc;
+    Object.keys(promptData).forEach(function(key) { PROMPT_SYNTHESIS[key] = promptData[key]; });
+
+    // Guardrails
+    var grData = data[4];
+    CONFIG.THRESHOLD = grData.threshold != null ? grData.threshold : CONFIG.THRESHOLD;
+    CONFIG.MAX_SCORE = grData.maxScore != null ? grData.maxScore : CONFIG.MAX_SCORE;
+    CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier != null ? grData.universalMultiplier : CONFIG.UNIVERSAL_MULTIPLIER;
+    CONFIG.SESSION_CAP = grData.sessionCap != null ? grData.sessionCap : CONFIG.SESSION_CAP;
+    CONFIG.COOLDOWN_MS = grData.cooldownMs != null ? grData.cooldownMs : CONFIG.COOLDOWN_MS;
+    CONFIG.INTENT_FLOOR = grData.intentFloor != null ? grData.intentFloor : CONFIG.INTENT_FLOOR;
+    CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs != null ? grData.activityPauseMs : CONFIG.ACTIVITY_PAUSE_MS;
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 16. Init
+// ══════════════════════════════════════════════════════════════════════════════
+
+(async function init() {
+  configLoaded = await loadConfigsFromFiles();
+  resetSimulator();
+})();
 </script>
 </body>
 </html>
