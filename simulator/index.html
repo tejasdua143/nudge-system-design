@@ -2220,10 +2220,13 @@ function applyPromptSynthesis(synthesis) {
 // ── Live Claude API prompt synthesis ──
 var llmRequestId = 0;
 
-function checkOllama() {
-  fetch('http://localhost:11434/api/tags')
-    .then(function(res) { state._ollamaAvailable = res.ok; })
-    .catch(function() { state._ollamaAvailable = false; });
+async function checkOllama() {
+  try {
+    var res = await fetch('http://localhost:11434/api/tags');
+    state._ollamaAvailable = res.ok;
+  } catch (e) {
+    state._ollamaAvailable = false;
+  }
 }
 
 function synthesizeWithLLM(prompt) {
@@ -2928,7 +2931,7 @@ async function loadConfigsFromFiles() {
 
 (async function init() {
   configLoaded = await loadConfigsFromFiles();
-  checkOllama();
+  await checkOllama();
   resetSimulator();
 })();
 </script>
