@@ -569,9 +569,35 @@
   .badge.fire { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
   .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
   .badge.shown { background: rgba(0,0,0,0.03); color: var(--text-dim); border: 1px solid var(--border-light); }
-  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; }
+  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; cursor: help; position: relative; }
   .filtered-row { opacity: 0.35; }
+  .filtered-row:hover { opacity: 0.75; }
   .filtered-row td { color: var(--text-dim) !important; }
+  .filter-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 260px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    z-index: 100;
+    pointer-events: none;
+    text-align: left;
+  }
+  .filtered-row:hover .filter-tooltip { display: block; }
+  .filter-tooltip .ft-title { font-size: 11px; font-weight: 700; color: var(--red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .filter-tooltip .ft-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+  .filter-tooltip .ft-label { color: var(--text-muted); }
+  .filter-tooltip .ft-val { font-family: 'PT Mono', monospace; font-weight: 600; }
+  .filter-tooltip .ft-val.zero { color: var(--red); }
+  .filter-tooltip .ft-val.pos { color: var(--green); }
+  .filter-tooltip .ft-divider { border-top: 1px solid var(--border-light); margin: 6px 0; }
+  .filter-tooltip .ft-total { font-weight: 700; color: var(--text); }
+  .filter-tooltip .ft-reason { font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
 
   /* ── Nudge Preview ── */
   .nudge-preview-empty {
@@ -2471,6 +2497,39 @@ function renderSignals() {
   }).join('');
 }
 
+// ── Filter tooltip builder ──
+function buildFilterTooltip(feature) {
+  var u = state.user;
+  var mindsetScore = (u.mindsetVector || {})[feature.id] || 0;
+  var promptScore = (u.promptSynthesis || {})[feature.id] || 0;
+  var total = mindsetScore + promptScore;
+
+  var mindsetKey = u.role + ' | ' + (u.audienceStakes || 'internal');
+  var promptLabel = u.topic.length > 35 ? u.topic.substring(0, 35) + '...' : u.topic;
+
+  var reason = '';
+  if (mindsetScore === 0 && promptScore === 0) {
+    reason = 'Neither the user\u2019s role/audience nor their prompt suggest this feature is useful.';
+  } else if (mindsetScore === 0) {
+    reason = 'The user\u2019s role (' + u.role + ') presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences doesn\u2019t align with this feature.';
+  } else if (promptScore === 0) {
+    reason = 'The user\u2019s prompt doesn\u2019t mention anything related to this feature.';
+  } else {
+    reason = 'Combined context score (' + total + ') is below the relevance threshold of ' + RELEVANCE_THRESHOLD + '.';
+  }
+
+  var html = '<span class="badge filtered">FILTERED';
+  html += '<div class="filter-tooltip">';
+  html += '<div class="ft-title">Why ' + feature.name + ' is filtered</div>';
+  html += '<div class="ft-row"><span class="ft-label">Mindset (' + mindsetKey + ')</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
+  html += '<div class="ft-row"><span class="ft-label">Prompt (\u201c' + promptLabel + '\u201d)</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
+  html += '<div class="ft-divider"></div>';
+  html += '<div class="ft-row"><span class="ft-label ft-total">Relevance</span><span class="ft-val zero">' + total + '/' + RELEVANCE_THRESHOLD + ' needed</span></div>';
+  html += '<div class="ft-reason">' + reason + '</div>';
+  html += '</div></span>';
+  return html;
+}
+
 // ── renderMatrix ──
 function renderMatrix() {
   var scores = calculateScores();
@@ -2503,7 +2562,7 @@ function renderMatrix() {
     if (isTop) { barClass = 'top'; numClass = 'top'; }
 
     var badge = '';
-    if (!isRelevant) badge = '<span class="badge filtered">FILTERED</span>';
+    if (!isRelevant) badge = buildFilterTooltip(f);
     else if (isShown) badge = '<span class="badge shown">SHOWN</span>';
     else if (isTop && isAbove) badge = '<span class="badge fire">NEXT</span>';
     else if (isAbove) badge = '<span class="badge queued">QUEUED</span>';
