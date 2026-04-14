@@ -190,6 +190,30 @@
     border-color: var(--accent);
     background: var(--surface);
   }
+  .api-key-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .api-key-input {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: 'PT Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    outline: none;
+  }
+  .api-key-input:focus { border-color: var(--accent); }
+  .api-key-input::placeholder { color: var(--border); }
+  .api-status {
+    font-size: 10px; font-weight: 600; padding: 3px 8px;
+    border-radius: 4px; white-space: nowrap;
+  }
+  .api-status.connected { color: var(--green); background: #F0FDF4; }
+  .api-status.none { color: var(--text-dim); background: var(--surface-2); }
+  .api-status.loading { color: var(--yellow); background: #FFFBEB; }
+  .api-status.error { color: var(--red); background: #FEF2F2; }
   .prompt-section-label {
     font-family: 'Montserrat', sans-serif;
     font-size: 9px;
@@ -1842,6 +1866,9 @@ function resetSimulator() {
     lastMilestoneTime: 0,
     milestoneLog: [],
     isUserActive: false,
+    _llmLoading: false,
+    _llmError: null,
+    _llmSource: null,
   };
 
   generateUser();
@@ -2000,6 +2027,18 @@ function renderPromptAnalysis() {
 
   var html = '';
 
+  // API key input
+  var savedKey = localStorage.getItem('anthropic_api_key') || '';
+  var keyStatus = savedKey ? 'connected' : 'none';
+  var keyLabel = savedKey ? 'API connected' : 'No API key';
+  if (state._llmLoading) { keyStatus = 'loading'; keyLabel = 'Analyzing...'; }
+  if (state._llmError) { keyStatus = 'error'; keyLabel = state._llmError; }
+
+  html += '<div class="api-key-row">';
+  html += '<input type="password" class="api-key-input" id="api-key-input" value="' + savedKey + '" oninput="saveApiKey(this.value)" placeholder="sk-ant-... (Anthropic API key)" />';
+  html += '<span class="api-status ' + keyStatus + '">' + keyLabel + '</span>';
+  html += '</div>';
+
   // Editable prompt with shuffle button
   html += '<div class="prompt-section-label">User Prompt</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
@@ -2007,10 +2046,13 @@ function renderPromptAnalysis() {
   html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
   html += '</div>';
 
-  // LLM extraction — always available (lookup or keyword fallback)
+  // Signal extraction — LLM lookup, live API, or keyword fallback
   var synthesis = u.promptSynthesis || {};
-  var isLookup = PROMPT_SYNTHESIS[u.topic] !== undefined;
-  html += '<div class="prompt-section-label">Signal Extraction' + (isLookup ? ' (LLM)' : ' (keyword fallback)') + '</div>';
+  var sourceLabel = '(keyword fallback)';
+  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '(pre-analyzed)';
+  if (state._llmSource === u.topic) sourceLabel = '(live Claude API)';
+  if (state._llmLoading) sourceLabel = '(analyzing...)';
+  html += '<div class="prompt-section-label">Signal Extraction ' + sourceLabel + '</div>';
 
   // Sort features by synthesis score descending
   var entries = FEATURES.map(function(f) {
@@ -2035,10 +2077,27 @@ function renderPromptAnalysis() {
   el.innerHTML = html;
 }
 
+function saveApiKey(value) {
+  if (value && value.trim()) {
+    localStorage.setItem('anthropic_api_key', value.trim());
+  } else {
+    localStorage.removeItem('anthropic_api_key');
+  }
+  state._llmError = null;
+  // Re-render just the status badge
+  var statusEl = document.querySelector('.api-status');
+  if (statusEl) {
+    statusEl.className = 'api-status ' + (value.trim() ? 'connected' : 'none');
+    statusEl.textContent = value.trim() ? 'API connected' : 'No API key';
+  }
+}
+
 var promptDebounceTimer = null;
 function debouncePrompt(text) {
   if (promptDebounceTimer) clearTimeout(promptDebounceTimer);
-  promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, 300);
+  // Longer debounce when API key is set (avoid hammering the API)
+  var delay = localStorage.getItem('anthropic_api_key') ? 800 : 300;
+  promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, delay);
 }
 
 function applyCustomPrompt(text) {
@@ -2047,13 +2106,23 @@ function applyCustomPrompt(text) {
 
   state.user.topic = prompt;
 
-  // Re-run prompt synthesis — lookup or keyword fallback
-  var synthesis = PROMPT_SYNTHESIS[prompt] || synthesizeFromKeywords(prompt);
+  // Try: 1) pre-analyzed lookup, 2) live Claude API, 3) keyword fallback
+  var lookup = PROMPT_SYNTHESIS[prompt];
+  if (lookup) {
+    applyPromptSynthesis(lookup);
+  } else {
+    // Apply keyword fallback immediately for instant feedback
+    applyPromptSynthesis(synthesizeFromKeywords(prompt));
+    // Then try live API in background
+    synthesizeWithLLM(prompt);
+  }
+}
+
+function applyPromptSynthesis(synthesis) {
   state.user.promptSynthesis = synthesis;
   DIRECT_MAP['prompt-synthesis'] = synthesis;
   state.activeSignals.add('prompt-synthesis');
 
-  // Save cursor position before re-render destroys the input
   var oldInput = document.getElementById('prompt-input');
   var cursorPos = oldInput ? oldInput.selectionStart : null;
 
@@ -2065,12 +2134,81 @@ function applyCustomPrompt(text) {
   renderGuardrails();
   evaluateAndFire();
 
-  // Restore focus and cursor position after re-render
   var newInput = document.getElementById('prompt-input');
   if (newInput && cursorPos !== null) {
     newInput.focus();
     newInput.setSelectionRange(cursorPos, cursorPos);
   }
+
+  // Preserve API key input focus if it was active
+  var apiInput = document.getElementById('api-key-input');
+  if (apiInput && document.activeElement && document.activeElement.id === 'api-key-input') {
+    apiInput.focus();
+  }
+}
+
+// ── Live Claude API prompt synthesis ──
+var llmRequestId = 0;
+
+function synthesizeWithLLM(prompt) {
+  var apiKey = localStorage.getItem('anthropic_api_key');
+  if (!apiKey) return;
+
+  var requestId = ++llmRequestId;
+  state._llmLoading = true;
+  state._llmError = null;
+  renderPromptAnalysis();
+
+  var systemPrompt = 'You score user prompts for a presentation tool. Given a prompt describing what presentation a user wants to create, score how relevant each of these 9 Pro features would be to them on a 0-5 scale.\n\nFeatures:\n- ai-models: Better AI for higher quality slides\n- brand-kit: Custom brand colors and fonts\n- unbranded: Templates without watermark\n- export: PowerPoint/PDF download\n- invite-collab: Real-time collaboration\n- analytics: Viewer engagement tracking\n- gen-speed: Faster generation speed\n- pres-refresh: Regenerate with improvements\n- hire-team: Our team builds it for you (for struggling/overwhelmed users)\n\nRespond ONLY with a JSON object mapping feature IDs to integer scores 0-5. No explanation.';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5',
+      max_tokens: 256,
+      messages: [{ role: 'user', content: 'Score this prompt: "' + prompt + '"' }],
+      system: systemPrompt,
+    }),
+  })
+  .then(function(res) {
+    if (!res.ok) return res.json().then(function(err) { throw new Error(err.error?.message || 'API error ' + res.status); });
+    return res.json();
+  })
+  .then(function(data) {
+    if (requestId !== llmRequestId) return; // stale request
+    state._llmLoading = false;
+
+    var text = '';
+    for (var i = 0; i < data.content.length; i++) {
+      if (data.content[i].type === 'text') { text = data.content[i].text; break; }
+    }
+
+    // Parse JSON from response (handle markdown code blocks)
+    var jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    var scores = JSON.parse(jsonStr);
+
+    // Validate and clamp scores
+    var synthesis = {};
+    FEATURES.forEach(function(f) {
+      var s = parseInt(scores[f.id]) || 0;
+      synthesis[f.id] = Math.max(0, Math.min(5, s));
+    });
+
+    state._llmSource = prompt;
+    applyPromptSynthesis(synthesis);
+  })
+  .catch(function(err) {
+    if (requestId !== llmRequestId) return;
+    state._llmLoading = false;
+    state._llmError = err.message.length > 30 ? err.message.slice(0, 30) + '...' : err.message;
+    renderPromptAnalysis();
+  });
 }
 
 function shufflePrompt() {
