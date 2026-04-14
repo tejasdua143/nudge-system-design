@@ -42,7 +42,7 @@ function StatusDot({ status }: { status: 'ok' | 'blocked' | 'warn' }) {
   return <span className={`inline-block h-2 w-2 rounded-full ${colors[status]}`} />;
 }
 
-export default function NudgeDebugPanel({ state }: NudgeDebugPanelProps) {
+export function NudgeDebugPanel({ state }: NudgeDebugPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const sortedFeatures = useMemo(() => {

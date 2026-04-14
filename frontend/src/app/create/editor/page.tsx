@@ -1771,13 +1771,11 @@ export default function NewEditorPage() {
     dismissNudge,
     upgradeNudge,
   } = useNudgeEngine({
-    userContext: {
-      name: flowData.name,
-      email: flowData.email,
-      role: flowData.role,
-      prompt: flowData.prompt,
-      fileName: flowData.fileName,
-    },
+    name: flowData.name,
+    email: flowData.email,
+    role: flowData.role,
+    prompt: flowData.prompt,
+    fileName: flowData.fileName,
   });
 
   // Edit tracking for nudge signals

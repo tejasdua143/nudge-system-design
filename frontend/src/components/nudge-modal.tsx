@@ -21,13 +21,13 @@ const cardVariants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { ease: [0.19, 1, 0.22, 1], duration: 0.5 },
+    transition: { ease: [0.19, 1, 0.22, 1] as [number, number, number, number], duration: 0.5 },
   },
   exit: {
     opacity: 0,
     scale: 0.95,
     y: 10,
-    transition: { ease: [0.19, 1, 0.22, 1], duration: 0.3 },
+    transition: { ease: [0.19, 1, 0.22, 1] as [number, number, number, number], duration: 0.3 },
   },
 };
 
