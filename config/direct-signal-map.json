@@ -51,5 +51,8 @@
   "acq-paid":              { "gen-speed": 2, "export": 2 },
   "acq-referral":          { "invite-collab": 3 },
 
-  "pricing-visit":         {}
+  "pricing-visit":         {},
+
+  "doc-uploaded":          { "export": 4, "brand-kit": 3, "unbranded": 3, "pres-refresh": 3, "hire-team": 2, "analytics": 2, "invite-collab": 2, "ai-models": -2 },
+  "doc-long":              { "hire-team": 4, "pres-refresh": 3, "gen-speed": 3, "export": 2 }
 }

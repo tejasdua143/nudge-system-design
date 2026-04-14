@@ -1080,6 +1080,8 @@ const ACTIONS = [
   { id: 'mention-metrics', label: 'Use data/metrics in prompt', signals: ['data-content'], cat: 'prompt' },
   { id: 'deck-complete', label: 'Complete deck (AI create done)', signals: ['deck-edited'], cat: 'prompt' },
   { id: 'started-blank', label: 'Start from blank (no template)', signals: ['started-blank'], cat: 'prompt' },
+  { id: 'upload-doc', label: 'Upload document/file with prompt', signals: ['doc-uploaded'], cat: 'prompt' },
+  { id: 'upload-long-doc', label: 'Upload long doc (20+ pages)', signals: ['doc-uploaded', 'doc-long'], cat: 'prompt' },
 
   // Session & journey
   { id: 'start-new-deck', label: 'Start 2nd deck', signals: ['multi-deck', 'new-deck-session2'], cat: 'session' },
@@ -1149,6 +1151,10 @@ const DIRECT_MAP = {
 
   'pricing-visit':         {},
 
+  // Document upload signals
+  'doc-uploaded':          { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'pres-refresh': 3, 'hire-team': 2, 'analytics': 2, 'invite-collab': 2, 'ai-models': -2 },
+  'doc-long':              { 'hire-team': 4, 'pres-refresh': 3, 'gen-speed': 3, 'export': 2 },
+
   // Mindset vector signal (populated at runtime from MINDSET_VECTORS lookup)
   'mindset-vector':        {},
 };
@@ -1170,6 +1176,7 @@ const UNIVERSAL_MAP = {
   'deck-veteran':     3,
   'acq-paid':         2,
   'acq-referral':     3,
+  'doc-uploaded':     3,
 };
 
 // Mindset vectors: 'role|audienceStakes' -> per-feature weights (0-5)
@@ -1587,7 +1594,7 @@ function calculateScores() {
     });
 
     const universalContrib = universal * CONFIG.UNIVERSAL_MULTIPLIER;
-    const total = direct + universalContrib;
+    const total = Math.max(0, direct + universalContrib);
 
     scores[f.id] = {
       direct,
@@ -2159,7 +2166,13 @@ function synthesizeWithLLM(prompt) {
   state._llmError = null;
   renderPromptAnalysis();
 
-  var systemPrompt = 'You score user prompts for a presentation tool. Given a prompt describing what presentation a user wants to create, score how relevant each of these 9 Pro features would be to them on a 0-5 scale.\n\nFeatures:\n- ai-models: Better AI for higher quality slides\n- brand-kit: Custom brand colors and fonts\n- unbranded: Templates without watermark\n- export: PowerPoint/PDF download\n- invite-collab: Real-time collaboration\n- analytics: Viewer engagement tracking\n- gen-speed: Faster generation speed\n- pres-refresh: Regenerate with improvements\n- hire-team: Our team builds it for you (for struggling/overwhelmed users)\n\nRespond ONLY with a JSON object mapping feature IDs to integer scores 0-5. No explanation.';
+  var hasDoc = state.activeSignals.has('doc-uploaded');
+  var hasLongDoc = state.activeSignals.has('doc-long');
+  var docContext = '';
+  if (hasLongDoc) docContext = '\n\nIMPORTANT: The user uploaded a LONG document (20+ pages) with their prompt. They have existing content and need help presenting it — not generating from scratch. Boost export, brand-kit, unbranded, pres-refresh, hire-team. Reduce ai-models (they have content already). Long docs especially boost hire-team (complex to convert).';
+  else if (hasDoc) docContext = '\n\nIMPORTANT: The user uploaded a document/file with their prompt. They have existing content and need help presenting it — not generating from scratch. Boost export, brand-kit, unbranded, pres-refresh. Reduce ai-models (they already have content).';
+
+  var systemPrompt = 'You score user prompts for a presentation tool. Given a prompt describing what presentation a user wants to create, score how relevant each of these 9 Pro features would be to them on a 0-5 scale.\n\nFeatures:\n- ai-models: Better AI for higher quality slides (lower if user has their own content)\n- brand-kit: Custom brand colors and fonts\n- unbranded: Templates without watermark\n- export: PowerPoint/PDF download\n- invite-collab: Real-time collaboration\n- analytics: Viewer engagement tracking\n- gen-speed: Faster generation speed (NOT related to urgency)\n- pres-refresh: Regenerate with improvements\n- hire-team: Our team builds it for you (for struggling/overwhelmed users, or complex source docs)' + docContext + '\n\nRespond ONLY with a JSON object mapping feature IDs to integer scores 0-5. No explanation.';
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -2356,6 +2369,8 @@ function renderSignals() {
     { id: 'brand-mention', label: 'Brand/company in prompt', type: 'direct' },
     { id: 'team-language', label: 'Team/we/our language', type: 'direct' },
     { id: 'started-blank', label: 'Started from blank', type: 'direct' },
+    { id: 'doc-uploaded', label: 'Document uploaded with prompt', type: 'both' },
+    { id: 'doc-long', label: 'Long document (20+ pages)', type: 'direct' },
     { id: 'deck-edited', label: 'Deck edited post-gen', type: 'direct' },
     // Session
     { id: 'multi-deck', label: '2+ decks created', type: 'both' },
