@@ -1016,6 +1016,7 @@
       </div>
       <div class="panel" id="panel-prompt">
         <div class="panel-title">Prompt Analysis</div>
+        <div id="prompt-input-area"></div>
         <div id="prompt-analysis"></div>
       </div>
     </div>
@@ -1618,8 +1619,8 @@ function synthesizeFromKeywords(prompt) {
 }
 
 function getAudienceStakes(audience) {
-  const HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers'];
-  const LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors'];
+  const HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers', 'Panel judges', 'Professor', 'Executives'];
+  const LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors', 'Workshop attendees', 'Corporate trainees'];
   if (HIGH.includes(audience)) return 'high-external';
   if (LOW.includes(audience)) return 'low-external';
   return 'internal';
@@ -1996,6 +1997,7 @@ function resetSimulator() {
 
   generateUser();
   renderUserContext();
+  renderPromptInput();
   renderPromptAnalysis();
   renderActions();
   renderSignals();
@@ -2138,11 +2140,10 @@ function renderUserContext() {
   }).join('');
 }
 
-function renderPromptAnalysis() {
+// Render the prompt input area — only called on init/reset, NOT during typing
+function renderPromptInput() {
   var u = state.user;
-  var el = document.getElementById('prompt-analysis');
-  if (!u.topic) { el.innerHTML = ''; return; }
-
+  var el = document.getElementById('prompt-input-area');
   var html = '';
 
   // Ollama status
@@ -2150,12 +2151,26 @@ function renderPromptAnalysis() {
   var ollamaLabel = 'Ollama not checked';
   if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Ollama connected'; }
   else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Ollama not running'; }
-  if (state._llmLoading) { ollamaStatus = 'loading'; ollamaLabel = 'Analyzing...'; }
-  if (state._llmError) { ollamaStatus = 'error'; ollamaLabel = state._llmError; }
 
   html += '<div class="api-key-row">';
   html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + ' (Gemma 2)</span>';
   html += '</div>';
+
+  html += '<div class="prompt-section-label">User Prompt</div>';
+  html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
+  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
+  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+// Render the analysis results — called on every update, does NOT touch the input
+function renderPromptAnalysis() {
+  var u = state.user;
+  var el = document.getElementById('prompt-analysis');
+
+  var html = '';
 
   // Loading indicator
   if (state._llmLoading) {
@@ -2165,25 +2180,24 @@ function renderPromptAnalysis() {
     html += '</div>';
   }
 
-  // Editable prompt with shuffle button
-  html += '<div class="prompt-section-label">User Prompt</div>';
-  html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
-  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
-  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
-  html += '</div>';
-
-  // Signal extraction — LLM lookup, live API, or keyword fallback
-  var synthesis = u.promptSynthesis || {};
-  // Derived context from prompt analysis
-  var audience = u.audience || '\u2014';
-  var stakes = u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014';
-  var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
+  // Audience and stakes — only show LLM-inferred values, not random ones
+  var hasLLMAnalysis = state._llmSource === u.topic;
+  var audience = hasLLMAnalysis ? (u.audience || '\u2014') : null;
+  var stakes = hasLLMAnalysis ? (u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014') : null;
 
   html += '<div class="prompt-section-label">Inferred from Prompt</div>';
-  html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
-  html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Audience</span><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">' + audience + '</div></div>';
-  html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
-  html += '</div>';
+  if (audience) {
+    var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
+    html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
+    html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Audience</span><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">' + audience + '</div></div>';
+    html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Waiting for LLM analysis...' : (state._ollamaAvailable ? 'Type a prompt to analyze' : 'Requires Ollama running locally')) + '</div>';
+  }
+
+  // Signal extraction
+  var synthesis = u.promptSynthesis || {};
 
   // Signal extraction
   var sourceLabel = '(keyword fallback)';
@@ -2240,25 +2254,13 @@ function applyPromptSynthesis(synthesis) {
   DIRECT_MAP['prompt-synthesis'] = synthesis;
   state.activeSignals.add('prompt-synthesis');
 
-  var oldInput = document.getElementById('prompt-input');
-  var cursorPos = oldInput ? oldInput.selectionStart : null;
-
   rebuildSignalsFromActions();
   renderUserContext();
-  renderPromptAnalysis();
+  renderPromptAnalysis();  // Only updates analysis results, NOT the input
   renderSignals();
   renderMatrix();
   renderGuardrails();
   evaluateAndFire();
-
-  var newInput = document.getElementById('prompt-input');
-  if (newInput && cursorPos !== null) {
-    newInput.focus();
-    newInput.setSelectionRange(cursorPos, cursorPos);
-  }
-
-  // Preserve API key input focus if it was active
-  var apiInput = document.getElementById('api-key-input');
   if (apiInput && document.activeElement && document.activeElement.id === 'api-key-input') {
     apiInput.focus();
   }
@@ -2387,6 +2389,7 @@ function shufflePrompt() {
 
   // Re-render everything affected
   renderUserContext();
+  renderPromptInput();  // Update input value with new topic
   renderPromptAnalysis();
   renderSignals();
   renderMatrix();
