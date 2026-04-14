@@ -69,6 +69,10 @@ import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import ShinyText from "@/components/ShinyText"
+import { useNudgeEngine } from '@/hooks/use-nudge-engine';
+import { useCreateFlow } from '../create-flow-context';
+import { NudgeModal } from '@/components/nudge-modal';
+import { NudgeDebugPanel } from '@/components/nudge-debug-panel';
 
 /* -------------------------------------------------------------------------- */
 /*  Mock user data                                                            */
@@ -177,7 +181,7 @@ function ToolbarIconButton({ children, className, ...props }: React.ComponentPro
   )
 }
 
-function EditorTopBar() {
+function EditorTopBar({ fireSignal, onPresent }: { fireSignal: (signal: string) => void; onPresent?: () => void }) {
   return (
     <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 pt-3">
       {/* Left toolbar — Figma: p-[4px] containers, size-[28px] icon inserts = 36px height */}
@@ -191,13 +195,13 @@ function EditorTopBar() {
         <EditableTitle />
         <div className="self-stretch w-px bg-border-secondary" />
         <div className="flex items-center p-1">
-          <ToolbarIconButton>
+          <ToolbarIconButton onClick={() => { fireSignal('undo-redo'); fireSignal('manual-edit'); }}>
             <ArrowUUpLeft className="size-4" />
           </ToolbarIconButton>
         </div>
         <div className="self-stretch w-px bg-border-secondary" />
         <div className="flex items-center p-1">
-          <ToolbarIconButton>
+          <ToolbarIconButton onClick={() => { fireSignal('undo-redo'); fireSignal('manual-edit'); }}>
             <ArrowUUpRight className="size-4" />
           </ToolbarIconButton>
         </div>
@@ -219,7 +223,7 @@ function EditorTopBar() {
               className="text-[length:var(--text-base)]"
             />
           </button>
-          <Button variant="primary" size="sm" className="h-full gap-1.5 rounded-[var(--radius-md)] px-2.5 font-normal">
+          <Button variant="primary" size="sm" className="h-full gap-1.5 rounded-[var(--radius-md)] px-2.5 font-normal" onClick={() => { fireSignal('export-attempt'); }}>
             <MicrosoftPowerpointLogo weight="regular" className="size-4" />
             Export as PPT
           </Button>
@@ -285,14 +289,14 @@ function EditorTopBar() {
           <div className="self-stretch w-px bg-border-secondary" />
           {/* Share — Figma: p-[4px] container, px-[6px] py-[4px] insert */}
           <div className="flex items-center p-1">
-            <button className="flex items-center rounded px-1.5 py-1 text-[length:var(--text-base)] text-text-primary transition-colors hover:bg-bg-elevated-hover">
+            <button onClick={() => { fireSignal('share-clicked'); }} className="flex items-center rounded px-1.5 py-1 text-[length:var(--text-base)] text-text-primary transition-colors hover:bg-bg-elevated-hover">
               Share
             </button>
           </div>
           <div className="self-stretch w-px bg-border-secondary" />
           {/* Present — Figma: p-[4px] container, px-[8px] py-[4px] insert, gap-[8px] */}
           <div className="flex items-center p-1">
-            <button className="flex items-center rounded px-2 py-1 text-[length:var(--text-base)] text-text-primary transition-colors hover:bg-bg-elevated-hover">
+            <button onClick={() => { fireSignal('slideshow'); onPresent?.(); }} className="flex items-center rounded px-2 py-1 text-[length:var(--text-base)] text-text-primary transition-colors hover:bg-bg-elevated-hover">
               Present
             </button>
           </div>
@@ -469,7 +473,7 @@ const FILMSTRIP_EASE_OUT: [number, number, number, number] = [0.19, 1, 0.22, 1] 
 const FILMSTRIP_MORPH = { duration: 0.35, ease: FILMSTRIP_EASE_IN_OUT }
 const FILMSTRIP_CONTENT = { duration: 0.15, ease: FILMSTRIP_EASE_OUT }
 
-function Filmstrip({ activeSlide, onSlideSelect, slides, onNewSlideWithPrompt, generatingSlideId }: { activeSlide: number; onSlideSelect: (id: number) => void; slides: typeof SLIDES; onNewSlideWithPrompt: () => void; generatingSlideId: number | null }) {
+function Filmstrip({ activeSlide, onSlideSelect, slides, onNewSlideWithPrompt, generatingSlideId, fireSignal }: { activeSlide: number; onSlideSelect: (id: number) => void; slides: typeof SLIDES; onNewSlideWithPrompt: () => void; generatingSlideId: number | null; fireSignal: (signal: string) => void }) {
   const [mode, setMode] = useState<FilmstripMode>("filmstrip")
   const collapsedRef = useRef<HTMLDivElement>(null)
   const [collapsedWidth, setCollapsedWidth] = useState(72)
@@ -563,11 +567,11 @@ function Filmstrip({ activeSlide, onSlideSelect, slides, onNewSlideWithPrompt, g
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="right" sideOffset={12} align="start" className="w-[200px]">
-                    <DropdownMenuItem onSelect={onNewSlideWithPrompt}>
+                    <DropdownMenuItem onSelect={() => { fireSignal('manual-slide-add'); onNewSlideWithPrompt(); }}>
                       <MagicWand weight="regular" className="size-5 shrink-0 text-text-secondary" />
                       New slide with a prompt
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => { fireSignal('manual-slide-add'); }}>
                       <CardsThree weight="regular" className="size-5 shrink-0 text-text-secondary" />
                       New slide from template
                     </DropdownMenuItem>
@@ -813,10 +817,12 @@ function ObjectSelectorModal({
   open,
   onOpenChange,
   initialCategory = "list",
+  fireSignal,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialCategory?: ObjectCategory
+  fireSignal: (signal: string) => void
 }) {
   const [activeCategory, setActiveCategory] = useState<ObjectCategory>(initialCategory)
   const [search, setSearch] = useState("")
@@ -861,6 +867,13 @@ function ObjectSelectorModal({
     setSelectedThumbnail(thumbnail)
     setDescription("")
     setView("describe")
+    // Fire nudge signals based on object category
+    if (['chart', 'diagram', 'table'].includes(activeCategory)) {
+      fireSignal('data-content');
+    }
+    if (['media'].includes(activeCategory)) {
+      fireSignal('media-added');
+    }
   }
 
   const handleBack = () => {
@@ -1548,7 +1561,7 @@ function ThemePanel({ open, onClose, onExitComplete }: { open: boolean; onClose:
 /*  Bottom bar                                                                */
 /* -------------------------------------------------------------------------- */
 
-function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixToggle }: { onObjectSelect: (category: ObjectCategory) => void; onInsertWithPrompt: () => void; onThemeToggle: () => void; onRemixToggle: () => void }) {
+function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixToggle, fireSignal }: { onObjectSelect: (category: ObjectCategory) => void; onInsertWithPrompt: () => void; onThemeToggle: () => void; onRemixToggle: () => void; fireSignal: (signal: string) => void }) {
   return (
     <div className="absolute inset-x-0 bottom-3 flex items-center justify-center">
       {/* Figma: elevation-3, radius-md */}
@@ -1608,11 +1621,11 @@ function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixT
               <div className="px-2 py-1">
                 <span className="text-[length:var(--text-xs)] font-medium text-text-tertiary">Slide</span>
               </div>
-              <DropdownMenuItem onSelect={() => onInsertWithPrompt()}>
+              <DropdownMenuItem onSelect={() => { fireSignal('manual-slide-add'); onInsertWithPrompt(); }}>
                 <MagicWand weight="regular" className="size-5 shrink-0 text-text-secondary" />
                 Insert with a prompt
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { fireSignal('manual-slide-add'); }}>
                 <CardsThree weight="regular" className="size-5 shrink-0 text-text-secondary" />
                 Insert from template
               </DropdownMenuItem>
@@ -1634,7 +1647,7 @@ function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixT
         {/* Theme */}
         <div className="flex items-center p-1">
           <button
-            onClick={onThemeToggle}
+            onClick={() => { fireSignal('template-switch'); onThemeToggle(); }}
             className="flex items-center gap-2 rounded pl-2 pr-3 py-1 text-[length:var(--text-base)] text-text-primary transition-colors hover:bg-bg-elevated-hover"
           >
             <Palette weight="regular" className="size-4" />
@@ -1651,11 +1664,11 @@ function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixT
               </ToolbarIconButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" sideOffset={12} alignOffset={-4} align="start" className="w-52">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { fireSignal('slide-duplicate'); }}>
                 <Copy weight="regular" className="size-5 text-text-secondary" />
                 Duplicate slide
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { fireSignal('manual-slide-add'); }}>
                 <Plus weight="regular" className="size-5 text-text-secondary" />
                 Add slide below
               </DropdownMenuItem>
@@ -1668,7 +1681,7 @@ function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixT
                 Move down
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { fireSignal('style-change'); fireSignal('manual-edit'); }}>
                 <Palette weight="regular" className="size-5 text-text-secondary" />
                 Slide colors
               </DropdownMenuItem>
@@ -1697,7 +1710,7 @@ function BottomBar({ onObjectSelect, onInsertWithPrompt, onThemeToggle, onRemixT
                 <EyeSlash weight="regular" className="size-5 text-text-secondary" />
                 Hide slide
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { fireSignal('slide-delete'); fireSignal('manual-edit'); }}>
                 <Trash weight="regular" className="size-5 text-text-danger-primary" />
                 Delete slide
               </DropdownMenuItem>
@@ -1748,6 +1761,39 @@ export default function NewEditorPage() {
   const [themePanelOpen, setThemePanelOpen] = useState(false)
   const [remixPanelOpen, setRemixPanelOpen] = useState(false)
   const pendingPanelRef = useRef<"remix" | "theme" | null>(null)
+
+  // Nudge engine integration
+  const { data: flowData } = useCreateFlow();
+  const {
+    fireSignal,
+    state: nudgeState,
+    activeMilestone,
+    dismissNudge,
+    upgradeNudge,
+  } = useNudgeEngine({
+    userContext: {
+      name: flowData.name,
+      email: flowData.email,
+      role: flowData.role,
+      prompt: flowData.prompt,
+      fileName: flowData.fileName,
+    },
+  });
+
+  // Edit tracking for nudge signals
+  const editCountPerSlide = useRef(new Map<number, number>());
+  const totalEditsRef = useRef(0);
+  const hasPlayedSlideshowRef = useRef(false);
+
+  // Track idle time on active slide for nudge signal
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      fireSignal('idle-on-slide');
+    }, 30000);
+    return () => { if (idleTimerRef.current) clearTimeout(idleTimerRef.current); };
+  }, [activeSlide]);
 
   const handleTogglePanel = (panel: "remix" | "theme") => {
     const isRemixOpen = remixPanelOpen
@@ -1875,7 +1921,15 @@ export default function NewEditorPage() {
                 {isGenerating ? (
                   <SlideSkeletonLoading />
                 ) : (
-                  <div className="flex h-full items-center justify-center">
+                  <div className="flex h-full items-center justify-center" onClick={() => {
+                    fireSignal('manual-edit');
+                    totalEditsRef.current++;
+                    if (totalEditsRef.current >= 5) fireSignal('edits-5plus');
+                    const slideEdits = editCountPerSlide.current.get(slide.id) || 0;
+                    editCountPerSlide.current.set(slide.id, slideEdits + 1);
+                    if (slideEdits + 1 >= 3) fireSignal('re-edit-3x');
+                    if (hasPlayedSlideshowRef.current) fireSignal('slideshow-then-edit');
+                  }}>
                     <span className="text-[length:var(--text-lg)] text-text-tertiary">{slide.label}</span>
                   </div>
                 )}
@@ -1886,10 +1940,10 @@ export default function NewEditorPage() {
       </div>
 
       {/* Top bar */}
-      <EditorTopBar />
+      <EditorTopBar fireSignal={fireSignal} onPresent={() => { hasPlayedSlideshowRef.current = true; }} />
 
       {/* Filmstrip sidebar */}
-      <Filmstrip activeSlide={activeSlide} onSlideSelect={setActiveSlide} slides={slides} generatingSlideId={generatingSlideId} onNewSlideWithPrompt={() => { setPromptModalTitle("New slide with a prompt"); setPromptModalOpen(true) }} />
+      <Filmstrip activeSlide={activeSlide} onSlideSelect={setActiveSlide} slides={slides} generatingSlideId={generatingSlideId} onNewSlideWithPrompt={() => { setPromptModalTitle("New slide with a prompt"); setPromptModalOpen(true) }} fireSignal={fireSignal} />
 
       {/* Bottom bar / Generating bar */}
       <AnimatePresence mode="wait">
@@ -1923,7 +1977,7 @@ export default function NewEditorPage() {
           </motion.div>
         ) : (
           <motion.div key="bottombar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <BottomBar onObjectSelect={handleObjectSelect} onInsertWithPrompt={() => { setPromptModalTitle("Insert new slide with a prompt"); setPromptModalOpen(true) }} onThemeToggle={() => handleTogglePanel("theme")} onRemixToggle={() => handleTogglePanel("remix")} />
+            <BottomBar onObjectSelect={handleObjectSelect} onInsertWithPrompt={() => { setPromptModalTitle("Insert new slide with a prompt"); setPromptModalOpen(true) }} onThemeToggle={() => handleTogglePanel("theme")} onRemixToggle={() => handleTogglePanel("remix")} fireSignal={fireSignal} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1945,7 +1999,18 @@ export default function NewEditorPage() {
         open={objectSelectorOpen}
         onOpenChange={setObjectSelectorOpen}
         initialCategory={objectSelectorCategory}
+        fireSignal={fireSignal}
       />
+
+      {/* Nudge Modal */}
+      <NudgeModal
+        milestone={activeMilestone}
+        onDismiss={dismissNudge}
+        onUpgrade={upgradeNudge}
+      />
+
+      {/* Nudge Debug Panel */}
+      <NudgeDebugPanel state={nudgeState} />
     </div>
   )
 }
