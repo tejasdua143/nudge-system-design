@@ -569,35 +569,35 @@
   .badge.fire { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
   .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
   .badge.shown { background: rgba(0,0,0,0.03); color: var(--text-dim); border: 1px solid var(--border-light); }
-  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; cursor: help; position: relative; }
-  .filtered-row { opacity: 0.35; }
-  .filtered-row:hover { opacity: 0.75; }
+  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; cursor: help; }
+  .filtered-row { opacity: 0.35; position: relative; }
+  .filtered-row:hover { opacity: 1; }
   .filtered-row td { color: var(--text-dim) !important; }
+  .filtered-row:hover td { color: var(--text-muted) !important; }
+  .filter-tooltip-wrap { position: relative; display: inline-block; }
   .filter-tooltip {
     display: none;
-    position: absolute;
-    bottom: calc(100% + 8px);
-    right: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    min-width: 260px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-    z-index: 100;
-    pointer-events: none;
+    position: fixed;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 200;
     text-align: left;
+    line-height: 1.6;
   }
-  .filtered-row:hover .filter-tooltip { display: block; }
-  .filter-tooltip .ft-title { font-size: 11px; font-weight: 700; color: var(--red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .filter-tooltip .ft-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
-  .filter-tooltip .ft-label { color: var(--text-muted); }
-  .filter-tooltip .ft-val { font-family: 'PT Mono', monospace; font-weight: 600; }
-  .filter-tooltip .ft-val.zero { color: var(--red); }
-  .filter-tooltip .ft-val.pos { color: var(--green); }
-  .filter-tooltip .ft-divider { border-top: 1px solid var(--border-light); margin: 6px 0; }
-  .filter-tooltip .ft-total { font-weight: 700; color: var(--text); }
-  .filter-tooltip .ft-reason { font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
+  .badge.filtered:hover .filter-tooltip { display: block; }
+  .filter-tooltip .ft-title { font-size: 13px; font-weight: 700; color: #FF6B6B; margin-bottom: 12px; }
+  .filter-tooltip .ft-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+  .filter-tooltip .ft-label { color: rgba(255,255,255,0.7); font-size: 12px; max-width: 200px; }
+  .filter-tooltip .ft-val { font-family: 'PT Mono', monospace; font-weight: 700; font-size: 13px; }
+  .filter-tooltip .ft-val.zero { color: #FF6B6B; }
+  .filter-tooltip .ft-val.pos { color: #6BFF8D; }
+  .filter-tooltip .ft-divider { border-top: 1px solid rgba(255,255,255,0.15); margin: 8px 0; }
+  .filter-tooltip .ft-total { font-weight: 700; color: #fff; }
+  .filter-tooltip .ft-reason { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; line-height: 1.6; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
 
   /* ── Nudge Preview ── */
   .nudge-preview-empty {
@@ -2518,16 +2518,33 @@ function buildFilterTooltip(feature) {
     reason = 'Combined context score (' + total + ') is below the relevance threshold of ' + RELEVANCE_THRESHOLD + '.';
   }
 
-  var html = '<span class="badge filtered">FILTERED';
-  html += '<div class="filter-tooltip">';
-  html += '<div class="ft-title">Why ' + feature.name + ' is filtered</div>';
-  html += '<div class="ft-row"><span class="ft-label">Mindset (' + mindsetKey + ')</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
-  html += '<div class="ft-row"><span class="ft-label">Prompt (\u201c' + promptLabel + '\u201d)</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
+  var html = '<span class="badge filtered" onmouseenter="positionFilterTooltip(event)" onmouseleave="hideFilterTooltip()">FILTERED';
+  html += '<div class="filter-tooltip" id="ft-' + feature.id + '">';
+  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Filtered Out</div>';
+  html += '<div class="ft-row"><span class="ft-label">Mindset: ' + mindsetKey + '</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
+  html += '<div class="ft-row"><span class="ft-label">Prompt: \u201c' + promptLabel + '\u201d</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
   html += '<div class="ft-divider"></div>';
-  html += '<div class="ft-row"><span class="ft-label ft-total">Relevance</span><span class="ft-val zero">' + total + '/' + RELEVANCE_THRESHOLD + ' needed</span></div>';
+  html += '<div class="ft-row"><span class="ft-label ft-total">Relevance score</span><span class="ft-val zero">' + total + ' (need \u2265' + RELEVANCE_THRESHOLD + ')</span></div>';
   html += '<div class="ft-reason">' + reason + '</div>';
   html += '</div></span>';
   return html;
+}
+
+function positionFilterTooltip(event) {
+  var badge = event.currentTarget;
+  var tooltip = badge.querySelector('.filter-tooltip');
+  if (!tooltip) return;
+  var rect = badge.getBoundingClientRect();
+  tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+  tooltip.style.left = Math.max(10, rect.right - 320) + 'px';
+  // If clipping top, show below instead
+  if (rect.top - tooltip.offsetHeight - 10 < 10) {
+    tooltip.style.top = (rect.bottom + 10) + 'px';
+  }
+}
+
+function hideFilterTooltip() {
+  // Tooltips hide via CSS :hover, but this is a fallback
 }
 
 // ── renderMatrix ──
