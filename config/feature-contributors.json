@@ -21,7 +21,8 @@
       "idle-on-slide": 3,
       "started-blank": 3,
       "time-20": 3,
-      "stakes-internal": 2
+      "stakes-internal": 2,
+      "doc-uploaded": -2
     },
     "universalSignals": {
       "_note": "Each universal signal contributes its weight × 0.4 to this feature",
@@ -39,7 +40,8 @@
       "tier-1-country": 2,
       "deck-veteran": 3,
       "acq-paid": 2,
-      "acq-referral": 3
+      "acq-referral": 3,
+      "doc-uploaded": 3
     },
     "contextLayers": {
       "mindsetVector": "Varies by role × stakes. High in: Engineering|internal (2), Student|internal (2), Product|internal (2). Low in: Sales|high-external (2), Marketing|high-external (2).",
@@ -64,7 +66,8 @@
       "multi-deck": 3,
       "deck-veteran": 3,
       "stakes-high-external": 2,
-      "stakes-low-external": 1
+      "stakes-low-external": 1,
+      "doc-uploaded": 3
     },
     "universalSignals": {
       "_note": "Each universal signal contributes its weight × 0.4 to this feature",
@@ -82,7 +85,8 @@
       "tier-1-country": 2,
       "deck-veteran": 3,
       "acq-paid": 2,
-      "acq-referral": 3
+      "acq-referral": 3,
+      "doc-uploaded": 3
     },
     "contextLayers": {
       "mindsetVector": "Varies by role × stakes. High in: Design|high-external (5), Creator|high-external (4), Marketing|high-external (4). Low in: Engineering|internal (0), Finance|internal (0).",
@@ -91,7 +95,7 @@
     },
     "keywordTriggers": ["brand", "logo", "colors", "identity", "company", "style", "design system"],
     "urgencyBoost": 0,
-    "typicalScenario": "User mentions their brand in the prompt, changes fonts/styles, switches templates, works across multiple decks."
+    "typicalScenario": "User mentions their brand in the prompt, changes fonts/styles, switches templates, works across multiple decks. Uploading a document suggests existing brand material they want reflected."
   },
 
   "unbranded": {
@@ -111,7 +115,8 @@
       "deck-edited": 2,
       "deck-sharer": 2,
       "stakes-high-external": 3,
-      "stakes-low-external": 2
+      "stakes-low-external": 2,
+      "doc-uploaded": 3
     },
     "universalSignals": {
       "_note": "Each universal signal contributes its weight × 0.4 to this feature",
@@ -129,7 +134,8 @@
       "tier-1-country": 2,
       "deck-veteran": 3,
       "acq-paid": 2,
-      "acq-referral": 3
+      "acq-referral": 3,
+      "doc-uploaded": 3
     },
     "contextLayers": {
       "mindsetVector": "Varies by role × stakes. High in: Design|high-external (4), Sales|high-external (4), Marketing|high-external (4), Creator|high-external (4). Low in: Engineering|internal (0), Operations|internal (0).",
@@ -138,7 +144,7 @@
     },
     "keywordTriggers": ["professional", "clean", "client", "enterprise", "investor", "watermark", "template"],
     "urgencyBoost": 0,
-    "typicalScenario": "User is sharing/presenting to external stakeholders, previewing slideshow, using templates for client-facing work."
+    "typicalScenario": "User is sharing/presenting to external stakeholders, previewing slideshow, using templates for client-facing work. Uploading a document indicates polished, professional content they want branded cleanly."
   },
 
   "export": {
@@ -152,7 +158,9 @@
       "share-clicked": 3,
       "deck-edited": 3,
       "new-deck-session2": 0,
-      "acq-paid": 2
+      "acq-paid": 2,
+      "doc-uploaded": 4,
+      "doc-long": 2
     },
     "universalSignals": {
       "_note": "Each universal signal contributes its weight × 0.4 to this feature",
@@ -170,7 +178,8 @@
       "tier-1-country": 2,
       "deck-veteran": 3,
       "acq-paid": 2,
-      "acq-referral": 3
+      "acq-referral": 3,
+      "doc-uploaded": 3
     },
     "contextLayers": {
       "mindsetVector": "Varies by role × stakes. High in: Data Analytics|high-external (4), Finance|high-external (4), Teacher|high-external (4), Student|high-external (4). Low in: most internal roles (1).",
@@ -179,7 +188,7 @@
     },
     "keywordTriggers": ["download", "pdf", "powerpoint", "pptx", "email", "offline", "print", "send"],
     "urgencyBoost": 3,
-    "typicalScenario": "User tries to download (hits paywall), plays slideshow, has previously bought a single export, needs to email the deck."
+    "typicalScenario": "User tries to download (hits paywall), plays slideshow, has previously bought a single export, needs to email the deck. Uploading a document strongly signals intent to export — the content originated outside the tool and will likely need to leave it."
   },
 
   "invite-collab": {
