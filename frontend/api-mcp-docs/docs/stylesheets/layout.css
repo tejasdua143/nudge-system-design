@@ -1,0 +1,76 @@
+/* ============================================================================
+   PAIDS Design System — Layout Styles
+   ============================================================================ */
+
+/* Wider reading width */
+.md-grid { max-width: 1200px; }
+
+/* Utility card */
+.card {
+  background: var(--brand-bg-elevated);
+  border: 1px solid var(--brand-border-secondary);
+  border-radius: var(--brand-radius-lg);
+  box-shadow: var(--brand-shadow);
+  padding: 16px;
+}
+
+/* Headings */
+.md-typeset h1 { margin-top: 0.2rem; margin-bottom: 0.6rem; }
+.md-typeset h2 { margin-top: 1.25rem; }
+
+/* Header inner layout */
+.md-header__inner {
+  display: flex;
+  align-items: center;
+}
+.md-header__button:last-child {
+  margin-left: auto;
+}
+
+/* Footer */
+.md-footer {
+  background: #171717 !important;
+  border-top: 1px solid var(--brand-border-secondary) !important;
+  margin-top: 2rem !important;
+}
+
+.md-footer-meta {
+  background: #171717 !important;
+  padding: 0.75rem 0 !important;
+}
+
+.md-footer-copyright {
+  color: #a3a3a3 !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  padding: 0.5rem 0 !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+.md-footer-meta__inner {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1rem !important;
+  text-align: center !important;
+}
+
+/* Brand accent bar in footer */
+.md-footer-copyright::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: #ff5500;
+  margin: 0 auto 0.5rem auto;
+  border-radius: 1px;
+}
+
+/* Mobile footer */
+@media (max-width: 768px) {
+  .md-footer-copyright {
+    font-size: 12px !important;
+    padding: 0.4rem 0 !important;
+  }
+}

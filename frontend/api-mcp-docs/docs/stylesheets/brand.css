@@ -1,0 +1,151 @@
+/* ============================================================================
+   PAIDS Design System — Brand Tokens for MkDocs
+   Maps PAIDS palette & semantic tokens into MkDocs Material variables.
+   ============================================================================ */
+:root {
+  /* Brand palette */
+  --md-primary-fg-color: #ff5500;
+  --md-primary-fg-color--light: #ff783b;
+  --md-primary-fg-color--dark: #cb4609;
+  --md-accent-fg-color: #ff5500;
+  --md-accent-fg-color--transparent: rgba(255, 85, 0, 0.12);
+
+  /* PAIDS tokens */
+  --brand-radius: 6px;
+  --brand-radius-sm: 4px;
+  --brand-radius-lg: 8px;
+  --brand-border: rgba(26, 26, 26, 0.08);
+  --brand-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.06), 0px 1px 3px 0px rgba(16, 24, 40, 0.1);
+  --brand-shadow-lg: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
+
+  /* Surfaces */
+  --brand-bg-primary: #ffffff;
+  --brand-bg-secondary: #fafafa;
+  --brand-bg-elevated: #ffffff;
+  --brand-bg-elevated-hover: rgba(26, 26, 26, 0.06);
+
+  /* Text */
+  --brand-text-primary: #171717;
+  --brand-text-secondary: #525252;
+  --brand-text-tertiary: #a3a3a3;
+
+  /* Border */
+  --brand-border-primary: rgba(26, 26, 26, 0.12);
+  --brand-border-secondary: rgba(26, 26, 26, 0.08);
+}
+
+/* Dark mode overrides */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #ff5500;
+  --md-primary-fg-color--light: #ff783b;
+  --md-primary-fg-color--dark: #9a380d;
+  --md-accent-fg-color: #ff5500;
+  --brand-border: rgba(255, 255, 255, 0.08);
+  --brand-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  --brand-shadow-lg: 0px 4px 6px -2px rgba(0, 0, 0, 0.1), 0px 12px 16px -4px rgba(0, 0, 0, 0.2);
+  --brand-bg-primary: #0a0a0a;
+  --brand-bg-secondary: #171717;
+  --brand-bg-elevated: #262626;
+  --brand-bg-elevated-hover: rgba(255, 255, 255, 0.08);
+  --brand-text-primary: #fafafa;
+  --brand-text-secondary: #a3a3a3;
+  --brand-text-tertiary: #525252;
+  --brand-border-primary: rgba(255, 255, 255, 0.12);
+  --brand-border-secondary: rgba(255, 255, 255, 0.08);
+}
+
+/* Header — solid brand color, no gradient */
+.md-header,
+.md-tabs,
+.md-tabs--fixed {
+  background: #171717;
+  box-shadow: 0 1px 0 var(--brand-border-secondary);
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs,
+[data-md-color-scheme="slate"] .md-tabs--fixed {
+  background: #0a0a0a;
+}
+
+/* Search bar */
+.md-search__form {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--brand-radius-sm);
+}
+.md-search__input { background: transparent; color: #fff; }
+.md-search__input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+/* Buttons */
+.md-button, .md-button--primary {
+  background-color: #ff5500;
+  border-color: #ff5500;
+  color: #fff;
+  border-radius: var(--brand-radius-sm);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.md-button:hover {
+  background-color: #cb4609;
+  border-color: #cb4609;
+  color: #fff;
+}
+
+/* Login button */
+.login-button {
+  background: #ff5500 !important;
+  box-shadow: none;
+  border-radius: var(--brand-radius-sm) !important;
+  padding: 6px 14px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  transition: background-color 0.15s ease;
+}
+.login-button:hover {
+  background: #cb4609 !important;
+  transform: none;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+/* Link colors */
+.md-typeset a { color: #ff5500; }
+.md-typeset a:hover { color: #cb4609; }
+
+/* Search highlighting */
+.md-search-result__teaser mark {
+  background-color: rgba(255, 85, 0, 0.2);
+  color: #ff5500;
+}
+
+/* Admonition — brand accent */
+.md-typeset .admonition.warning {
+  border-left: 0.2rem solid #ff5500;
+}
+.md-typeset .admonition.warning > .admonition-title {
+  background-color: rgba(255, 85, 0, 0.08);
+  border-color: #ff5500;
+}
+
+/* Back to top button */
+.md-top {
+  background-color: #ff5500;
+  border-radius: var(--brand-radius);
+  box-shadow: var(--brand-shadow);
+}
+.md-top:hover {
+  background-color: #cb4609;
+  transform: translateY(-1px);
+  box-shadow: var(--brand-shadow-lg);
+}
+
+/* Mobile responsive login button */
+@media screen and (max-width: 76.1875em) {
+  .login-button {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+}

@@ -1,0 +1,200 @@
+/* ============================================================================
+   PAIDS Design System — Token Reference
+
+   Architecture:
+     Layer 1: Source Palette (--paids-*)       → raw hex/rgba from Figma
+     Layer 2: Semantic Aliases (--bg-*, etc.)  → reference Layer 1, switch in .dark
+     Layer 3: Components                       → only reference Layer 2 aliases
+
+   This file adds tokens for spacing, typography, z-index, motion, focus,
+   and component-level layout that were previously hardcoded.
+   ============================================================================ */
+
+:root {
+  /* ==========================================================================
+     SPACING — 8-point grid with micro steps
+     ========================================================================== */
+  --space-0: 0px;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ==========================================================================
+     TYPOGRAPHY — Font families, sizes, weights, line-heights, tracking
+     ========================================================================== */
+
+  /* --- Font families --- */
+  --font-family-sans: var(--font-inter);
+  --font-family-mono: var(--font-geist-mono);
+
+  /* --- Font sizes --- */
+  --text-3xs: 0.5rem;     /* 8px — body-xxs */
+  --text-2xs: 0.625rem;   /* 10px — body-xs */
+  --text-xs: 0.75rem;     /* 12px — body-sm */
+  --text-base: 0.875rem;  /* 14px — body-base */
+  --text-md: 1rem;        /* 16px — body-lg */
+  --text-lg: 1.125rem;    /* 18px — body-xl / heading-lg */
+  --text-xl: 1.25rem;     /* 20px — heading-xl */
+  --text-2xl: 1.5rem;     /* 24px — heading-2xl */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px — heading-4xl */
+
+  /* --- Font weights --- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* --- Line heights --- */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-heading: 1.3;
+  --leading-snug: 1.33;
+  --leading-body: 1.43;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* --- Letter spacing --- */
+  --tracking-tight: -0.24px;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+
+  /* ==========================================================================
+     BORDER RADIUS — extends the Tailwind radius scale
+     ========================================================================== */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-default: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 10px);
+  --radius-4xl: calc(var(--radius) + 14px);
+  --radius-full: 9999px;
+  --radius-checkbox: 4px;
+  --radius-card: 8px;
+  --radius-logo: 4px;
+
+  /* ==========================================================================
+     Z-INDEX — layering scale
+     ========================================================================== */
+  --z-base: 0;
+  --z-raised: 1;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-popover: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+  --z-max: 9999;
+
+  /* ==========================================================================
+     MOTION / TRANSITIONS
+     ========================================================================== */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --duration-slowest: 1000ms;
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ==========================================================================
+     FOCUS — consistent focus ring styling
+     ========================================================================== */
+  --focus-ring-width: 3px;
+  --focus-ring-color: var(--border-brand-secondary);
+  --focus-ring-offset: 0px;
+
+  /* ==========================================================================
+     BORDERS
+     ========================================================================== */
+  --border-width-thin: 1px;
+  --border-width-default: 1px;
+  --border-width-thick: 1.5px;
+  --border-width-heavy: 2px;
+
+  /* ==========================================================================
+     COMPONENT LAYOUT — common dimensions
+     ========================================================================== */
+  --popover-min-width: 8rem;
+  --popover-min-width-lg: 12rem;
+  --command-list-max-height: 300px;
+  --drawer-max-height: 80vh;
+  --drawer-handle-width: 100px;
+  --sidebar-width-collapsed: 52px;
+  --sidebar-width-expanded: 260px;
+  --sidebar-resize-handle: 2px;
+
+  /* ==========================================================================
+     SCROLLBAR
+     ========================================================================== */
+  --scrollbar-size: 6px;
+  --scrollbar-thumb-radius: 3px;
+  --scrollbar-thumb-light: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-dark: rgba(255, 255, 255, 0.15);
+
+  /* ==========================================================================
+     GRADIENTS — decorative gradient stops
+     ========================================================================== */
+
+  /* Button gradient (brand rainbow) */
+  --gradient-brand-start: #FF6B35;
+  --gradient-brand-mid: #E84393;
+  --gradient-brand-end: #A855F7;
+
+  /* Accent color (used for decorative highlights) */
+  --gradient-accent: #f94777;
+
+  /* Slide/presentation decorative gradients */
+  --gradient-slide-1a: #1e3a5f;
+  --gradient-slide-1b: #2d5a87;
+  --gradient-slide-2a: #8b4513;
+  --gradient-slide-2b: #cd853f;
+  --gradient-slide-3a: #e8e4df;
+  --gradient-slide-3b: #d4cfc8;
+  --gradient-slide-4a: #2c5f2d;
+  --gradient-slide-4b: #97bc62;
+  --gradient-slide-5a: #4a1942;
+  --gradient-slide-5b: #c74b50;
+  --gradient-slide-6a: #0f3460;
+  --gradient-slide-6b: #533483;
+  --gradient-slide-7a: #f38181;
+  --gradient-slide-7b: #fce38a;
+  --gradient-slide-8a: #355c7d;
+  --gradient-slide-8b: #6c5b7b;
+
+  /* ==========================================================================
+     DIALOG SIZES
+     ========================================================================== */
+  --dialog-width-sm: 380px;
+  --dialog-width-md: 620px;
+  --dialog-width-lg: 980px;
+
+  /* ==========================================================================
+     CHART — Recharts overrides
+     ========================================================================== */
+  --chart-stroke-muted: var(--border-secondary);
+  --chart-stroke-contrast: var(--bg-primary);
+}

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start Guide - Presentations.AI Developer Documentation</title>
+    <link rel="icon"
+        href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .admonition {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .admonition-info {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .admonition-success {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .admonition-warning {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .admonition-tip {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+            (function () {
+                const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+                const depth = Math.max(parts.length - 1, 0);
+                const prefix = depth > 0 ? '../'.repeat(depth) : '';
+                const load = (src) => new Promise((resolve) => {
+                    const s = document.createElement('script');
+                    s.src = prefix + src;
+                    s.onload = resolve;
+                    document.head.appendChild(s);
+                });
+                load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                    if (window.renderHeader) window.renderHeader(prefix);
+                }));
+            })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">GETTING STARTED</h2>
+                <nav class="space-y-0.5">
+                    <a href="index.html" class="block px-3 py-2 rounded-md text-gray-700 hover:#CB4609 text-sm">
+                        Introduction to Presentations.AI API offerings
+                    </a>
+                    <a href="quickstart.html"
+                        class="block px-3 py-2 rounded-md bg-light-accent text-gray-900 font-medium text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="register/register.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Account Registration
+                    </a>
+                    <a href="v1/topic-document.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                        Create from Topic
+                    </a>
+                    <a href="v1/document-file.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                        Create from File
+                    </a>
+                    <a href="content-updates/createfromcontent.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Content
+                      </a>
+                    <a href="v1/topic-singleslide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                        Create Single Slide
+                    </a>
+                    <a href="mcp-v1/create-document-from-content.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                        MCP Integration
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">⚡ Quick Start Guide</h1>
+
+            <p class="text-base text-gray-700 mb-8 leading-relaxed">
+                This guide walks you through creating your first presentation using the Presentations.AI API.
+            </p>
+
+            <div class="admonition admonition-tip mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-indigo-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                        </path>
+                    </svg>
+                    <div>
+                        <strong class="text-indigo-900">🎯 What You'll Learn</strong>
+                        <ul class="list-disc list-inside text-indigo-800 mt-2 space-y-1">
+                            <li>Account setup and API key generation</li>
+                            <li>Your first API call</li>
+                            <li>Understanding responses and next steps</li>
+                            <li>Testing with different programming languages</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-1" class="text-3xl font-bold text-gray-900 mb-4">🚀 Step 1: Create Your Account</h2>
+
+            <ol class="list-decimal list-inside text-gray-700 space-y-2 mb-4">
+                <li><strong>Visit</strong> <a id="register-link-2" href="/docs/login"
+                        class="underline !hover:text-[#ffa500]">developers.presentations.ai/docs/login</a>
+                </li>
+            <script>
+                (function() {
+                    const hostname = window.location.hostname;
+                    let loginUrl;
+                    if (hostname.includes('dev-apis') || hostname.includes('devmcp')) {
+                        loginUrl = 'https://dev-apis.presentations.ai/docs/login';
+                    } else if (hostname.includes('developers')) {
+                        loginUrl = 'https://developers.presentations.ai/docs/login';
+                    } else {
+                        loginUrl = window.location.origin + '/docs/login';
+                    }
+                    const registerLink = document.getElementById('register-link-2');
+                    if (registerLink) {
+                        registerLink.href = loginUrl;
+                    }
+                })();
+            </script>
+                <li><strong>Sign up</strong> using:
+                    <ul class="list-disc list-inside ml-6 mt-1">
+                        <li>LinkedIn, Google, or Microsoft (instant access)</li>
+                        <li>Email (requires email confirmation)</li>
+                    </ul>
+                </li>
+                <li><strong>Complete</strong> the registration process</li>
+            </ol>
+
+            <img src="assets/images/signup.png" alt="Registration" class="rounded-lg shadow-md mb-6">
+
+            <div class="admonition admonition-success mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-green-900">✅ Free Credits</strong>
+                        <p class="text-green-800 mt-1">New accounts receive <strong>200 free credits</strong> to get
+                            started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-2" class="text-3xl font-bold text-gray-900 mb-4">🔑 Step 2: Get Your API Key</h2>
+
+            <ol class="list-decimal list-inside text-gray-700 space-y-2 mb-4">
+                <li><strong>Navigate</strong> to <strong>Settings → API / Register for API</strong></li>
+                <li><strong>Click</strong> "Register for API" button</li>
+                <li><strong>Click</strong> "Reveal" to display your API key</li>
+                <li><strong>Copy</strong> and store your API key securely</li>
+            </ol>
+
+            <img src="assets/images/requestApi.png" alt="API Request" class="rounded-lg shadow-md mb-4">
+
+            <div class="admonition admonition-warning mb-4">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-yellow-900">🔒 Security Note</strong>
+                        <p class="text-yellow-800 mt-1">Never commit API keys to version control or share them publicly.
+                            Store them as environment variables or in secure configuration.</p>
+                    </div>
+                </div>
+            </div>
+
+            <img src="assets/images/api.png" alt="API Details" class="rounded-lg shadow-md mb-8">
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-3" class="text-3xl font-bold text-gray-900 mb-4">🎯 Step 3: Make Your First API Call</h2>
+
+            <p class="text-gray-700 mb-4">Let's create a simple presentation about "AI in Healthcare":</p>
+
+            <!-- Language tabs for example code -->
+            <div class="mb-4 border-b border-gray-200">
+                <nav class="flex space-x-8">
+                    <button class="lang-tab active py-2 px-1 border-b-2 border-blue-600 font-medium text-blue-600"
+                        data-lang="curl">cURL</button>
+                    <button
+                        class="lang-tab py-2 px-1 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700"
+                        data-lang="js">JavaScript (Node.js)</button>
+                    <button
+                        class="lang-tab py-2 px-1 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700"
+                        data-lang="python">Python</button>
+                </nav>
+            </div>
+
+            <!-- cURL example -->
+            <div id="lang-curl" class="lang-panel">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Using cURL:</h3>
+                <pre class="mb-6"><code>curl -X POST https://developers.presentations.ai/api/v1/topic/document \
+            -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+            -H "Content-Type: application/json" \
+            -d '{
+                "topic": "AI in Healthcare: Transforming Patient Care",
+                "slideCount": 6,
+                "language": "en", 
+                "domain": "presentations.ai",
+                "exportType": "ppt"
+            }'</code></pre>
+            </div>
+
+            <!-- JavaScript example -->
+            <div id="lang-js" class="lang-panel hidden">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Using JavaScript (Node.js):</h3>
+                <pre class="mb-6"><code>const axios = require('axios');
+
+                const createPresentation = async () => {
+                try {
+                    const response = await axios.post('https://developers.presentations.ai/api/v1/topic/document', {
+                    topic: "AI in Healthcare: Transforming Patient Care",
+                    slideCount: 6,
+                    language: "en",
+                    domain: "healthcare", 
+                    exportType: "ppt"
+                    }, {
+                    headers: {
+                        'Authorization': 'Bearer YOUR_API_KEY_HERE',
+                        'Content-Type': 'application/json'
+                    }
+                    });
+                    
+                    console.log('Success:', response.data);
+                    return response.data;
+                } catch (error) {
+                    console.error('Error:', error.response.data);
+                }
+                };
+
+                createPresentation();</code></pre>
+            </div>
+
+            <!-- Python example -->
+            <div id="lang-python" class="lang-panel hidden">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Using Python:</h3>
+                <pre class="mb-8"><code>import requests
+                import json
+
+                def create_presentation():
+                url = "https://developers.presentations.ai/api/v1/topic/document"
+
+                headers = {
+                    "Authorization": "Bearer YOUR_API_KEY_HERE",
+                    "Content-Type": "application/json"
+                }
+
+                data = {
+                    "topic": "AI in Healthcare: Transforming Patient Care",
+                    "slideCount": 6,
+                    "language": "en",
+                    "domain": "presentations.ai",
+                    "exportType": "ppt"
+                }
+
+                try:
+                    response = requests.post(url, headers=headers, json=data)
+                    response.raise_for_status()
+                    
+                    result = response.json()
+                    print("Success:", json.dumps(result, indent=2))
+                    return result
+                    
+                except requests.exceptions.RequestException as e:
+                    print(f"Error: {e}")
+
+                create_presentation()</code></pre>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-4" class="text-3xl font-bold text-gray-900 mb-4">🎉 Step 4: Understanding the Response</h2>
+
+<p class="text-gray-700 mb-4">A successful response looks like this:</p>
+
+<pre class="mb-6"><code>{
+  "status": 0,
+  "docid": 199943,
+  "docurl": "https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx",
+  "animated_url": "https://devcdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx"
+}</code></pre>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Response Fields:</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-6">
+                <li><strong><code>status</code></strong>: <code>0</code> = success, <code>1</code> = error</li>
+                <li><strong><code>message</code></strong>: Human-readable status message</li>
+                <li><strong><code>docurl</code></strong>: Direct link to view/edit your presentation</li>
+                <li><strong><code>insertid</code></strong>: Unique presentation ID for future operations</li>
+            </ul>
+
+            <div class="admonition admonition-success mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-green-900">Success</strong>
+                        <p class="text-green-800 mt-1">Open the <code>docurl</code> to view your presentation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-5" class="text-3xl font-bold text-gray-900 mb-4">🔧 Step 5: Try Different Export Types</h2>
+
+            <p class="text-gray-700 mb-4">Presentations.AI supports multiple export formats:</p>
+
+           <div class="space-y-4 mb-8">
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">PowerPoint File (.ppt):</h4>
+        <pre><code>{
+  "topic": "Your topic here",
+  "exportType": "ppt"
+}</code></pre>
+    </div>
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">PowerPoint File (.pptx):</h4>
+        <pre><code>{
+  "topic": "Your topic here",
+  "exportType": "pptx"
+}</code></pre>
+    </div>
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">PDF Document:</h4>
+        <pre><code>{
+  "topic": "Your topic here", 
+  "exportType": "pdf"
+}</code></pre>
+    </div>
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">Web Shareable Link:</h4>
+        <pre><code>{
+  "topic": "Your topic here",
+  "exportType": "share"
+}</code></pre>
+    </div>
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">Preview Images:</h4>
+        <pre><code>{
+  "topic": "Your topic here",
+  "exportType": "image"
+}</code></pre>
+    </div>
+</div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-6" class="text-3xl font-bold text-gray-900 mb-4">🌍 Step 6: Explore Language Support</h2>
+
+           <p class="text-gray-700 mb-4">Create presentations in multiple languages:</p>
+
+<pre class="mb-4"><code>{
+  "topic": "Inteligencia Artificial en la Medicina",
+  "language": "es",
+  "domain": "presentations.ai"
+}</code></pre>
+
+            <p class="text-gray-700 mb-2"><strong>Supported Languages:</strong></p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-8">
+                <li><code>en</code> - English</li>
+                <li><code>es</code> - Spanish</li>
+                <li><code>fr</code> - French</li>
+                <li><code>de</code> - German</li>
+                <li><code>pt</code> - Portuguese</li>
+                <li><code>it</code> - Italian</li>
+                <li>And many more...</li>
+            </ul>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="step-7" class="text-3xl font-bold text-gray-900 mb-4">🎯 Step 7: Customize by Domain</h2>
+
+            <p class="text-gray-700 mb-4">Get better results by specifying the domain context:</p>
+
+            <div class="space-y-6 mb-8">
+    <div>
+        <h4 class="text-lg font-semibold text-gray-900 mb-2">Business</h4>
+        <pre><code>{
+  "topic": "Digital Marketing Strategy 2024",
+  "domain": "yourdomain.com",
+  "slideCount": 12
+}</code></pre>
+    </div>
+                <div>
+    <h4 class="text-lg font-semibold text-gray-900 mb-2">Education</h4>
+    <pre><code>{
+  "topic": "Introduction to Quantum Physics",
+  "domain": "education",
+  "slideCount": 15
+}</code></pre>
+</div>
+                <div>
+    <h4 class="text-lg font-semibold text-gray-900 mb-2">Technology</h4>
+    <pre><code>{
+  "topic": "Cloud Computing Fundamentals",
+  "domain": "presentations.ai",
+  "slideCount": 10
+}</code></pre>
+</div>
+                <div>
+    <h4 class="text-lg font-semibold text-gray-900 mb-2">Healthcare</h4>
+    <pre><code>{
+  "topic": "Patient Safety Protocols",
+  "domain": "presentations.ai",
+  "slideCount": 8
+}</code></pre>
+</div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="common-errors" class="text-3xl font-bold text-gray-900 mb-4">❌ Common Errors & Solutions</h2>
+
+            <div class="space-y-6 mb-8">
+               <div>
+    <h3 class="text-xl font-semibold text-gray-900 mb-2">Authentication Error (401):</h3>
+    <pre class="mb-2"><code>{
+  "status": 1,
+  "error": "Unauthorized access"
+}</code></pre>
+    <p class="text-gray-700"><strong>Solution:</strong> Check your API key and Authorization header format.</p>
+</div>
+                <div>
+    <h3 class="text-xl font-semibold text-gray-900 mb-2">Insufficient Credits (402):</h3>
+    <pre class="mb-2"><code>{
+  "status": 1,
+  "error": "Insufficient credits"
+}</code></pre>
+    <p class="text-gray-700"><strong>Solution:</strong> Log in at 
+            href="https://developers.presentations.ai"
+            class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>
+        to check your balance and purchase more credits.</p>
+</div>
+                <div>
+    <h3 class="text-xl font-semibold text-gray-900 mb-2">Invalid Topic (400):</h3>
+    <pre class="mb-2"><code>{
+  "status": 1,
+  "error": "Topic cannot be empty"
+}</code></pre>
+    <p class="text-gray-700"><strong>Solution:</strong> Ensure your topic is descriptive and not empty.</p>
+</div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 id="next-steps" class="text-3xl font-bold text-gray-900 mb-4">🚀 Next Steps</h2>
+
+            <p class="text-gray-700 mb-4">Now that you have created your first presentation, here is what to explore next:</p>
+
+            <ol class="list-decimal list-inside text-gray-700 space-y-2 mb-6">
+                <li><a href="v1/topic-document.html" class="text-blue-600 hover:text-blue-800 underline"><strong>API
+                            Reference</strong></a> - Explore all available endpoints</li>
+                <li><a href="mcp-v1/create-document-from-content.html"
+                        class="text-blue-600 hover:text-blue-800 underline"><strong>MCP Integration</strong></a> -
+                    Connect with Claude Desktop</li>
+                <li><strong>Best Practices</strong> - Tips for optimal results</li>
+            </ol>
+
+            <div class="admonition admonition-tip mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-indigo-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                        </path>
+                    </svg>
+                    <div>
+                        <strong class="text-indigo-900">💡 Pro Tips</strong>
+                        <ul class="list-disc list-inside text-indigo-800 mt-2 space-y-1">
+                            <li>Use specific, descriptive topics for better results</li>
+                            <li>Start with smaller slide counts (5-10) to test</li>
+                            <li>Specify domain context for more relevant content</li>
+                            <li>Save your <code>insertid</code> for future slide updates</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex space-x-4">
+                <a href="v1/topic-document.html" class="px-6 py-3 bg-[#FF5500] hover:bg-[#CB4609] font-medium rounded-lg" style="color:#ffffff !important;">
+                    Explore Full API Documentation
+                </a>
+                <a href="mailto:support@presentations.ai"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-white/10 font-medium">
+                    Get Support
+                </a>
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto ">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#step-1" class="block text-sm text-gray-600 hover:text-gray-900">Step 1: Create Your
+                        Account</a>
+                    <a href="#step-2" class="block text-sm text-gray-600 hover:text-gray-900">Step 2: Get Your API
+                        Key</a>
+                    <a href="#step-3" class="block text-sm text-gray-600 hover:text-gray-900">Step 3: Make Your First
+                        API Call</a>
+                    <a href="#step-4" class="block text-sm text-gray-600 hover:text-gray-900">Step 4: Understanding the
+                        Response</a>
+                    <a href="#step-5" class="block text-sm text-gray-600 hover:text-gray-900">Step 5: Try Different
+                        Export Types</a>
+                    <a href="#step-6" class="block text-sm text-gray-600 hover:text-gray-900">Step 6: Explore Language
+                        Support</a>
+                    <a href="#step-7" class="block text-sm text-gray-600 hover:text-gray-900">Step 7: Customize by
+                        Domain</a>
+                    <a href="#common-errors" class="block text-sm text-gray-600 hover:text-gray-900">Common Errors &
+                        Solutions</a>
+                    <a href="#next-steps" class="block text-sm text-gray-600 hover:text-gray-900">Next Steps</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Simple language tab switcher for Step 3 examples
+        (function () {
+            const tabs = document.querySelectorAll('.lang-tab');
+            if (!tabs.length) return;
+
+            const panels = {
+                curl: document.getElementById('lang-curl'),
+                js: document.getElementById('lang-js'),
+                python: document.getElementById('lang-python')
+            };
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const lang = tab.getAttribute('data-lang');
+
+                    // Update tab styles
+                    tabs.forEach(t => {
+                        t.classList.remove('active', 'border-blue-600', 'text-blue-600');
+                        t.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    tab.classList.add('active', 'border-blue-600', 'text-blue-600');
+                    tab.classList.remove('border-transparent', 'text-gray-500');
+
+                    // Toggle panels
+                    Object.entries(panels).forEach(([key, panel]) => {
+                        if (!panel) return;
+                        if (key === lang) {
+                            panel.classList.remove('hidden');
+                        } else {
+                            panel.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>

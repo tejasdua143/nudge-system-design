@@ -1,0 +1,30 @@
+/* ============================================================================
+   PAIDS Design System — Code Block Styles
+   ============================================================================ */
+
+/* Inline code */
+.md-typeset code {
+  background-color: var(--brand-bg-secondary, #fafafa);
+  border: 1px solid var(--brand-border-secondary);
+  border-radius: var(--brand-radius-sm);
+  padding: 0.15rem 0.35rem;
+  font-size: 0.8rem;
+}
+
+/* Fenced code blocks */
+.md-typeset pre > code {
+  border: 1px solid var(--brand-border-secondary);
+  border-radius: var(--brand-radius);
+  box-shadow: none;
+}
+
+/* Tabbed code labels */
+.md-typeset .tabbed-labels > label {
+  border-radius: var(--brand-radius-sm) var(--brand-radius-sm) 0 0;
+  padding: 0.45rem 0.85rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+/* Copy/select buttons */
+.md-clipboard { opacity: 1; }

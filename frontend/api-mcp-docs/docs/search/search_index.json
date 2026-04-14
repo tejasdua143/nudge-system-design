@@ -1,0 +1,420 @@
+{
+    "config": { "lang": ["en"], "separator": "[\\s\\-]+", "pipeline": ["stopWordFilter"], "fields": { "title": { "boost": 1000.0 }, "text": { "boost": 1.0 }, "tags": { "boost": 1000000.0 } } },
+    "docs": [
+        {
+            "location": "",
+            "title": "Presentations.AI Developer Documentation",
+            "text": "<p>Welcome to Presentations.AI's comprehensive developer documentation. Our platform provides powerful AI-driven tools for creating professional presentations through both REST API and MCP (Model Context Protocol) integration.</p> <p>\ud83c\udfaf What You'll Find Here</p> <p>Complete guides for integrating Presentations.AI into your applications, from simple API calls to advanced MCP server connections with Claude Desktop.</p>"
+        },
+        {
+            "location": "#quick-overview",
+            "title": "\ud83d\ude80 Quick Overview",
+            "text": "<p>Presentations.AI enables developers to:</p> <ul> <li>Generate presentations from topics using advanced AI</li> <li>Create single slides for focused content and quick generation</li> <li>Transform files into presentations (PDFs, documents, spreadsheets)</li> <li>Create custom presentations from structured content</li> <li>Integrate with Claude Desktop via MCP server for conversational presentation creation</li> </ul>"
+        },
+        {
+            "location": "#two-powerful-integration-methods",
+            "title": "\ud83d\ude80 Two Powerful Integration Methods",
+            "text": "<ul> <li> <p>\ud83d\udd17 REST API Integration</p> <p>Traditional HTTP API for developers</p> <ul> <li>Simple HTTP requests with JSON responses</li> <li>Bearer token authentication</li> <li>Perfect for web apps, mobile apps, and backend services</li> <li>Get Started with REST API \u2192</li> </ul> </li> <li> <p>\ud83e\udd16 MCP Integration (Recommended)</p> <p>Revolutionary Claude Desktop integration for conversational AI experiences</p> <ul> <li>Natural language presentation creation</li> <li>Seamless Claude Desktop workflow</li> <li>Real-time collaboration with AI</li> <li>Perfect for AI-powered productivity</li> <li>Set up MCP Integration \u2192</li> </ul> </li> </ul>"
+        },
+        {
+            "location": "#try-mcp-integration",
+            "title": "Try MCP Integration",
+            "text": "<p>\ud83d\ude80 Fastest Way to Get Started (2 minutes setup)</p> <p>Skip complex API calls! Create presentations by talking to Claude Desktop:</p> <p>1. Install Claude Desktop \u2192 Download here</p> <p>2. Add MCP Server \u2192 Follow our setup guide</p> <p>3. Start Creating! <pre><code>\"Hey Claude, create a 7-slide presentation about digital marketing trends for 2024\"\n</code></pre></p> <p>That's it! Claude will generate, edit, and export your presentation automatically.</p>"
+        },
+        {
+            "location": "#mcp-in-action",
+            "title": "MCP in Action",
+            "text": "<pre><code>You: \"Create a presentation about AI in healthcare with 8 slides\"\n\nClaude: I'll create that presentation for you! Let me generate 8 slides about AI in healthcare.\n\n\u2705 Generated: \"AI in Healthcare - Transforming Patient Care.pptx\"\n\ud83d\udce5 Download: https://cdn.presentations.ai/exports/199943/...\n\nCreate additional content?\n\nYou: \"Create same presentation on same topic with 15 slides\"\n\nClaude: I'll create a new presentation on the same topic with 15 slides...\n\u2705 Generated: \"AI in Healthcare - Transforming Patient Care.pptx\" (15 slides)\n\ud83d\udce5 Download: https://cdn.presentations.ai/exports/199944/...\n</code></pre>"
+        },
+        { "location": "#or-use-rest-api", "title": "\ud83d\udd17 Or Use REST API", "text": "<p>Prefer traditional API integration? Get started with REST API in under 5 minutes:</p>" },
+        { "location": "index.html#1-get-your-api-key", "title": "Get Your API Key", "text": "<p>Register at developers.presentations.ai and get your free API key (200 credits included).</p>" },
+        {
+            "location": "#2-create-your-first-presentation",
+            "title": "2. Create Your First Presentation",
+            "text": "<pre><code>curl -X POST https://developers.presentations.ai/api/v1/topic/document \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" \\\n  -F \"topic=Introduction to Machine Learning\" \\\n  -F \"slideCount=8\" \\\n  -F \"language=en\" \\\n  -F \"domain=presentations.ai\" \\\n  -F \"exportType=ppt\" \\\n  # Optional: include a file (PDF, Word, PowerPoint, or text)\n  -F \"file=@/path/to/yourfile.pdf\"'\n</code></pre>"
+        },
+        {
+            "location": "#3-success-response",
+            "title": "3. Success Response",
+            "text": "<pre><code>{\n    \"status\": 0,\n    \"docid\": 199943,\n    \"docurl\": \"https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx\",\n    \"animated_url\": \"https://cdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx\"\n}\n</code></pre> <p>\ud83c\udf89 That's it!</p> <p>Your AI-generated presentation is ready! Visit the <code>docurl</code> to view, edit, or download your presentation.</p>"
+        },
+        {
+            "location": "#documentation-sections",
+            "title": "\ud83d\udcda Documentation Sections",
+            "text": "<ul> <li> <p>\ud83e\udd16 MCP Integration \u2b50 Recommended</p> <p>Revolutionary Claude Desktop integration for conversational AI presentation creation</p> </li> <li> <p>Getting Started</p> <p>Account registration, API key setup, and authentication</p> </li> <li> <p>REST API Reference</p> <p>Complete REST API documentation with examples</p> </li> </ul>"
+        },
+        { "location": "#authentication", "title": "\ud83d\udd11 Authentication", "text": "<p>All API requests require authentication using your API key as a Bearer token:</p> <pre><code>Authorization: Bearer YOUR_API_KEY\n</code></pre>" },
+        {
+            "location": "#code-examples",
+            "title": "Code Examples:",
+            "text": "JavaScript (Fetch)JavaScript (Axios)TypeScriptPythonPHPJavaC#GoRustSwift <pre><code>const response = await fetch('https://developers.presentations.ai/api/v1/topic/document', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer YOUR_API_KEY',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    topic: 'Your presentation topic',\n    slideCount: 10,\n    exportType: 'ppt'\n  })\n});\n</code></pre> <pre><code>const response = await axios.post('https://developers.presentations.ai/api/v1/topic/document', {\n  topic: 'Your presentation topic',\n  slideCount: 10,\n  exportType: 'ppt'\n}, {\n  headers: {\n    'Authorization': 'Bearer YOUR_API_KEY',\n    'Content-Type': 'application/json'\n  }\n});\n</code></pre> <pre><code>interface PresentationRequest {\n  topic: string;\n  slideCount: number;\n  exportType: 'ppt' | 'pdf';\n}\n\nconst data: PresentationRequest = {\n  topic: 'Your presentation topic',\n  slideCount: 10,\n  exportType: 'ppt'\n};\n\nconst response = await fetch('https://developers.presentations.ai/api/v1/topic/document', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer YOUR_API_KEY',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify(data)\n});\n</code></pre> <pre><code>import requests\n\nheaders = {\n    'Authorization': 'Bearer YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\n\ndata = {\n    'topic': 'Your presentation topic',\n    'slideCount': 10,\n    'exportType': 'ppt'\n}\n\nresponse = requests.post(\n    'https://developers.presentations.ai/api/v1/topic/document',\n    headers=headers,\n    json=data\n)\n</code></pre> <pre><code>&lt;?php\n$curl = curl_init();\n\ncurl_setopt_array($curl, array(\n    CURLOPT_URL =&gt; 'https://developers.presentations.ai/api/v1/topic/document',\n    CURLOPT_RETURNTRANSFER =&gt; true,\n    CURLOPT_CUSTOMREQUEST =&gt; 'POST',\n    CURLOPT_POSTFIELDS =&gt; json_encode([\n        'topic' =&gt; 'Your presentation topic',\n        'slideCount' =&gt; 10,\n        'exportType' =&gt; 'ppt'\n    ]),\n    CURLOPT_HTTPHEADER =&gt; array(\n        'Authorization: Bearer YOUR_API_KEY',\n        'Content-Type: application/json'\n    ),\n));\n\n$response = curl_exec($curl);\ncurl_close($curl);\n?&gt;\n</code></pre> <pre><code>import java.net.http.HttpClient;\nimport java.net.http.HttpRequest;\nimport java.net.http.HttpResponse;\nimport java.net.URI;\nimport java.time.Duration;\nimport java.io.IOException;\n\ntry {\n    HttpClient client = HttpClient.newBuilder()\n        .connectTimeout(Duration.ofSeconds(10))\n        .build();\n\n    String jsonData = \"\"\"\n        {\n            \"topic\": \"Your presentation topic\",\n            \"slideCount\": 10,\n            \"exportType\": \"ppt\"\n        }\n        \"\"\";\n\n    HttpRequest request = HttpRequest.newBuilder()\n        .uri(URI.create(\"https://developers.presentations.ai/api/v1/topic/document\"))\n        .header(\"Authorization\", \"Bearer YOUR_API_KEY\")\n        .header(\"Content-Type\", \"application/json\")\n        .POST(HttpRequest.BodyPublishers.ofString(jsonData))\n        .build();\n\n    HttpResponse&lt;String&gt; response = client.send(request, \n        HttpResponse.BodyHandlers.ofString());\n\n    System.out.println(\"Response: \" + response.body());\n} catch (IOException | InterruptedException e) {\n    System.err.println(\"Error: \" + e.getMessage());\n}\n</code></pre> <pre><code>using System;\nusing System.Net.Http;\nusing System.Text;\nusing System.Text.Json;\nusing System.Threading.Tasks;\n\npublic class PresentationClient\n{\n    private static readonly HttpClient client = new HttpClient();\n\n    public static async Task&lt;string&gt; CreatePresentation()\n    {\n        var data = new\n        {\n            topic = \"Your presentation topic\",\n            slideCount = 10,\n            exportType = \"ppt\"\n        };\n\n        var json = JsonSerializer.Serialize(data);\n        var content = new StringContent(json, Encoding.UTF8, \"application/json\");\n\n        var request = new HttpRequestMessage(HttpMethod.Post, \n            \"https://developers.presentations.ai/api/v1/topic/document\")\n        {\n            Content = content\n        };\n        request.Headers.Add(\"Authorization\", \"Bearer YOUR_API_KEY\");\n\n        var response = await client.SendAsync(request);\n        response.EnsureSuccessStatusCode();\n\n        return await response.Content.ReadAsStringAsync();\n    }\n}\n</code></pre> <pre><code>package main\n\nimport (\n    \"bytes\"\n    \"encoding/json\"\n    \"fmt\"\n    \"io\"\n    \"net/http\"\n    \"time\"\n)\n\ntype PresentationRequest struct {\n    Topic       string `json:\"topic\"`\n    SlideCount  int    `json:\"slideCount\"`\n    ExportType  string `json:\"exportType\"`\n}\n\nfunc main() {\n    data := PresentationRequest{\n        Topic:      \"Your presentation topic\",\n        SlideCount: 10,\n        ExportType: \"ppt\",\n    }\n\n    jsonData, err := json.Marshal(data)\n    if err != nil {\n        fmt.Printf(\"Error marshaling JSON: %v\", err)\n        return\n    }\n\n    client := &amp;http.Client{Timeout: 10 * time.Second}\n    req, err := http.NewRequest(\"POST\", \n        \"https://developers.presentations.ai/api/v1/topic/document\", \n        bytes.NewBuffer(jsonData))\n    if err != nil {\n        fmt.Printf(\"Error creating request: %v\", err)\n        return\n    }\n\n    req.Header.Set(\"Authorization\", \"Bearer YOUR_API_KEY\")\n    req.Header.Set(\"Content-Type\", \"application/json\")\n\n    resp, err := client.Do(req)\n    if err != nil {\n        fmt.Printf(\"Error making request: %v\", err)\n        return\n    }\n    defer resp.Body.Close()\n\n    body, err := io.ReadAll(resp.Body)\n    if err != nil {\n        fmt.Printf(\"Error reading response: %v\", err)\n        return\n    }\n\n    fmt.Printf(\"Response: %s\\n\", body)\n}\n</code></pre> <pre><code>use reqwest;\nuse serde_json::json;\n\n#[tokio::main]\nasync fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {\n    let client = reqwest::Client::new();\n\n    let data = json!({\n        \"topic\": \"Your presentation topic\",\n        \"slideCount\": 10,\n        \"exportType\": \"ppt\"\n    });\n\n    let response = client\n        .post(\"https://developers.presentations.ai/api/v1/topic/document\")\n        .header(\"Authorization\", \"Bearer YOUR_API_KEY\")\n        .header(\"Content-Type\", \"application/json\")\n        .json(&amp;data)\n        .send()\n        .await?;\n\n    let response_text = response.text().await?;\n    println!(\"Response: {}\", response_text);\n    Ok(())\n}\n</code></pre> <pre><code>import Foundation\n\nstruct PresentationRequest: Codable {\n    let topic: String\n    let slideCount: Int\n    let exportType: String\n}\n\nfunc createPresentation() async throws {\n    let url = URL(string: \"https://developers.presentations.ai/api/v1/topic/document\")!\n\n    let data = PresentationRequest(\n        topic: \"Your presentation topic\",\n        slideCount: 10,\n        exportType: \"ppt\"\n    )\n\n    var request = URLRequest(url: url)\n    request.httpMethod = \"POST\"\n    request.setValue(\"Bearer YOUR_API_KEY\", forHTTPHeaderField: \"Authorization\")\n    request.setValue(\"application/json\", forHTTPHeaderField: \"Content-Type\")\n\n    let encoder = JSONEncoder()\n    request.httpBody = try encoder.encode(data)\n\n    let (responseData, response) = try await URLSession.shared.data(for: request)\n\n    if let httpResponse = response as? HTTPURLResponse {\n        print(\"Status code: \\(httpResponse.statusCode)\")\n    }\n}\n</code></pre>"
+        },
+        { "location": "#need-help", "title": "\ud83d\udedf Need Help?", "text": "<ul> <li>Email Support: support@presentations.ai</li> </ul> <p>\ud83d\udca1 Pro Tip</p> <p>Start with our Getting Started guide for a step-by-step walkthrough, or jump directly to the API Reference if you're ready to integrate.</p>" },
+        {
+            "location": "error-handling/",
+            "title": "\ud83d\udea8 Error Handling Guide",
+            "text": "<p>This comprehensive guide covers all possible errors you might encounter when using the Presentations.AI API, along with solutions and best practices.</p> <p>\ud83d\udccb Error Response Format</p> <p>All API errors follow a consistent format with status codes and descriptive messages to help you debug quickly.</p>"
+        },
+        { "location": "error-handling/#standard-error-response", "title": "\ud83d\udcca Standard Error Response", "text": "<p>All API endpoints return errors in this format:</p> <pre><code>{\n  \"status\": 1,\n  \"error\": \"Descriptive error message\"\n}\n</code></pre>" },
+        {
+            "location": "error-handling/#response-fields",
+            "title": "Response Fields:",
+            "text": "<ul> <li><code>status</code>: Always <code>1</code> for errors, <code>0</code> for success</li> <li><code>error</code>: Human-readable error description</li> <li>HTTP Status Code: Standard HTTP status codes (400, 401, 402, 500, etc.)</li> </ul>"
+        },
+        { "location": "error-handling/#authentication-errors-401", "title": "\ud83d\udd10 Authentication Errors (401)", "text": "" },
+        {
+            "location": "error-handling/#invalid-api-key",
+            "title": "Invalid API Key",
+            "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Invalid API key\"\n}\n</code></pre> <p>Causes: - API key is incorrect or malformed - API key has been reset/regenerated - Missing or malformed Authorization header</p> <p>Solutions: - Verify your API key in the developer portal - Ensure header format: <code>Authorization: Bearer YOUR_API_KEY</code> - Generate a new API key if necessary</p>"
+        },
+        {
+            "location": "error-handling/#missing-authorization-header",
+            "title": "Missing Authorization Header",
+            "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Unauthorized access\"\n}\n</code></pre> <p>Solution: <pre><code># \u274c Wrong - Missing header\ncurl -X POST https://developers.presentations.ai/v1/topic/document\n\n# \u2705 Correct - With authorization\ncurl -X POST https://developers.presentations.ai/v1/topic/document \\\n  -H \"Authorization: Bearer YOUR_API_KEY\"\n</code></pre></p>"
+        },
+        { "location": "error-handling/#payment-credits-errors-402", "title": "\ud83d\udcb3 Payment &amp; Credits Errors (402)", "text": "" },
+        { "location": "error-handling/#insufficient-credits", "title": "Insufficient Credits", "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Insufficient credits for this operation\"\n}\n</code></pre> <p>Solutions: - Purchase more credits - Contact support for billing issues</p>" },
+        { "location": "error-handling/#account-suspended", "title": "Account Suspended", "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Account suspended. Contact support.\"\n}\n</code></pre> <p>Solution: Contact support@presentations.ai for account resolution.</p>" },
+        { "location": "error-handling/#request-validation-errors-400", "title": "\u274c Request Validation Errors (400)", "text": "" },
+        {
+            "location": "error-handling/#empty-or-invalid-topic",
+            "title": "Empty or Invalid Topic",
+            "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Topic cannot be empty\"\n}\n</code></pre> <p>Solutions: <pre><code>// \u274c Wrong - Empty topic\n{\n  \"topic\": \"\",\n  \"exportType\": \"ppt\"\n}\n\n// \u2705 Correct - Descriptive topic\n{\n  \"topic\": \"Introduction to Machine Learning Algorithms\",\n  \"exportType\": \"ppt\"\n}\n</code></pre></p>"
+        },
+        {
+            "location": "error-handling/#invalid-slide-count",
+            "title": "Invalid Slide Count",
+            "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Slide count must be between 1 and 50\"\n}\n</code></pre> <p>Valid Range: 1-50 slides</p> <pre><code>// \u274c Wrong\n{\n  \"topic\": \"AI Overview\",\n  \"slideCount\": 100\n}\n\n// \u2705 Correct\n{\n  \"topic\": \"AI Overview\", \n  \"slideCount\": 25\n}\n</code></pre>"
+        },
+        {
+            "location": "error-handling/#invalid-export-type",
+            "title": "Invalid Export Type",
+            "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Invalid export type. Must be: ppt, pptx, pdf, image, render, or share\"\n}\n</code></pre> <p>Valid Export Types: - <code>ppt</code> - PowerPoint file (.ppt format) - <code>pptx</code> - PowerPoint file (.pptx format)  - <code>pdf</code> - PDF document - <code>image</code> - Preview images - <code>render</code> - Rendered presentation - <code>share</code> - Shareable link</p>"
+        },
+        { "location": "error-handling/#server-errors-500", "title": "\u26a0\ufe0f Server Errors (500)", "text": "" },
+        { "location": "error-handling/#internal-server-error", "title": "Internal Server Error", "text": "<pre><code>{\n  \"status\": 1,\n  \"error\": \"Internal server error. Please try again later.\"\n}\n</code></pre> <p>Solutions: - Wait a few minutes and retry - Contact support if persistent</p>" },
+        {
+            "location": "error-handling/#getting-help",
+            "title": "\ud83c\udd98 Getting Help",
+            "text": "<p>When contacting support, please include:</p> <ol> <li>Error message (complete JSON response)</li> <li>Request details (endpoint, method, parameters)</li> <li>Timestamp of the error</li> <li>Your API key (last 4 characters only)</li> <li>Registered email address associated with your API key (the one used during key generation)</li> <li>Expected behavior vs actual behavior</li> </ol> <p>Contact Information: - Email: support@presentations.ai</p> <p>\ud83d\udca1 Pro Tips</p> <ul> <li>Always validate input before sending requests</li> <li>Implement proper error handling and retries for server errors</li> <li>Cache successful responses when possible</li> <li>Monitor your credit usage proactively</li> </ul>"
+        },
+        {
+            "location": "quickstart/",
+            "title": "\u26a1 Quick Start Guide",
+            "text": "<p>Get up and running with Presentations.AI in under 10 minutes! This guide will walk you through creating your first AI-generated presentation.</p> <p>\ud83c\udfaf What You'll Learn</p> <ul> <li>Account setup and API key generation</li> <li>Your first API call</li> <li>Understanding responses and next steps</li> <li>Testing with different programming languages</li> </ul>"
+        },
+        {
+            "location": "quickstart/#step-1-create-your-account",
+            "title": "\ud83d\ude80 Step 1: Create Your Account",
+            "text": "<ol> <li>Visit https://developers.presentations.ai/docs/login</li> <li>Sign up using:</li> <li>LinkedIn, Google, or Microsoft (instant access)</li> <li>Email (requires email confirmation)</li> <li>Complete the registration process</li> </ol> <p>\u2705 Free Credits</p> <p>New accounts receive 200 free credits to get started!</p>"
+        },
+        {
+            "location": "quickstart/#step-2-get-your-api-key",
+            "title": "\ud83d\udd11 Step 2: Get Your API Key",
+            "text": "<ol> <li>Navigate to Settings \u2192 API / Register for API</li> <li>Click \"Register for API\" button</li> <li>Click \"Reveal\" to display your API key</li> <li>Copy and store your API key securely</li> </ol> <p>\ud83d\udd12 Security Note</p> <p>Never commit API keys to version control or share them publicly. Store them as environment variables or in secure configuration.</p> <p></p>"
+        },
+        { "location": "quickstart/#step-3-make-your-first-api-call", "title": "\ud83c\udfaf Step 3: Make Your First API Call", "text": "<p>Let's create a simple presentation about \"AI in Healthcare\":</p>" },
+        {
+            "location": "quickstart/#using-curl",
+            "title": "Using cURL:",
+            "text": "<pre><code>curl -X POST https://developers.presentations.ai/api/v1/topic/document \\\n  -H \"Authorization: Bearer YOUR_API_KEY_HERE\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"topic\": \"AI in Healthcare: Transforming Patient Care\",\n    \"slideCount\": 6,\n    \"language\": \"en\", \n    \"domain\": \"presentations.ai\",\n    \"exportType\": \"ppt\"\n  }'\n</code></pre>"
+        },
+        {
+            "location": "quickstart/#using-javascript-nodejs",
+            "title": "Using JavaScript (Node.js):",
+            "text": "<pre><code>const axios = require('axios');\n\nconst createPresentation = async () =&gt; {\n  try {\n    const response = await axios.post('https://developers.presentations.ai/api/v1/topic/document', {\n      topic: \"AI in Healthcare: Transforming Patient Care\",\n      slideCount: 6,\n      language: \"en\",\n      domain: \"healthcare\", \n      exportType: \"ppt\"\n    }, {\n      headers: {\n        'Authorization': 'Bearer YOUR_API_KEY_HERE',\n        'Content-Type': 'application/json'\n      }\n    });\n\n    console.log('Success:', response.data);\n    return response.data;\n  } catch (error) {\n    console.error('Error:', error.response.data);\n  }\n};\n\ncreatePresentation();\n</code></pre>"
+        },
+        {
+            "location": "quickstart/#using-python",
+            "title": "Using Python:",
+            "text": "<pre><code>import requests\nimport json\n\ndef create_presentation():\n    url = \"https://developers.presentations.ai/api/v1/topic/document\"\n\n    headers = {\n        \"Authorization\": \"Bearer YOUR_API_KEY_HERE\",\n        \"Content-Type\": \"application/json\"\n    }\n\n    data = {\n        \"topic\": \"AI in Healthcare: Transforming Patient Care\",\n        \"slideCount\": 6,\n        \"language\": \"en\",\n        \"domain\": \"presentations.ai\",\n        \"exportType\": \"ppt\"\n    }\n\n    try:\n        response = requests.post(url, headers=headers, json=data)\n        response.raise_for_status()\n\n        result = response.json()\n        print(\"Success:\", json.dumps(result, indent=2))\n        return result\n\n    except requests.exceptions.RequestException as e:\n        print(f\"Error: {e}\")\n\ncreate_presentation()\n</code></pre>"
+        },
+        {
+            "location": "quickstart/#step-4-understanding-the-response",
+            "title": "\ud83c\udf89 Step 4: Understanding the Response",
+            "text": "<p>A successful response looks like this:</p> <pre><code>{\n    \"status\": 0,\n    \"docid\": 199943,\n    \"docurl\": \"https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx\",\n    \"animated_url\": \"https://devcdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx\"\n}\n</code></pre>"
+        },
+        {
+            "location": "quickstart/#response-fields",
+            "title": "Response Fields:",
+            "text": "<ul> <li><code>status</code>: <code>0</code> = success, <code>1</code> = error</li> <li><code>message</code>: Human-readable status message  </li> <li><code>docurl</code>: Direct link to view/edit your presentation</li> <li><code>insertid</code>: Unique presentation ID for future operations</li> </ul> <p>\ud83c\udf8a Congratulations!</p> <p>Click the <code>docurl</code> to view your AI-generated presentation!</p>"
+        },
+        { "location": "quickstart/#step-5-try-different-export-types", "title": "\ud83d\udd27 Step 5: Try Different Export Types", "text": "<p>Presentations.AI supports multiple export formats:</p>" },
+        { "location": "quickstart/#powerpoint-file-ppt", "title": "PowerPoint File (.ppt):", "text": "<pre><code>{\n  \"topic\": \"Your topic here\",\n  \"exportType\": \"ppt\"\n}\n</code></pre>" },
+        { "location": "quickstart/#powerpoint-file-pptx", "title": "PowerPoint File (.pptx):", "text": "<pre><code>{\n  \"topic\": \"Your topic here\",\n  \"exportType\": \"pptx\"\n}\n</code></pre>" },
+        { "location": "quickstart/#pdf-document", "title": "PDF Document:", "text": "<pre><code>{\n  \"topic\": \"Your topic here\", \n  \"exportType\": \"pdf\"\n}\n</code></pre>" },
+        { "location": "quickstart/#web-shareable-link", "title": "Web Shareable Link:", "text": "<pre><code>{\n  \"topic\": \"Your topic here\",\n  \"exportType\": \"share\"\n}\n</code></pre>" },
+        { "location": "quickstart/#preview-images", "title": "Preview Images:", "text": "<pre><code>{\n  \"topic\": \"Your topic here\",\n  \"exportType\": \"image\"\n}\n</code></pre>" },
+        {
+            "location": "quickstart/#step-6-explore-language-support",
+            "title": "\ud83c\udf0d Step 6: Explore Language Support",
+            "text": "<p>Create presentations in multiple languages:</p> <pre><code>{\n  \"topic\": \"Inteligencia Artificial en la Medicina\",\n  \"language\": \"es\",\n  \"domain\": \"presentations.ai\"\n}\n</code></pre> <p>Supported Languages: - <code>en</code> - English - <code>es</code> - Spanish - <code>fr</code> - French - <code>de</code> - German - <code>pt</code> - Portuguese - <code>it</code> - Italian - And many more...</p>"
+        },
+        {
+            "location": "quickstart/#step-7-customize-by-domain",
+            "title": "\ud83c\udfaf Step 7: Customize by Domain",
+            "text": "<p>Get better results by specifying the domain context:</p> BusinessEducationTechnologyHealthcare <pre><code>{\n  \"topic\": \"Digital Marketing Strategy 2024\",\n  \"domain\": \"yourdomain.com\",\n  \"slideCount\": 12\n}\n</code></pre> <pre><code>{\n  \"topic\": \"Introduction to Quantum Physics\", \n  \"domain\": \"education\",\n  \"slideCount\": 15\n}\n</code></pre> <pre><code>{\n  \"topic\": \"Cloud Computing Fundamentals\",\n  \"domain\": \"presentations.ai\", \n  \"slideCount\": 10\n}\n</code></pre> <pre><code>{\n  \"topic\": \"Patient Safety Protocols\",\n  \"domain\": \"presentations.ai\",\n  \"slideCount\": 8\n}\n</code></pre>"
+        },
+        { "location": "quickstart/#common-errors-solutions", "title": "\u274c Common Errors &amp; Solutions", "text": "" },
+        { "location": "quickstart/#authentication-error-401", "title": "Authentication Error (401):", "text": "<p><pre><code>{\n  \"status\": 1,\n  \"error\": \"Unauthorized access\"\n}\n</code></pre> Solution: Check your API key and Authorization header format.</p>" },
+        { "location": "quickstart/#insufficient-credits-402", "title": "Insufficient Credits (402):", "text": "<p><pre><code>{\n  \"status\": 1, \n  \"error\": \"Insufficient credits\"\n}\n</code></pre> Solution: Purchase more credits or check your balance.</p>" },
+        { "location": "quickstart/#invalid-topic-400", "title": "Invalid Topic (400):", "text": "<p><pre><code>{\n  \"status\": 1,\n  \"error\": \"Topic cannot be empty\"\n}\n</code></pre> Solution: Ensure your topic is descriptive and not empty.</p>" },
+        {
+            "location": "quickstart/#next-steps",
+            "title": "\ud83d\ude80 Next Steps",
+            "text": "<p>Congratulations! You've successfully created your first AI presentation. Here's what to explore next:</p> <ol> <li>API Reference - Explore all available endpoints</li> <li>MCP Integration - Connect with Claude Desktop</li> <li>Best Practices - Tips for optimal results</li> </ol> <p>\ud83d\udca1 Pro Tips</p> <ul> <li>Use specific, descriptive topics for better results</li> <li>Start with smaller slide counts (5-10) to test</li> <li>Specify domain context for more relevant content</li> <li>Save your <code>insertid</code> for future slide updates</li> </ul> <p>Ready to build something amazing? \ud83c\udfa8</p> <p>Explore Full API Documentation Get Support</p>"
+        },
+        { "location": "credits/credits/", "title": "\ud83d\udcca Credits API", "text": "<p>APIs related to GPT credit pricing, usage history, and availability for different workspaces. All endpoints are prefixed with <code>/credits</code>.</p>" },
+        { "location": "credits/credits/#1-get-creditsgetapicredits", "title": "1. GET <code>/credits/getApiCredits</code>", "text": "<p>Fetch pricing plans for GPT usage for a specific workspace, considering user\u2019s IP location.</p>" },
+        { "location": "credits/credits/#authorization", "title": "\ud83d\udd10 Authorization", "text": "<p>Requires user to be authenticated (<code>req.session.pd.user</code>).</p>" },
+        {
+            "location": "credits/credits/#query-parameters",
+            "title": "\ud83e\uddfe Query Parameters",
+            "text": "Parameter Type Required Description <code>workspaceId</code> number \u2705 Workspace ID to fetch pricing for. <ul> <li> <p>Success Response</p> <p><pre><code>{\n\"status\": 0,\n\"plans\": [\n    {\n    \"id\": 1,\n    \"name\": \"Pro Plan\",\n    \"currency\": \"USD\",\n    \"credit\": \"100\",\n    \"symbol\": \"$\",\n    \"unformattedPrice\": 10,\n    \"price\": \"10.00\"\n    },\n    ...\n]\n}\n</code></pre> - Failure Response <pre><code>{\n  \"status\": 1,\n  \"msg\": \"Error message\"\n}\n</code></pre></p> </li> </ul>"
+        },
+        { "location": "credits/credits/#2-get-creditsgetworkspacegpt3history", "title": "2. GET <code>/credits/getWorkspaceGpt3History</code>", "text": "<p>Fetch usage history of GPT-3 credits for a given workspace with optional pagination.</p>" },
+        { "location": "credits/credits/#authorization_1", "title": "\ud83d\udd10 Authorization", "text": "<p>Requires user to be authenticated (<code>req.session.pd.user</code>).</p>" },
+        {
+            "location": "credits/credits/#query-parameters_1",
+            "title": "\ud83e\uddfe Query Parameters",
+            "text": "Parameter Type Required Description <code>workspaceId</code> number \u2705 Workspace ID to fetch pricing for. <ul> <li> <p>Success Response</p> <pre><code>{\n\"status\": 0,\n\"history\": [\n    {\n    \"id\": 101,\n    \"usedAt\": \"2025-07-29T09:41:00Z\",\n    \"credits\": 10,\n    \"description\": \"Slide generation\"\n    },\n    ...\n],\n\"count\": 123\n}\n</code></pre> </li> <li> <p>Failure <pre><code>{\n  \"status\": 1,\n  \"msg\": \"Error message\"\n}\n</code></pre></p> </li> </ul>"
+        },
+        { "location": "credits/credits/#3-get-creditsgetcredits", "title": "3. GET <code>/credits/getCredits</code>", "text": "<p>Get pricing plans for GPT usage based on user\u2019s geolocation via IP.</p>" },
+        {
+            "location": "credits/credits/#authorization_2",
+            "title": "\ud83d\udd10 Authorization",
+            "text": "<p>Requires user to be authenticated (<code>req.session.pd.user</code>).</p> <ul> <li> <p>Success Response</p> <pre><code>{\n\"status\": 0,\n\"plans\": [\n    {\n    \"id\": 1,\n    \"name\": \"Starter Plan\",\n    \"currency\": \"USD\",\n    \"credit\": \"50\",\n    \"symbol\": \"$\",\n    \"unformattedPrice\": 5,\n    \"price\": \"5.00\"\n    },\n...\n]\n}\n</code></pre> </li> <li> <p>Failure <pre><code>{\n  \"status\": 1,\n  \"msg\": \"An error occurred while processing your request\"\n}\n</code></pre></p> </li> </ul>"
+        },
+        { "location": "credits/credits/#4-get-creditsgetworkspacegpt3details", "title": "4. GET <code>/credits/getWorkspaceGpt3Details</code>", "text": "<p>Get the remaining GPT-3 credits for a specific workspace.</p>" },
+        { "location": "credits/credits/#authorization_3", "title": "\ud83d\udd10 Authorization", "text": "<p>Requires user to be authenticated (<code>req.session.pd.user</code>).</p>" },
+        {
+            "location": "credits/credits/#query-parameters_2",
+            "title": "\ud83e\uddfe Query Parameters",
+            "text": "Parameter Type Required Description <code>workspaceId</code> number \u2705 Workspace ID to fetch pricing for. <ul> <li> <p>Success Response</p> <pre><code>{\n\"status\": 0,\n\"credits\": 500\n}\n</code></pre> </li> <li> <p>Failure <pre><code>{\n\"status\": 1,\n\"msg\": \"Error message\"\n}\n</code></pre></p> </li> </ul>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/",
+            "title": "\ud83e\udd16 MCP Integration: Create Presentations with Natural Language",
+            "text": "<p>\ud83c\udf1f Revolutionary Presentation Creation</p> <p>Transform the way you create presentations! Instead of complex API calls, simply chat with Claude Desktop to generate professional presentations instantly.</p> <p>\"Create a 10-slide presentation about renewable energy for executives\" \u2192 \u2728 Done in seconds!</p> <p>This guide shows you how to connect the Presentations.AI MCP server to Claude Desktop, enabling conversational presentation creation directly in your chats.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#why-choose-mcp-integration",
+            "title": "\ud83d\ude80 Why Choose MCP Integration?",
+            "text": "<ul> <li> <p>\ud83d\udde3\ufe0f Natural Language</p> <p>No coding required - just describe what you want</p> </li> <li> <p>\ud83d\udd04 Interactive Editing</p> <p>\"Make slide 3 more technical\" - Claude updates instantly</p> </li> <li> <p>\ud83c\udfaf AI-Powered</p> <p>Claude understands context and creates relevant content</p> </li> <li> <p>\ud83d\udce6 Export Options</p> <p>Includes all the export types same as REST APIs</p> </li> </ul>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#1-prerequisites",
+            "title": "1\ufe0f\u20e3 Prerequisites",
+            "text": "<ul> <li>Claude Desktop installed (latest version)   Download: https://claude.ai/download </li> <li>A hosted Presentations.AI MCP server running at a valid URL (e.g., <code>https://developers.presentations.ai/mcp</code>)  </li> <li>An API key from Presentations.AI   Obtain it by registering at https://developers.presentations.ai </li> </ul> <p>\ud83d\udca1 Ensure Claude Desktop is updated via the \"Check for Updates\" option in the Claude menu.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#2-locate-claude-desktop-configuration-file",
+            "title": "2\ufe0f\u20e3 Locate Claude Desktop Configuration File",
+            "text": "<p>Claude Desktop uses a file named <code>claude_desktop_config.json</code> to configure MCP servers.</p> <ul> <li> <p>macOS <pre><code>~/Library/Application Support/Claude/claude_desktop_config.json\n</code></pre></p> </li> <li> <p>Windows <pre><code>%APPDATA%\\Claude\\claude_desktop_config.json\n</code></pre></p> </li> </ul> <p>\ud83d\udca1 If the file doesn\u2019t exist, create it in the specified directory using a text editor like VS Code or Notepad++.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#3-add-your-remote-mcp-server-configuration",
+            "title": "3\ufe0f\u20e3 Add Your Remote MCP Server Configuration",
+            "text": "<p>Edit (or create) <code>claude_desktop_config.json</code> and add your Presentations.AI remote MCP server details using the <code>mcp-remote</code> launcher:</p> <pre><code>{\n  \"mcpServers\": {\n    \"presentationsai\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"mcp-remote\",\n        \"https://developers.presentations.ai/mcp\",\n        \"--header\",\n        \"Authorization: Bearer YOUR_API_KEY\"\n      ]\n    }\n  }\n}\n</code></pre>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#explanation",
+            "title": "Explanation:",
+            "text": "<ul> <li><code>mcpServers</code>: A map of named MCP servers (e.g., <code>presentationsai</code>). The name can be customized.</li> <li><code>command</code>: Uses <code>npx</code> to run the <code>mcp-remote</code> package, which connects to remote MCP servers.</li> <li><code>args</code>: </li> <li><code>mcp-remote</code> specifies the remote server connection.</li> <li>The URL (<code>https://developers.presentations.ai/mcp</code>) is the endpoint for the Presentations.AI MCP server (verify the exact URL from Presentations.AI documentation).</li> <li>The API key is passed via the <code>--header</code> flag for authentication.</li> </ul> <p>\ud83d\udca1 Replace <code>YOUR_API_KEY</code> with the API key obtained from https://developers.presentations.ai. Ensure the <code>mcp-remote</code> package is available in your environment or managed by your system administrator.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#4-restart-claude-desktop",
+            "title": "4\ufe0f\u20e3 Restart Claude Desktop",
+            "text": "<p>After saving changes to <code>claude_desktop_config.json</code>: 1. Quit Claude Desktop completely (ensure it\u2019s not running in the background). 2. Restart the application. 3. Claude will automatically connect to your Presentations.AI remote MCP server.</p> <p>\ud83d\udca1 On Windows, use Task Manager to confirm Claude Desktop is fully closed. On macOS, use Activity Monitor or run <code>pkill Claude</code> in the terminal.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#5-verify-the-integration",
+            "title": "5\ufe0f\u20e3 Verify the Integration",
+            "text": "<p>To confirm the MCP server is connected: - Open Claude Desktop and start a new conversation. - Click the hammer icon (or tools icon) in the conversation input area to view available MCP tools. - Look for the <code>presentationsai</code> server or its tools (e.g., presentation creation tools). - Alternatively, check the developer console (View \u2192 Toggle Developer Tools) for logs like:   <pre><code>\u2705 Connected to MCP server: presentationsai\n</code></pre> - Test the integration by asking Claude to create a presentation, e.g., \u201cCreate a 5-slide presentation on renewable energy using Presentations.AI.\u201d</p> <p>\ud83d\udca1 If the server doesn\u2019t appear, verify the URL is correct and the server is accessible. Check logs in <code>~/Library/Logs/Claude/mcp.log</code> (macOS) or <code>%APPDATA%\\Claude\\mcp.log</code> (Windows) for errors.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#troubleshooting",
+            "title": "\ud83d\udd39 Troubleshooting",
+            "text": "Issue Possible Cause Fix MCP server not detected Incorrect JSON syntax or file path Validate JSON syntax (use a JSON linter) and confirm file path. Connection refused Wrong or unreachable server URL Verify the URL with Presentations.AI support. Auth errors Invalid or expired API key Regenerate the API key at https://developers.presentations.ai. Tools not showing Claude Desktop not restarted Fully quit and restart Claude Desktop. <p>\ud83d\udca1 For additional debugging, enable debug logging in Claude Desktop settings (Settings \u2192 Developer \u2192 Enable Debug Logging) and review logs in the Extensions settings panel or <code>mcp.log</code> file.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#example-usage",
+            "title": "\ud83d\udd39 Example Usage",
+            "text": "<p>Once connected, you can use natural language in Claude Desktop to interact with the Presentations.AI MCP server. Examples: - \u201cCreate a 10-slide presentation on digital marketing using Presentations.AI.\u201d - \u201cGenerate a PDF presentation about AI trends with 5 slides.\u201d</p> <p>The server will process these requests using the Presentations.AI API endpoints (<code>POST /v1/topic/document</code>, <code>POST /v1/content/document</code>, or <code>POST /v1/document/slide</code>), and Claude will return the results, such as a download link or confirmation.</p>"
+        },
+        {
+            "location": "mcp-v1/create-document-from-content/#additional-notes",
+            "title": "\ud83d\udd39 Additional Notes",
+            "text": "<ul> <li>Security: Keep your <code>claude_desktop_config.json</code> file and API key secure, as they contain sensitive information. Use your operating system\u2019s secure storage (e.g., Keychain on macOS, Credential Manager on Windows) for API keys if possible.</li> <li>Multiple Servers: You can add multiple MCP servers in the <code>mcpServers</code> object by defining additional entries with unique names.</li> <li>Desktop Extensions (DXT): If Presentations.AI provides a <code>.dxt</code> file for their MCP server, you can install it via Claude Desktop\u2019s Extensions settings for a simpler setup (Settings \u2192 Extensions \u2192 Install Extension).</li> </ul> <p>For further assistance, contact Presentations.AI support at support@presentations.ai or visit Anthropic\u2019s Help Center for Claude Desktop issues.</p>"
+        },
+        { "location": "register/register/", "title": "Account Signup", "text": "" },
+        { "location": "register/register/#how-to-register-for-an-api-account", "title": "How to register for an API account", "text": "<p>To start using our API you need to register with our platform. Following are the steps involved</p>" },
+        {
+            "location": "register/register/#1-register-for-an-account",
+            "title": "1. Register for an account",
+            "text": "<p>Go to the developer portal at https://developers.presentations.ai/docs/login</p> <p>You can sign up using your LinkedIn/Google/Microsoft credentials or use your own email to sign up. However you will have to confirm your account when you use your own credentials.</p> <p>Note: If you have already have signed up on our platform then you can directly login</p>"
+        },
+        { "location": "register/register/#2-request-for-api-key", "title": "2. Request for API Key", "text": "<p>Click on the Register for API button.</p>" },
+        {
+            "location": "register/register/#3-api-details",
+            "title": "3. API Details",
+            "text": "<p>After signup, the api key is displayed. Click on the Reveal button to see the key. Use this key as Bearer Token in your API requests. On Sign-up 200 credits are given to you.</p> <p>Click on the Reset button to generate a new API Key.</p>"
+        },
+        {
+            "location": "v1/content-document/",
+            "title": "POST /v1/content/document",
+            "text": "<p>\ud83d\udea7 Beta API Notice</p> <p>The Generate API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p> <p>Creates a presentation using raw slide content instead of generating from topic.</p>"
+        },
+        { "location": "v1/content-document/#authorization", "title": "\ud83d\udd12 Authorization", "text": "<p>Requires <code>checkWorkspace</code>.</p>" },
+        {
+            "location": "v1/content-document/#request-body",
+            "title": "\ud83d\udce5 Request Body",
+            "text": "Field Type Required Description <code>name</code> string \u2705 Name of the presentation. <code>slides</code> string (JSON) \u2705 JSON stringified array of slides. <code>type</code> string Optional Defaults to<code>'ideatodeck'</code>. <code>domain</code> string Optional Optional context domain. <code>file</code> string Optional file type ( .txt, .docx, .odt, .epub, .pdf, .html, .htm, .tsv, .json, .xls, .xlsx ). <p>Example <code>slides</code> format:</p> <pre><code>[\n  {\n    \"title\": \"Slide 1\",\n    \"content\": \"This is the first slide\"\n  },\n  {\n    \"title\": \"Slide 2\",\n    \"content\": \"This is the second slide\"\n  }\n]\n</code></pre> <ul> <li> <p>Success (200) <pre><code>{\n  \"status\": 0,\n  \"message\": \"Presentation created successfully\",\n  \"docurl\": \"https://cdn.presentations.ai/docs/view/123\",\n  \"insertid\": 123\n}\n</code></pre></p> </li> <li> <p>Failure <pre><code>{\n  \"status\": 1,\n  \"error\": \"Error message\"\n}\n</code></pre></p> </li> </ul>"
+        },
+        {
+            "location": "v1/document-file/",
+            "title": "Create Presentation from File",
+            "text": "<p>\ud83d\udea7 Beta API Notice</p> <p>The File to Presentation API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p> <p>This endpoint allows you to create presentations directly from uploaded files. Upload documents, PDFs, spreadsheets, or text files and let AI transform them into professional presentations.</p>"
+        },
+        { "location": "v1/document-file/#post-apiv1documentfile", "title": "POST <code>/api/v1/document/file</code>", "text": "<p>Creates a presentation from an uploaded file using AI content analysis and generation.</p>" },
+        { "location": "v1/document-file/#authorization", "title": "Authorization", "text": "<p>Include your API key in the <code>Authorization</code> header as a Bearer token.</p>" },
+        {
+            "location": "v1/document-file/#request-parameters",
+            "title": "Request Parameters",
+            "text": "Field Type Required Description <code>file</code> file Yes Content file to convert to presentation <code>topic</code> string Optional Override topic (if not provided, extracted from file). You can use this to instruct the AI, for example: \"Split content as it is into slides\". The API will primarily use the content in the uploaded file to generate slides. <code>slideCount</code> number Optional Number of slides to generate (1-50) <code>language</code> string Optional Language for generation (default: English) <code>domain</code> string Optional Context domain (e.g., education, business) <code>exportType</code> string Yes One of <code>ppt</code>, <code>pptx</code>, <code>pdf</code>, <code>image</code>, <code>render</code>, <code>share</code> <code>tone</code> string Optional Tone of the presentation (e.g., professional, casual, educational). <code>targetAudience</code> string Optional Target audience for the presentation (e.g., students, executives). <code>callback_url</code> string Optional HTTPS URL to receive async callback notification. <code>preservationMode</code> string Optional How to handle the source content. One of <code>enhance</code> (default), <code>preserve</code>, <code>summarize</code>, <code>instruction</code>."
+        },
+        {
+            "location": "v1/document-file/#supported-file-formats",
+            "title": "Supported File Formats",
+            "text": "<ul> <li>Text: <code>.txt</code></li> <li>Documents: <code>.docx</code>, <code>.odt</code></li> <li>eBooks: <code>.epub</code></li> <li>PDFs: <code>.pdf</code></li> <li>Web: <code>.html</code>, <code>.htm</code></li> <li>Data: <code>.tsv</code>, <code>.json</code>, <code>.xls</code>, <code>.xlsx</code></li> </ul>"
+        },
+        { "location": "v1/document-file/#file-size-limit", "title": "File Size Limit", "text": "<p>Maximum file size is 1MB. If you upload a file larger than this, you will receive:</p> <pre><code>{\n    \"status\": 1,\n    \"error\": \"File size exceeds maximum limit of 1MB\"\n}\n</code></pre>" },
+        {
+            "location": "v1/document-file/#callback-url-flow",
+            "title": "Callback URL Flow",
+            "text": "<p>If you provide a valid <code>callback_url</code>, the API will respond immediately with a job ID and queue status:</p> <p>Immediate Response (with valid callback_url): <pre><code>{\n    \"job_id\": \"b1ed6035-1872-49d1-b773-34b920e74204\",\n    \"status\": \"queued\"\n}\n</code></pre></p> <p>Immediate Response (with invalid callback_url): <pre><code>{\n    \"status\": 1,\n    \"error\": \"Invalid callback_url. Must be a valid HTTPS URL\"\n}\n</code></pre></p> <p>When processing is complete, the result (same as the synchronous response below) will be POSTed to your callback URL.</p> <p>If you do not provide a <code>callback_url</code>, the result will be returned directly in the API response.</p>"
+        },
+        {
+            "location": "v1/document-file/#preservation-modes-file-deck",
+            "title": "Preservation Modes (file \u2192 deck)",
+            "text": "<ul> <li><code>enhance</code> (default): AI enhances and structures the deck. <code>slideCount</code> validated (1-50).</li> <li><code>preserve</code>: Keep the original order/structure; <code>slideCount</code> is ignored (no need to send it).</li> <li><code>summarize</code>: Condense the content; <code>slideCount</code> validated (1-50).</li> <li><code>instruction</code>: Follow custom instructions; topic is required and used as the instruction text. <code>slideCount</code> validated (1-50).</li> </ul>"
+        },
+        {
+            "location": "v1/document-file/#timeout-polling-no-callback_url",
+            "title": "Timeout &amp; Polling (no <code>callback_url</code>)",
+            "text": "<ul> <li>If processing takes longer than 5 minutes, the API returns immediately while continuing in the background.</li> <li>You will receive: <pre><code>{\n  \"status\": 1,\n  \"pollUrl\": \"https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;\"\n}\n</code></pre></li> <li>Poll the job status with <code>GET https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;</code> (same Bearer token).</li> <li>In-progress response:   <pre><code>{\n  \"status\": 1,\n  \"message\": \"Document is being processed\"\n}\n</code></pre></li> <li>Completed response mirrors the success format for your <code>exportType</code>.</li> </ul>"
+        },
+        {
+            "location": "v1/document-file/#example-request-curl",
+            "title": "Example Request (cURL)",
+            "text": "<pre><code>curl -X POST https://developers.presentations.ai/api/v1/document/file \\\n  -H \"Authorization: Bearer YOUR_API_KEY_HERE\" \\\n  -F \"file=@/path/to/your/document.pdf\" \\\n  -F \"topic=Annual Report Highlights\" \\\n  -F \"slideCount=10\" \\\n  -F \"language=en\" \\\n  -F \"domain=presentations.ai\" \\\n  -F \"exportType=ppt\" \\\n  -F \"tone=professional\" \\\n  -F \"targetAudience=executives\" \\\n  -F \"preservationMode=instruction\" \\\n  -F \"callback_url=https://yourdomain.com/api/callback\"\n</code></pre>"
+        },
+        {
+            "location": "v1/document-file/#response-formats",
+            "title": "Response Formats",
+            "text": "<p>The response format depends on the <code>exportType</code> parameter:</p>  exportType = ppt/pptx (Editable PowerPoint File)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199950,\n    \"docurl\": \"https://cdn.presentations.ai/exports/199950/1755583984885/Market%20Analysis%20Report.pptx\",\n    \"animated_url\": \"https://devcdn.presentations.ai/exports/199950/1755583984566/Market%20Analysis%20Report_animated.pptx\"\n}\n</code></pre>  Failure (400, 500): <pre><code>{\n  \"status\": 1,\n  \"error\": \"Please provide a content file\"\n}\n</code></pre>  exportType = pdf (Sharable PDF)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199951,\n    \"docurl\": \"https://cdn.presentations.ai/pdfs/199951/Market%20Analysis%20Report.pdf\",\n    \"animated_url\": null\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to generate PDF from file\"\n}\n</code></pre>  exportType = image (Slide Images)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199952,\n    \"docurl\": \"https://cdn.presentations.ai/pdfs/199952/Market%20Analysis%20Report.zip\",\n    \"animated_url\": null\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Image generation failed\"\n}\n</code></pre>  exportType = render (Rendered Preview)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199953,\n    \"docurl\": \"https://cdn.presentations.ai/docs/edit/199953\"\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to render presentation\"\n}\n</code></pre>  exportType = share (Public Shareable Link)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199954,\n    \"docurl\": \"https://cdn.presentations.ai/view/YJJOFilucT\"\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to create share link\"\n}\n</code></pre>"
+        },
+        { "location": "v1/document-file/#error-handling", "title": "Error Handling", "text": "" },
+        {
+            "location": "v1/document-file/#file-specific-errors",
+            "title": "File-Specific Errors",
+            "text": "<p><pre><code>{\n  \"status\": 1,\n  \"error\": \"File size exceeds maximum limit of 1MB\"\n}\n</code></pre> Solution: Reduce file size or use async processing with <code>callback_url</code>.</p> <p><pre><code>{\n  \"status\": 1,\n  \"error\": \"Please provide a content file\"\n}\n</code></pre> Solution: Ensure the <code>file</code> parameter contains a valid file upload.</p> <p><pre><code>{\n  \"status\": 1,\n  \"error\": \"Unsupported file format\"\n}\n</code></pre> Solution: Use one of the supported file formats listed above.</p> <p><pre><code>{\n  \"status\": 1,\n  \"error\": \"Unable to extract content from file\"\n}\n</code></pre> Solution: Ensure the file contains readable text content and is not corrupted.</p>"
+        },
+        {
+            "location": "v1/document-file/#usage-notes",
+            "title": "Usage Notes",
+            "text": "<ul> <li>Topic Guidance: Use the <code>topic</code> field to instruct the AI, e.g., \"Split content as it is into slides\". The file content is the main source for slide generation.</li> <li>Tone &amp; Target Audience: Use <code>tone</code> to set the style (e.g., professional, casual, educational) and <code>targetAudience</code> to tailor content for specific groups (e.g., students, executives).</li> <li>Callback URL: If provided and valid, results will be sent asynchronously to your endpoint. If invalid, you will receive an error message.</li> </ul> <p>For more details about error handling, see our Error Handling Guide.</p>"
+        },
+        { "location": "v1/document-slide/", "title": "POST /v1/document/slide", "text": "<p>\ud83d\udea7 Beta API Notice</p> <p>The Generate API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p> <p>Updates slide content for an existing document.</p>" },
+        { "location": "v1/document-slide/#authorization", "title": "\ud83d\udd12 Authorization", "text": "<p>Requires <code>checkWorkspace</code>.</p>" },
+        {
+            "location": "v1/document-slide/#request-body",
+            "title": "\ud83d\udce5 Request Body",
+            "text": "Field Type Required Description <code>docId</code> number \u2705 Document ID to update. <code>slides</code> string (JSON) \u2705 JSON array of slide content objects. <p>Each slide object in the array must include:</p> Slide Field Type Description <code>action</code> string Type of update (e.g., <code>update</code>). <code>slideContent</code> string The updated slide text. <code>index</code> number Position of the slide."
+        },
+        {
+            "location": "v1/document-slide/#response",
+            "title": "\ud83d\udce4 Response",
+            "text": "<ul> <li> <p>Success (200)</p> <pre><code>{\n\"status\": 0,\n\"message\": \"Slides updated successfully\"\n}\n</code></pre> </li> <li> <p>**Failure **</p> </li> </ul> <p>```json</p> <p>{   \"status\": 1,   \"error\": \"Slide content cannot be empty\" }</p>"
+        },
+        {
+            "location": "v1/topic-document/",
+            "title": "Presentations.AI API Documentation",
+            "text": "<p>\ud83d\udea7 Beta API Notice</p> <p>The Generate API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p> <p>This document describes the key endpoints of the Presentations.AI API for creating and managing AI-generated presentations. All endpoints require authentication using a Bearer token obtained from https://developers.presentations.ai.</p> <p>\ud83d\udcda Available Endpoints</p> <ul> <li>Create from Topic - Generate multi-slide presentations from topics</li> <li>Create Single Slide - Generate focused single-slide presentations</li> <li>Create from File - Transform uploaded files into presentations</li> </ul>"
+        },
+        { "location": "v1/topic-document/#post-apiv1topicdocument", "title": "POST <code>/api/v1/topic/document</code>", "text": "<p>Creates a presentation from a given topic using AI.</p>" },
+        { "location": "v1/topic-document/#authorization", "title": "Authorization", "text": "<p>Include your API key in the <code>Authorization</code> header as a Bearer token.</p>" },
+        {
+            "location": "v1/topic-document/#request-body",
+            "title": "Request Body",
+            "text": "Field Type Required Description <code>topic</code> string Yes The main topic of the presentation. <code>slideCount</code> number Optional Number of slides to generate (1-50). <code>language</code> string Optional Language for generation (default: English). <code>domain</code> string Optional Context domain (e.g., education, business). <code>exportType</code> string Yes One of <code>ppt</code>, <code>pptx</code>, <code>pdf</code>, <code>image</code>, <code>render</code>, <code>share</code>. <code>file</code> string Optional File type (<code>.txt</code>, <code>.docx</code>, <code>.odt</code>, <code>.epub</code>, <code>.pdf</code>, <code>.html</code>, <code>.htm</code>, <code>.tsv</code>, <code>.json</code>, <code>.xls</code>, <code>.xlsx</code>). <code>targetAudience</code> string Optional Target audience for the presentation (e.g., students, executives). <code>tone</code> string Optional Tone of the presentation (e.g., professional, casual, educational). <code>callback_url</code> string Optional HTTPS URL to receive async callback notification."
+        },
+        {
+            "location": "v1/topic-document/#callback-url-flow",
+            "title": "Callback URL Flow",
+            "text": "<p>If you provide a valid <code>callback_url</code>, the API will respond immediately with a job ID and queue status:</p> <p>Immediate Response (with valid callback_url): <pre><code>{\n    \"job_id\": \"b1ed6035-1872-49d1-b773-34b920e74204\",\n    \"status\": \"queued\"\n}\n</code></pre></p> <p>Immediate Response (with invalid callback_url): <pre><code>{\n    \"status\": 1,\n    \"error\": \"Invalid callback_url. Must be a valid HTTPS URL\"\n}\n</code></pre></p> <p>When processing is complete, the result (same as the synchronous response below) will be POSTed to your callback URL.</p> <p>If you do not provide a <code>callback_url</code> (synchronous flow):</p> <p>The response will be returned directly in the API call, depending on <code>exportType</code>:</p>"
+        },
+        {
+            "location": "v1/topic-document/#timeout-polling-no-callback_url",
+            "title": "Timeout &amp; Polling (no <code>callback_url</code>)",
+            "text": "<ul> <li>If processing takes longer than 5 minutes, the API returns immediately while continuing in the background.</li> <li>You will receive: <pre><code>{\n  \"status\": 1,\n  \"pollUrl\": \"https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;\"\n}\n</code></pre></li> <li>Poll the job status with <code>GET https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;</code> (same Bearer token).</li> <li>In-progress response:   <pre><code>{\n  \"status\": 1,\n  \"message\": \"Document is being processed\"\n}\n</code></pre></li> <li>Completed response mirrors the success format for your <code>exportType</code>.</li> </ul>"
+        },
+        {
+            "location": "v1/topic-document/#response-depends-on-the-exporttype",
+            "title": "Response depends on the <code>exportType</code>",
+            "text": "<p>Choose the <code>exportType</code> to view its corresponding response format:</p>  exportType = ppt/pptx (Editable PowerPoint File)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199943,\n    \"docurl\": \"https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx\",\n    \"animated_url\": \"https://devcdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx\"\n}\n</code></pre>  Failure (400, 500): <pre><code>{\n  \"status\": 1,\n  \"error\": \"Topic cannot be empty\"\n}\n</code></pre>  exportType = pdf (Sharable PDF)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199926,\n    \"docurl\": \"https://cdn.presentations.ai/pdfs/199926/Digital%20Marketing%20for%20Small%20Businesses.pdf\",\n    \"animated_url\": null\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to generate PDF\"\n}\n</code></pre>  exportType = image (Slide Images)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199953,\n    \"docurl\": \"https://cdn.presentations.ai/pdfs/199953/Digital%20Marketing%20for%20Small%20Businesses.zip\",\n    \"animated_url\": null\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Image generation failed\"\n}\n</code></pre>  exportType = render (Rendered Preview)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199944,\n    \"docurl\": \"https://cdn.presentations.ai/docs/edit/199944\"\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to render presentation\"\n}\n</code></pre>  exportType = share (Public Shareable Link)  Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 199945,\n    \"docurl\": \"https://cdn.presentations.ai/view/YJJOFilucT\"\n}\n</code></pre>  Failure: <pre><code>{\n  \"status\": 1,\n  \"error\": \"Failed to create share link\"\n}\n</code></pre>"
+        },
+        {
+            "location": "v1/topic-document/#usage-notes",
+            "title": "Usage Notes",
+            "text": "<ul> <li>Authentication: Obtain your API key from https://developers.presentations.ai and include it as <code>Authorization: Bearer &lt;your-api-key&gt;</code>.</li> <li>Export Types:<ul> <li><code>ppt/pptx</code> \u2192 Downloadable PowerPoint</li> <li><code>pdf</code> \u2192 Sharable PDF</li> <li><code>image</code> \u2192 Slide previews in image format</li> <li><code>render</code> \u2192 Rendered preview of the presentation</li> <li><code>share</code> \u2192 Public shareable link</li> </ul> </li> <li>Best Practices: Specify <code>domain</code> for better context, use descriptive topics, and test with small <code>slideCount</code> values initially.</li> <li>Target Audience &amp; Tone: Use <code>targetAudience</code> to tailor content for specific groups (e.g., students, executives) and <code>tone</code> to set the style (e.g., professional, casual, educational).</li> <li>Callback URL: If provided and valid, results will be sent asynchronously to your endpoint. If invalid, you will receive an error message.</li> </ul> <p>For more details, visit Presentations.AI or contact support@presentations.ai.</p>"
+        },
+        {
+            "location": "v1/topic-singleslide/",
+            "title": "Create Single Slide from Topic",
+            "text": "<p>\ud83d\udea7 Beta API Notice</p> <p>The Single Slide API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p> <p>This endpoint allows you to create a single slide presentation from a given topic using AI. Perfect for quick slide generation or when you need just one slide for your content.</p>"
+        },
+        { "location": "v1/topic-singleslide/#post-apiv1topicsingleslide", "title": "POST <code>/api/v1/topic/singleslide</code>", "text": "<p>Creates a single slide presentation from a given topic using AI.</p>" },
+        { "location": "v1/topic-singleslide/#authorization", "title": "Authorization", "text": "<p>Include your API key in the <code>Authorization</code> header as a Bearer token.</p>" },
+        {
+            "location": "v1/topic-singleslide/#request-body",
+            "title": "Request Body",
+            "text": "Field Type Required Description <code>topic</code> string Yes The main topic for the slide. <code>language</code> string Optional Language for generation (default: English). <code>domain</code> string Optional Context domain (e.g., education, business). <code>file</code> file Optional Additional reference file (<code>.txt</code>, <code>.docx</code>, <code>.odt</code>, <code>.epub</code>, <code>.pdf</code>, <code>.html</code>, <code>.htm</code>, <code>.tsv</code>, <code>.json</code>, <code>.xls</code>, <code>.xlsx</code>). <code>targetAudience</code> string Optional Target audience for the slide content. <code>tone</code> string Optional Tone of the content (professional, casual, etc.). <code>callback_url</code> string Optional HTTPS URL to receive async callback notification. <p>Note: The output will always be an image format. The <code>exportType</code> parameter is not accepted for this endpoint.</p>"
+        },
+        {
+            "location": "v1/topic-singleslide/#example-request",
+            "title": "Example Request",
+            "text": "<pre><code>{\n  \"topic\": \"Introduction to Machine Learning\",\n  \"language\": \"en\",\n  \"domain\": \"presentations.ai\",\n  \"targetAudience\": \"university students\",\n  \"tone\": \"educational\",\n  \"callback_url\": \"https://yourdomain.com/api/callback\"\n}\n</code></pre>"
+        },
+        {
+            "location": "v1/topic-singleslide/#curl-example",
+            "title": "cURL Example",
+            "text": "<pre><code>curl -X POST https://developers.presentations.ai/api/v1/topic/singleslide \\\n  -H \"Authorization: Bearer YOUR_API_KEY_HERE\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"topic\": \"Key Benefits of Cloud Computing\",\n    \"language\": \"en\",\n    \"domain\": \"presentations.ai\",\n    \"callback_url\": \"https://yourdomain.com/api/callback\"\n  }'\n</code></pre>"
+        },
+        {
+            "location": "v1/topic-singleslide/#callback-url-flow",
+            "title": "Callback URL Flow",
+            "text": "<p>If you provide a valid <code>callback_url</code>, the API will respond immediately with a job ID and queue status:</p> <p>Immediate Response (with valid callback_url): <pre><code>{\n    \"job_id\": \"b1ed6035-1872-49d1-b773-34b920e74204\",\n    \"status\": \"queued\"\n}\n</code></pre></p> <p>Immediate Response (with invalid callback_url): <pre><code>{\n    \"status\": 1,\n    \"error\": \"Invalid callback_url. Must be a valid HTTPS URL\"\n}\n</code></pre></p> <p>When processing is complete, the result will be POSTed to your callback URL:</p> <p>Callback Success Payload: <pre><code>{\n    \"job_id\": \"b1ed6035-1872-49d1-b773-34b920e74204\",\n    \"status\": 0,\n    \"docid\": 123456,\n    \"docurl\": \"https://cdn.presentations.ai/exports/123456/single-slide-image.png\"\n}\n</code></pre></p> <p>Callback Error Payload: <pre><code>{\n    \"status\": 1,\n    \"error\": \"Failed to generate single slide\"\n}\n</code></pre></p> <p>If you do not provide a <code>callback_url</code>, the result will be returned directly in the API response.</p>"
+        },
+        {
+            "location": "v1/topic-singleslide/#timeout-polling-no-callback_url",
+            "title": "Timeout &amp; Polling (no <code>callback_url</code>)",
+            "text": "<ul> <li>If processing takes longer than 5 minutes, the API returns immediately while continuing in the background.</li> <li>You will receive: <pre><code>{\n  \"status\": 1,\n  \"pollUrl\": \"https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;\"\n}\n</code></pre></li> <li>Poll the job status with <code>GET https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;</code> (same Bearer token).</li> <li>In-progress response:   <pre><code>{\n  \"status\": 1,\n  \"message\": \"Document is being processed\"\n}\n</code></pre></li> <li>Completed response mirrors the success format below.</li> </ul>"
+        },
+        {
+            "location": "v1/topic-singleslide/#response-format",
+            "title": "Response Format",
+            "text": "<p>Success (200): <pre><code>{\n    \"status\": 0,\n    \"docid\": 123456,\n    \"docurl\": \"https://cdn.presentations.ai/exports/123456/single-slide-image.png\"\n}\n</code></pre></p> <p>Failure (400, 500): <pre><code>{\n  \"status\": 1,\n  \"error\": \"Topic cannot be empty\"\n}\n</code></pre></p>"
+        },
+        {
+            "location": "v1/topic-singleslide/#usage-notes",
+            "title": "Usage Notes",
+            "text": "<ul> <li>Single Slide Focus: This endpoint generates exactly one slide, making it perfect for key points, summaries, or standalone content.</li> <li>File Support: You can upload reference files to provide additional context for slide generation.</li> <li>Target Audience: Specify your audience to get more relevant content and appropriate complexity level.</li> <li>Tone Control: Set the tone to match your presentation style (professional, casual, educational, etc.).</li> </ul>"
+        },
+        {
+            "location": "v1/topic-singleslide/#best-practices",
+            "title": "Best Practices",
+            "text": "<ul> <li>Use specific, focused topics for better single-slide content.</li> <li>Specify <code>targetAudience</code> and <code>tone</code> for more relevant results.</li> <li>Consider using reference files for context-rich content.</li> </ul> <p>For more details about error handling, see our Error Handling Guide.</p>"
+        }
+    ]
+}

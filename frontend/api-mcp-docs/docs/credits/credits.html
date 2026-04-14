@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits API - Presentations.AI Developer Documentation</title>
+    <link rel="icon"
+        href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+            (function () {
+                const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+                const depth = Math.max(parts.length - 1, 0);
+                const prefix = depth > 0 ? '../'.repeat(depth) : '';
+                const load = (src) => new Promise((resolve) => {
+                    const s = document.createElement('script');
+                    s.src = prefix + src;
+                    s.onload = resolve;
+                    document.head.appendChild(s);
+                });
+                load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                    if (window.renderHeader) window.renderHeader(prefix);
+                }));
+            })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API REFERENCE</h2>
+                <nav class="space-y-0.5">
+                    <a href="../index.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Introduction to Presentations.AI API offerings
+                    </a>
+                    <a href="../../quickstart.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="../../register/register.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Account Registration
+                    </a>
+                    <a href="../../v1/topic-document.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Topic
+                    </a>
+                    <a href="../../v1/document-file.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from File
+                    </a>
+                    <a href="../../v1/topic-singleslide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create Single Slide
+                    </a>
+                    <a href="../../mcp-v1/create-document-from-content.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        MCP Integration
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">📊 Credits API</h1>
+
+            <p class="text-base text-gray-700 mb-8 leading-relaxed">
+                APIs related to GPT credit pricing, usage history, and availability for different workspaces. All
+                endpoints are prefixed with <code>/credits</code>.
+            </p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">1. GET <code class="text-lg">/credits/getApiCredits</code>
+            </h2>
+
+            <p class="text-gray-700 mb-6">Fetch pricing plans for GPT usage for a specific workspace, considering user's
+                IP location.</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">🔐 Authorization</h3>
+            <p class="text-gray-700 mb-6">Requires user to be authenticated (<code>req.session.pd.user</code>).</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">🧾 Query Parameters</h3>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Parameter</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Required</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>workspaceId</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">✅</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Workspace ID to fetch pricing for.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Success Response</h3>
+            <pre class="mb-6"><code>
+                {
+                "status": 0,
+                "plans": [
+                    {
+                    "id": 1,
+                    "name": "Pro Plan",
+                    "currency": "USD",
+                    "credit": "100",
+                    "symbol": "$",
+                    "unformattedPrice": 10,
+                    "price": "10.00"
+                    }
+                ]
+                }</code></pre>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Failure Response</h3>
+            <pre class="mb-8"><code>{
+  "status": 1,
+  "msg": "Error message"
+}</code></pre>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">2. GET <code
+                    class="text-lg">/credits/getWorkspaceGpt3History</code></h2>
+
+            <p class="text-gray-700 mb-6">Fetch usage history of GPT-3 credits for a given workspace with optional
+                pagination.</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">🔐 Authorization</h3>
+            <p class="text-gray-700 mb-6">Requires user to be authenticated (<code>req.session.pd.user</code>).</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">🧾 Query Parameters</h3>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Parameter</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Required</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>workspaceId</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">✅</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Workspace ID to fetch pricing for.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Success Response</h3>
+            <pre class="mb-6"><code>{
+  "status": 0,
+  "history": [
+    {
+      "id": 101,
+      "usedAt": "2025-07-29T09:41:00Z",
+      "credits": 10,
+      "description": "Slide generation"
+    }
+  ],
+  "count": 123
+}</code></pre>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Failure</h3>
+            <pre class="mb-8"><code>{
+  "status": 1,
+  "msg": "Error message"
+}</code></pre>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">3. GET <code class="text-lg">/credits/getCredits</code>
+            </h2>
+
+            <p class="text-gray-700 mb-6">Get pricing plans for GPT usage based on user's geolocation via IP.</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">🔐 Authorization</h3>
+            <p class="text-gray-700 mb-6">Requires user to be authenticated (<code>req.session.pd.user</code>).</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Success Response</h3>
+            <pre class="mb-6"><code>{
+  "status": 0,
+  "plans": [
+    {
+      "id": 1,
+      "name": "Starter Plan",
+      "currency": "USD",
+      "credit": "50",
+      "symbol": "$",
+      "unformattedPrice": 5,
+      "price": "5.00"
+    }
+  ]
+}</code></pre>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Failure</h3>
+            <pre class="mb-8"><code>{
+  "status": 1,
+  "msg": "An error occurred while processing your request"
+}</code></pre>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">4. GET <code
+                    class="text-lg">/credits/getWorkspaceGpt3Details</code></h2>
+
+            <p class="text-gray-700 mb-6">Get the remaining GPT-3 credits for a specific workspace.</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">🔐 Authorization</h3>
+            <p class="text-gray-700 mb-6">Requires user to be authenticated (<code>req.session.pd.user</code>).</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">🧾 Query Parameters</h3>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Parameter</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Required</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>workspaceId</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">✅</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Workspace ID to fetch pricing for.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Success Response</h3>
+            <pre class="mb-6"><code>{
+  "status": 0,
+  "credits": 500
+}</code></pre>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Failure</h3>
+            <pre class="mb-8"><code>{
+  "status": 1,
+  "msg": "Error message"
+}</code></pre>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto ">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#get-api-credits" class="block text-sm text-gray-600 hover:text-gray-900">GET
+                        /credits/getApiCredits</a>
+                    <a href="#get-workspace-history" class="block text-sm text-gray-600 hover:text-gray-900">GET
+                        /credits/getWorkspaceGpt3History</a>
+                    <a href="#get-credits" class="block text-sm text-gray-600 hover:text-gray-900">GET
+                        /credits/getCredits</a>
+                    <a href="#get-workspace-details" class="block text-sm text-gray-600 hover:text-gray-900">GET
+                        /credits/getWorkspaceGpt3Details</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+</body>
+
+</html>

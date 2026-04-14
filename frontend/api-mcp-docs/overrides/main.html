@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block header %}
+  {{ super() }}
+  <script>
+    // Function to get dynamic login URL based on current server
+    function getLoginUrl() {
+      const hostname = window.location.hostname;
+      if (hostname.includes('dev-apis') || hostname.includes('devmcp')) {
+        return 'https://dev-apis.presentations.ai/docs/login';
+      } else if (hostname.includes('developers')) {
+        return 'https://developers.presentations.ai/docs/login';
+      } else {
+        // Fallback to current origin
+        return window.location.origin + '/docs/login';
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      // Add login button to header with more robust targeting
+      const headerInner = document.querySelector('.md-header__inner');
+      if (headerInner && !document.querySelector('.login-button')) {
+        const loginButton = document.createElement('div');
+        loginButton.className = 'md-header__cta';
+        loginButton.style.cssText = 'margin-left:auto; display:flex; gap:.5rem;';
+        const loginUrl = getLoginUrl();
+        loginButton.innerHTML = '<a class="md-button md-button--primary login-button" href="' + loginUrl + '" target="_blank" aria-label="Log in"><span style="margin-right:6px;">🔐</span>Login</a>';
+        headerInner.appendChild(loginButton);
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Integration - Presentations.AI Developer Documentation</title>
+    <link rel="icon"
+        href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .admonition {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .admonition-info {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .admonition-success {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .admonition-warning {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .admonition-tip {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        h2[id],
+        h3[id] {
+            scroll-margin-top: 6rem;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+        (function () {
+            const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+            const depth = Math.max(parts.length - 1, 0);
+            const prefix = depth > 0 ? '../'.repeat(depth) : '';
+            const load = (src) => new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = prefix + src;
+                s.onload = resolve;
+                document.head.appendChild(s);
+            });
+            load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                if (window.renderHeader) window.renderHeader(prefix);
+            }));
+        })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">DOCUMENTATION</h2>
+                <nav class="space-y-0.5">
+                    <a href="../index.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Introduction
+                    </a>
+                    <a href="../quickstart.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="../register/register.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Account Registration
+                    </a>
+
+                    <h3
+                        class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">
+                        API Reference</h3>
+                    <a href="../v1/topic-document.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Topic
+                    </a>
+                    <a href="../v1/document-file.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from File
+                    </a>
+                    <a href="../content-updates/createfromcontent.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from content
+                    </a>
+                    <a href="../v1/topic-singleslide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create Single Slide
+                    </a>
+                    <a href="../v1/content-document.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Content
+                    </a>
+                    <a href="../v1/document-slide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Update Slides
+                    </a>
+                    <a href="../error-handling.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Error Handling
+                    </a>
+
+                    <h3
+                        class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">
+                        MCP Integration</h3>
+                    <a href="create-document-from-content.html"
+                        class="block px-3 py-2 rounded-md bg-light-accent text-gray-900 font-medium text-sm">
+                        Connect to AI Assistants
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">MCP Integration: Connect Presentations.AI
+                to AI Assistants</h1>
+
+            <p class="text-base text-gray-700 mb-6 leading-relaxed">
+                Presentations.AI exposes an <strong>MCP (Model Context Protocol) server</strong> that lets AI assistants
+                create, transform, and edit presentations through natural language. Connect once, then just ask:
+            </p>
+
+            <div class="admonition admonition-success mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <p class="text-green-800 mt-1"><em>"Create a 10-slide pitch deck about AI in healthcare for
+                                executives"</em></p>
+                        <p class="text-green-800 mt-1"><em>"Turn these meeting notes into a 5-slide summary"</em></p>
+                        <p class="text-green-800 mt-1"><em>"Make slide 3 more concise and add a conclusion slide"</em>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Prerequisites -->
+            <h2 id="prerequisites" class="text-3xl font-bold text-gray-900 mb-4">Prerequisites</h2>
+
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">
+                <li>A <strong>Presentations.AI account</strong> (<a href="https://presentations.ai"
+                        class="text-blue-600 hover:text-blue-800 underline">sign up free</a>)</li>
+                <li><strong>Claude.ai / Claude Desktop:</strong> No further setup needed. OAuth handles login
+                    automatically</li>
+                <li><strong>Claude Code / VS Code / Cursor:</strong> An API key from <a
+                        href="https://developers.presentations.ai"
+                        class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a> (log in, go to Settings > API, and generate your key. It starts with
+                    <code>pai_</code>)
+                </li>
+            </ul>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Overview -->
+            <h2 id="overview" class="text-3xl font-bold text-gray-900 mb-4">Overview</h2>
+
+            <p class="text-gray-700 mb-4">MCP server URL:</p>
+            <pre class="mb-4"><code>https://developers.presentations.ai/mcp</code></pre>
+
+            <p class="text-gray-700 mb-4"><strong>8 tools</strong> covering the full presentation workflow:</p>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th
+                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tool</th>
+                            <th
+                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                What it does</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_presentation_topic</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">"Make a deck about X" - AI generates
+                                all slides from a topic string</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_single_slide</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">"Add one slide about Y" - AI generates
+                                a single slide on any subject</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_presentation_from_slides</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Build from structured slide-by-slide JSON
+                                with layout, audience, and tone control</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_document_from_content</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Exact content - pass a JSON slide
+                                array and get a presentation with no AI rewriting</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_presentation_from_content</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">"Turn these notes into slides" -
+                                transform raw text with 4 preservation modes</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">create_presentation_from_file</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">"Convert this PDF" - upload PDF,
+                                Word, or PPT and get a new presentation</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">update_document_content</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">"Fix slide 3" - edit, add, or remove
+                                slides in an existing presentation by document ID</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900">check_job_status</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Poll a running job - called
+                                automatically by Claude when generation takes time</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-gray-700 mb-6">Supports 6 export formats (PPTX, PPT, PDF, image, web preview, shareable
+                link), multiple audience types, tones, and 4 content preservation modes.</p>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Authentication -->
+            <h2 id="authentication" class="text-3xl font-bold text-gray-900 mb-4">Authentication</h2>
+
+            <p class="text-gray-700 mb-4">Two paths, depending on which surface you use:</p>
+
+            <div class="space-y-4 mb-6">
+                <div class="border border-green-200 bg-green-50 rounded-lg p-5">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">OAuth 2.1 (Automatic)</h4>
+                    <p class="text-gray-700 mb-2">For: <strong>Claude.ai</strong>, <strong>Claude Desktop</strong>,
+                        <strong>Claude Mobile</strong>
+                    </p>
+                    <p class="text-gray-600 text-sm">A login window opens automatically when you connect via the
+                        Connectors UI. Sign in with your Presentations.AI account and approve access. No API key
+                        needed.</p>
+                </div>
+                <div class="border border-blue-200 bg-blue-50 rounded-lg p-5">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">API Key (Manual)</h4>
+                    <p class="text-gray-700 mb-2">For: <strong>Claude Code</strong>, <strong>VS Code</strong>,
+                        <strong>Cursor</strong>
+                    </p>
+                    <p class="text-gray-600 text-sm mb-3">You pass your API key as a Bearer token in the
+                        configuration.</p>
+                    <h5 class="text-sm font-semibold text-gray-800 mb-2">How to get your API key:</h5>
+                    <ol class="list-decimal list-inside text-gray-600 text-sm space-y-1">
+                        <li>Go to <a href="https://developers.presentations.ai"
+                                class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a> and log in
+                        </li>
+                        <li>Navigate to <strong>Settings > API</strong></li>
+                        <li>Click <strong>Register for API</strong>, then click <strong>Reveal</strong> to see your key</li>
+                        <li>Copy the key (starts with <code>pai_</code>) - store it securely</li>
+                    </ol>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Claude.ai -->
+            <h2 id="claude-ai" class="text-3xl font-bold text-gray-900 mb-4">Claude.ai (Web)</h2>
+
+            <ol class="list-decimal list-inside text-gray-700 space-y-3 mb-4">
+                <li>Go to <strong>Settings</strong> (gear icon) in Claude.ai</li>
+                <li>Click <strong>Connectors</strong></li>
+                <li>Click <strong>Add custom connector</strong></li>
+                <li>Enter the MCP server URL:
+                    <pre class="mt-2 mb-2"><code>https://developers.presentations.ai/mcp</code></pre>
+                </li>
+                <li>Click <strong>Connect</strong> - a login window will open</li>
+                <li>Sign in with your Presentations.AI account and approve access</li>
+                <li>Done - 8 tools are now available in your conversations</li>
+            </ol>
+
+            <div class="admonition admonition-info bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+                <p class="text-blue-800">No API key needed. OAuth handles authentication automatically. The connection
+                    syncs to Claude Mobile as well.</p>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Claude Desktop -->
+            <h2 id="claude-desktop" class="text-3xl font-bold text-gray-900 mb-4">Claude Desktop</h2>
+
+            <ol class="list-decimal list-inside text-gray-700 space-y-3 mb-4">
+                <li>Open Claude Desktop and go to <strong>Settings</strong></li>
+                <li>Click <strong>Connectors</strong></li>
+                <li>Click <strong>Add custom connector</strong></li>
+                <li>Enter the MCP server URL:
+                    <pre class="mt-2 mb-2"><code>https://developers.presentations.ai/mcp</code></pre>
+                </li>
+                <li>Click <strong>Connect</strong> - your browser will open for login</li>
+                <li>Sign in and approve access</li>
+                <li>Return to Claude Desktop - tools are ready</li>
+            </ol>
+
+            <div class="admonition admonition-warning bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <p class="text-yellow-800"><strong>Important:</strong> Remote MCP servers must be added via the
+                        <strong>Connectors UI</strong>, not via <code>claude_desktop_config.json</code>. The config file
+                        is only for local stdio-based servers.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Claude Code -->
+            <h2 id="claude-code" class="text-3xl font-bold text-gray-900 mb-4">Claude Code (CLI)</h2>
+
+            <p class="text-gray-700 mb-4">Run this command in your terminal:</p>
+
+            <pre class="mb-4"><code>claude mcp add presentations-ai \
+  --transport http \
+  https://developers.presentations.ai/mcp \
+  --header "Authorization: Bearer YOUR_API_KEY"</code></pre>
+
+            <p class="text-gray-700 mb-4">Replace <code>YOUR_API_KEY</code> with your Presentations.AI API key. Log in at
+                <a href="https://developers.presentations.ai"
+                    class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>,
+                then go to Settings &gt; API &gt; Register for API &gt; Reveal to get your key.
+            </p>
+
+            <p class="text-gray-700 mb-4">Then ask Claude Code naturally:</p>
+            <pre class="mb-8"><code>Create a 5-slide presentation about renewable energy</code></pre>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- VS Code -->
+            <h2 id="vscode" class="text-3xl font-bold text-gray-900 mb-4">VS Code (Copilot MCP)</h2>
+
+            <p class="text-gray-700 mb-4">Add to your <code>.vscode/settings.json</code>:</p>
+
+            <pre class="mb-4"><code>{
+  "mcp.servers": {
+    "presentations-ai": {
+      "type": "http",
+      "url": "https://developers.presentations.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}</code></pre>
+
+            <p class="text-gray-700 mb-8">Replace <code>YOUR_API_KEY</code> with your API key. Restart VS Code after
+                saving.</p>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Cursor -->
+            <h2 id="cursor" class="text-3xl font-bold text-gray-900 mb-4">Cursor</h2>
+
+            <p class="text-gray-700 mb-4">Add to your Cursor MCP configuration:</p>
+
+            <pre class="mb-4"><code>{
+  "mcpServers": {
+    "presentations-ai": {
+      "url": "https://developers.presentations.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}</code></pre>
+
+            <p class="text-gray-700 mb-8">Replace <code>YOUR_API_KEY</code> with your API key.</p>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Example Usage -->
+            <h2 id="examples" class="text-3xl font-bold text-gray-900 mb-4">Example Usage</h2>
+
+            <p class="text-gray-700 mb-4">Once connected on any surface, just describe what you need in natural
+                language. Claude will pick the right tool automatically.</p>
+
+            <div class="space-y-4 mb-6">
+                <div class="border border-gray-200 rounded-lg p-5">
+                    <p class="text-gray-900 font-medium mb-1">Create from topic</p>
+                    <p class="text-gray-600 italic">"Create a 10-slide pitch deck about AI in healthcare for executive
+                        leadership in PPTX format"</p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-5">
+                    <p class="text-gray-900 font-medium mb-1">Transform content</p>
+                    <p class="text-gray-600 italic">"Turn these meeting notes into a 5-slide summary presentation:
+                        [paste notes]"</p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-5">
+                    <p class="text-gray-900 font-medium mb-1">Edit existing</p>
+                    <p class="text-gray-600 italic">"Make slide 3 more concise and add a new conclusion slide"</p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-5">
+                    <p class="text-gray-900 font-medium mb-1">Single slide</p>
+                    <p class="text-gray-600 italic">"Create a title slide for my quarterly business review"</p>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Verify -->
+            <h2 id="verify" class="text-3xl font-bold text-gray-900 mb-4">Verify the Connection</h2>
+
+            <p class="text-gray-700 mb-4">After connecting, verify that all 8 tools are available:</p>
+
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">
+                <li><strong>Claude.ai / Desktop:</strong> Start a new conversation and ask <em>"What Presentations.AI
+                        tools do you have?"</em> - Claude should list all 8 tools.</li>
+                <li><strong>Claude Code:</strong> Run <code>claude mcp list</code> and look for
+                    <code>presentations-ai</code> with 8 tools.
+                </li>
+                <li><strong>VS Code:</strong> Open the Command Palette and search for "MCP" to see connected servers.
+                </li>
+            </ul>
+
+            <div class="admonition admonition-tip bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-indigo-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                        </path>
+                    </svg>
+                    <p class="text-indigo-800">Try a quick test: <em>"Create a single slide about company vision"</em>
+                        - you should get a presentation URL back within seconds.</p>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Troubleshooting -->
+            <h2 id="troubleshooting" class="text-3xl font-bold text-gray-900 mb-4">Troubleshooting</h2>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th
+                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Issue</th>
+                            <th
+                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Cause</th>
+                            <th
+                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-900">Connect button does nothing (Claude.ai)</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Server URL incorrect or server unreachable</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Verify the URL is exactly
+                                <code>https://developers.presentations.ai/mcp</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-900">OAuth login opens but redirects to dashboard
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Browser session conflict</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Try in an incognito/private window, or clear
+                                cookies for presentations.ai</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-900">Auth error (401)</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Invalid or expired API key</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Log in at <a
+                                    href="https://developers.presentations.ai"
+                                    class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>,
+                                go to Settings &gt; API, and regenerate your key.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-900">Tools not showing</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Connection not established</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Restart the application and reconnect. For
+                                Claude Code, run <code>claude mcp list</code> to verify.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-900">Insufficient credits</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Account credits exhausted</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Log in at <a
+                                    href="https://developers.presentations.ai"
+                                    class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>
+                                to check your balance and add credits.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Additional Notes -->
+            <h2 id="additional-notes" class="text-3xl font-bold text-gray-900 mb-4">Additional Notes</h2>
+
+            <ul class="list-disc list-inside text-gray-700 space-y-3 mb-6">
+                <li><strong>Transport:</strong> The MCP server uses Streamable HTTP transport (MCP protocol
+                    2025-06-18).</li>
+                <li><strong>Export formats:</strong> All tools support <code>ppt</code>, <code>pptx</code>,
+                    <code>pdf</code>, <code>image</code>, <code>render</code>, and <code>share</code> formats.
+                </li>
+                <li><strong>Async jobs:</strong> Some presentations take longer to generate. Claude will automatically
+                    poll for completion using the <code>check_job_status</code> tool.</li>
+                <li><strong>Security:</strong> API keys should never be committed to version control or shared publicly.
+                    Store them as environment variables.</li>
+                <li><strong>Mobile:</strong> Connectors added on Claude.ai (web) are automatically available on Claude
+                    Mobile (iOS/Android). You cannot add new connectors directly on mobile.</li>
+            </ul>
+
+            <p class="text-gray-700 mb-4">
+                For the full REST API documentation, see the <a href="../v1/topic-document.html"
+                    class="text-blue-600 hover:text-blue-800 underline">API Reference</a>.
+                For support, contact <a href="mailto:support@presentations.ai"
+                    class="text-blue-600 hover:text-blue-800 underline">support@presentations.ai</a>.
+            </p>
+
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#prerequisites"
+                        class="block text-sm text-gray-600 hover:text-gray-900">Prerequisites</a>
+                    <a href="#overview" class="block text-sm text-gray-600 hover:text-gray-900">Overview</a>
+                    <a href="#authentication"
+                        class="block text-sm text-gray-600 hover:text-gray-900">Authentication</a>
+                    <a href="#claude-ai" class="block text-sm text-gray-600 hover:text-gray-900">Claude.ai (Web)</a>
+                    <a href="#claude-desktop" class="block text-sm text-gray-600 hover:text-gray-900">Claude Desktop</a>
+                    <a href="#claude-code" class="block text-sm text-gray-600 hover:text-gray-900">Claude Code (CLI)</a>
+                    <a href="#vscode" class="block text-sm text-gray-600 hover:text-gray-900">VS Code (Copilot MCP)</a>
+                    <a href="#cursor" class="block text-sm text-gray-600 hover:text-gray-900">Cursor</a>
+                    <a href="#examples" class="block text-sm text-gray-600 hover:text-gray-900">Example Usage</a>
+                    <a href="#verify" class="block text-sm text-gray-600 hover:text-gray-900">Verify the Connection</a>
+                    <a href="#troubleshooting"
+                        class="block text-sm text-gray-600 hover:text-gray-900">Troubleshooting</a>
+                    <a href="#additional-notes" class="block text-sm text-gray-600 hover:text-gray-900">Additional
+                        Notes</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+</body>
+
+</html>

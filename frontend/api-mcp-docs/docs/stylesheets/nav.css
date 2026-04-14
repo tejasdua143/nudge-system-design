@@ -1,0 +1,95 @@
+/* ============================================================================
+   PAIDS Design System — Navigation Styles
+   ============================================================================ */
+
+/* Left nav */
+.md-nav { font-size: 0.8rem; line-height: 1.5; }
+.md-nav__title {
+  font-weight: 600;
+  color: var(--brand-text-primary);
+  border-bottom: 1px solid var(--brand-border-secondary);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.md-nav__link {
+  border-radius: var(--brand-radius-sm);
+  padding: 0.35rem 0.6rem;
+  margin: 1px 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.md-nav__link:hover {
+  background-color: var(--brand-bg-elevated-hover);
+  color: var(--brand-text-primary);
+}
+
+.md-nav__link--active,
+.md-nav__item--active > .md-nav__link {
+  background-color: rgba(255, 85, 0, 0.08);
+  color: #ff5500;
+  font-weight: 600;
+  border-left: 2px solid #ff5500;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Nested nav */
+.md-nav--secondary .md-nav__title {
+  color: var(--brand-text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* TOC active state */
+.md-nav--integrated .md-nav__link--active {
+  color: #ff5500;
+  font-weight: 500;
+}
+
+/* Top tabs */
+.md-tabs__link {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.25px;
+  font-size: 0.8rem;
+}
+
+.md-tabs__link--active { font-weight: 600; }
+
+.md-tabs__item--active .md-tabs__link {
+  color: #ff5500;
+}
+
+/* Breadcrumb */
+.md-path { color: rgba(255, 255, 255, 0.6); }
+.md-path__list { margin: 0; padding: 0; }
+.md-path__item::after { color: rgba(255, 255, 255, 0.4); }
+
+/* Footer nav */
+.md-footer-nav {
+  background-color: var(--brand-bg-secondary);
+}
+
+.md-footer-nav__link {
+  color: #ff5500;
+  border-radius: var(--brand-radius-sm);
+  padding: 1rem;
+  transition: background-color 0.15s ease;
+}
+
+.md-footer-nav__link:hover {
+  background-color: rgba(255, 85, 0, 0.06);
+}
+
+/* Mobile nav */
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__title {
+    background-color: #171717;
+    color: white;
+  }
+
+  .md-nav--primary .md-nav__title--site {
+    background-color: #0a0a0a;
+  }
+}

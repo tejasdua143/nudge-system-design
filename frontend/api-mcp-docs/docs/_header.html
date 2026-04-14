@@ -1,0 +1,96 @@
+<header class="bg-primary-blue text-white sticky top-0 z-50 border-b border-blue-800">
+    <div class="max-w-full mx-auto">
+        <!-- Top Row: Logo and Login -->
+        <div class="flex items-center justify-between h-12 px-6 border-b border-blue-800">
+            <div class="flex items-center space-x-3">
+                <img id="header-logo" src="assets/presentations_ai_white.svg" alt="Presentations.AI" class="h-8" style="max-width: 180px;">
+            </div>
+            <div class="flex items-center space-x-4">
+                <a id="login-link" href="/docs/login"
+                    class="text-white hover:text-gray-200 text-sm">Log In</a>
+                <script>
+                    (function() {
+                        const hostname = window.location.hostname;
+                        let loginUrl;
+                        if (hostname.includes('dev-apis') || hostname.includes('devmcp')) {
+                            loginUrl = 'https://dev-apis.presentations.ai/docs/login';
+                        } else if (hostname.includes('developers')) {
+                            loginUrl = 'https://developers.presentations.ai/docs/login';
+                        } else {
+                            loginUrl = window.location.origin + '/docs/login';
+                        }
+                        const loginLink = document.getElementById('login-link');
+                        if (loginLink) {
+                            loginLink.href = loginUrl;
+                        }
+                    })();
+                </script>
+                <button class="text-white hover:text-gray-200 p-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Bottom Row: Navigation and Search -->
+        <div class="flex items-center justify-between h-12 px-6">
+            <nav class="hidden md:flex items-center space-x-1">
+                <a href="index.html" class="nav-tab" data-tab="overview">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                    <span>Overview</span>
+                </a>
+                <a href="quickstart.html" class="nav-tab" data-tab="api-reference">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <span>API Reference</span>
+                </a>
+            </nav>
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <input type="text" placeholder="Search"
+                        class="bg-blue-900/50 border border-blue-700 text-white placeholder-gray-300 px-3 py-1.5 rounded text-sm w-40 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                    <span class="absolute right-2.5 top-1.5 text-gray-400 text-xs">⌘K</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<style>
+    .nav-tab {
+        @apply px-3 py-1.5 rounded-md text-white text-sm font-medium flex items-center space-x-1.5 transition-colors;
+    }
+
+    .nav-tab:hover {
+        @apply bg-blue-800;
+    }
+
+    .nav-tab.active {
+        @apply bg-accent-blue text-white;
+    }
+</style>
+
+<script>
+        // Set active tab based on current page
+        document.addEventListener('DOMContentLoaded', function () {
+        const currentPath = window.location.pathname;
+        const tabs = document.querySelectorAll('.nav-tab');
+
+        tabs.forEach(tab => {
+            const href = tab.getAttribute('href');
+            if (currentPath.includes(href) || (currentPath === '/' && href.includes('index.html'))) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+    });
+</script>

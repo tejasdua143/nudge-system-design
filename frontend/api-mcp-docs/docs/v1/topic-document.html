@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create from Topic - Presentations.AI API Documentation</title>
+    <link rel="icon" href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .admonition {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .admonition-info {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .admonition-success {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .admonition-warning {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .admonition-tip {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+        }
+
+        details {
+            margin: 1rem 0;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 0.75rem;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        details summary:hover {
+            background-color: #e5e7eb;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        details>div {
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+            (function () {
+                const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+                const depth = Math.max(parts.length - 1, 0);
+                const prefix = depth > 0 ? '../'.repeat(depth) : '';
+                const load = (src) => new Promise((resolve) => {
+                    const s = document.createElement('script');
+                    s.src = prefix + src;
+                    s.onload = resolve;
+                    document.head.appendChild(s);
+                });
+            load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                if (window.renderHeader) window.renderHeader(prefix);
+            })).then(() => load('assets/code-examples.js'));
+            })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API REFERENCE</h2>
+                <nav class="space-y-0.5">
+                    <a href="../index.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Introduction to Presentations.AI API offerings
+                    </a>
+                    <a href="../../quickstart.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="../../register/register.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Account Registration
+                    </a>
+                    <a href="topic-document.html"
+                        class="block px-3 py-2 rounded-md bg-light-accent text-gray-900 font-medium text-sm">
+                        Create from Topic
+                    </a>
+                    <a href="document-file.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from File
+                    </a>
+                    <a href="../content-updates/createfromcontent.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Content
+                      </a>
+                    <a href="topic-singleslide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create Single Slide
+                    </a>
+                    <a href="../../mcp-v1/create-document-from-content.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        MCP Integration
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">Presentations.AI API Documentation</h1>
+
+            <div class="admonition admonition-warning mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-yellow-900">🚧 Beta API Notice</strong>
+                        <p class="text-yellow-800 mt-1">The Generate API is currently in beta. Functionality, rate
+                            limits, and pricing are subject to change.</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-gray-700 mb-6">
+                This document describes the key endpoints of the Presentations.AI API for creating and managing
+                AI-generated presentations. All endpoints require authentication using a Bearer token. Log in at <a
+                    href="https://developers.presentations.ai"
+                    class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>,
+                then go to Settings &gt; API &gt; Register for API &gt; Reveal to get your key.
+            </p>
+
+            <div class="admonition admonition-info mb-8">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-blue-900">📚 Available Endpoints</strong>
+                        <ul class="list-disc list-inside text-blue-800 mt-2 space-y-1">
+                            <li><a href="topic-document.html" class="underline"><strong>Create from Topic</strong></a> -
+                                Generate multi-slide presentations from topics</li>
+                            <li><a href="topic-singleslide.html" class="underline"><strong>Create Single
+                                        Slide</strong></a> - Generate focused single-slide presentations</li>
+                            <li><a href="document-file.html" class="underline"><strong>Create from File</strong></a> -
+                                Transform uploaded files into presentations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">POST <code class="text-lg">/api/v1/topic/document</code>
+            </h2>
+
+            <p class="text-gray-700 mb-6">Creates a presentation from a given topic using AI.</p>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Authorization</h3>
+            <p class="text-gray-700 mb-6">Include your API key in the <code>Authorization</code> header as a Bearer
+                token.</p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Request Body</h3>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Field</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Required</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>topic</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Yes</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Main topic for the presentation.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>slideCount</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Number of slides to generate (1-50).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>language</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Language for generation (default: English).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>domain</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Context domain (e.g., education, business).</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>exportType</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Yes</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">One of <code>ppt</code>, <code>pptx</code>,
+                                <code>pdf</code>, <code>image</code>, <code>render</code>, <code>share</code>.
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>targetAudience</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Target audience (e.g., students, executives).</td>
+                        </tr>
+                        
+                        </tr>
+                        
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>tone</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Tone (e.g., professional, casual, educational).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>callback_url</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">HTTPS URL for async callback.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>immediatePollUrl</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">boolean</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">No</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">If true, returns poll URL immediately.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Example Request</h3>
+            <div id="code-examples-topic-document"></div>
+            <script>
+                if (window.renderCodeExamples) {
+                    window.renderCodeExamples(
+                        'code-examples-topic-document',
+                        '/api/v1/topic/document',
+                        'POST',
+                        {
+                            topic: "Introduction to Machine Learning",
+                            slideCount: 10,
+                            language: "en",
+                            domain: "presentations.ai",
+                            exportType: "ppt",
+                            targetAudience: "university students",
+                            tone: "educational"
+                        },
+                        {
+                            status: 0,
+                            docid: 199943,
+                            docurl: "https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx",
+                            animated_url: "https://devcdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx"
+                        }
+                    );
+                }
+            </script>
+
+            <hr class="my-8 border-gray-200">
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Callback URL Flow</h3>
+
+            <p class="text-gray-700 mb-4">If you provide a valid <code>callback_url</code>, the API will respond
+                immediately with a job ID and queue status:</p>
+
+            <p class="text-gray-700 mb-2"><strong>Immediate Response (with valid callback_url):</strong></p>
+            <pre class="mb-4"><code>{
+    "job_id": "b1ed6035-1872-49d1-b773-34b920e74204",
+    "status": "queued"
+}</code></pre>
+
+            <p class="text-gray-700 mb-2"><strong>Immediate Response (with invalid callback_url):</strong></p>
+            <pre class="mb-4"><code>{
+    "status": 1,
+    "error": "Invalid callback_url. Must be a valid HTTPS URL"
+}</code></pre>
+
+            <p class="text-gray-700 mb-4">When processing is complete, the result (same as the synchronous response
+                below) will be POSTed to your callback URL.</p>
+
+            <p class="text-gray-700 mb-2"><strong>If you do not provide a <code>callback_url</code> (synchronous
+                    flow):</strong></p>
+            <p class="text-gray-700 mb-4">The response will be returned directly in the API call, depending on
+                <code>exportType</code>:
+            </p>
+
+            <h4 class="text-lg font-semibold text-gray-900 mb-3">Timeout & Polling (no <code>callback_url</code>)</h4>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-4">
+                <li>If processing takes longer than <strong>5 minutes</strong>, the API returns immediately while
+                    continuing in the background.</li>
+                <li>You will receive:</li>
+            </ul>
+            <pre class="mb-4"><code>{
+  "status": 1,
+  "pollUrl": "https://developers.presentations.ai/api/v1/polljob/<job_id>"
+}</code></pre>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-6">
+                <li>Poll the job status with
+                    <code>GET https://developers.presentations.ai/api/v1/polljob/&lt;job_id&gt;</code> (same Bearer
+                    token).
+                </li>
+                <li>In-progress response:</li>
+            </ul>
+            <pre class="mb-4"><code>{
+  "status": 1,
+  "message": "Document is being processed"
+}</code></pre>
+            <p class="text-gray-700 mb-6">Completed response mirrors the success format for your
+                <code>exportType</code>.
+            </p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Response depends on the <code>exportType</code></h2>
+
+            <p class="text-gray-700 mb-6">Choose the <strong><code>exportType</code></strong> to view its corresponding
+                response format:</p>
+
+            <details class="mb-4">
+                <summary><strong>exportType = ppt/pptx</strong> (Editable PowerPoint File)</summary>
+                <div>
+                    <p class="text-gray-700 mb-2"><strong>Success (200):</strong></p>
+                    <pre class="mb-4"><code>{
+    "status": 0,
+    "docid": 199943,
+    "docurl": "https://cdn.presentations.ai/exports/199943/1755583984885/Digital%20Marketing%20for%20Small%20Businesses.pptx",
+    "animated_url": "https://devcdn.presentations.ai/exports/199943/1755583984566/Digital%20Marketing%20for%20Small%20Businesses_animated.pptx"
+}</code></pre>
+                    <p class="text-gray-700 mb-2"><strong>Failure (400, 500):</strong></p>
+                    <pre><code>{
+  "status": 1,
+  "error": "Topic cannot be empty"
+}</code></pre>
+                </div>
+            </details>
+
+            <details class="mb-4">
+                <summary><strong>exportType = pdf</strong> (Sharable PDF)</summary>
+                <div>
+                    <p class="text-gray-700 mb-2"><strong>Success (200):</strong></p>
+                    <pre class="mb-4"><code>{
+    "status": 0,
+    "docid": 199926,
+    "docurl": "https://cdn.presentations.ai/pdfs/199926/Digital%20Marketing%20for%20Small%20Businesses.pdf",
+    "animated_url": null
+}</code></pre>
+                    <p class="text-gray-700 mb-2"><strong>Failure:</strong></p>
+                    <pre><code>{
+  "status": 1,
+  "error": "Failed to generate PDF"
+}</code></pre>
+                </div>
+            </details>
+
+            <details class="mb-4">
+                <summary><strong>exportType = image</strong> (Slide Images)</summary>
+                <div>
+                    <p class="text-gray-700 mb-2"><strong>Success (200):</strong></p>
+                    <pre class="mb-4"><code>{
+    "status": 0,
+    "docid": 199953,
+    "docurl": "https://cdn.presentations.ai/pdfs/199953/Digital%20Marketing%20for%20Small%20Businesses.zip",
+    "animated_url": null
+}</code></pre>
+                    <p class="text-gray-700 mb-2"><strong>Failure:</strong></p>
+                    <pre><code>{
+  "status": 1,
+  "error": "Image generation failed"
+}</code></pre>
+                </div>
+            </details>
+
+            <details class="mb-4">
+                <summary><strong>exportType = render</strong> (Rendered Preview)</summary>
+                <div>
+                    <p class="text-gray-700 mb-2"><strong>Success (200):</strong></p>
+                    <pre class="mb-4"><code>{
+    "status": 0,
+    "docid": 199944,
+    "docurl": "https://cdn.presentations.ai/docs/edit/199944"
+}</code></pre>
+                    <p class="text-gray-700 mb-2"><strong>Failure:</strong></p>
+                    <pre><code>{
+  "status": 1,
+  "error": "Failed to render presentation"
+}</code></pre>
+                </div>
+            </details>
+
+            <details class="mb-4">
+                <summary><strong>exportType = share</strong> (Public Shareable Link)</summary>
+                <div>
+                    <p class="text-gray-700 mb-2"><strong>Success (200):</strong></p>
+                    <pre class="mb-4"><code>{
+    "status": 0,
+    "docid": 199945,
+    "docurl": "https://cdn.presentations.ai/view/YJJOFilucT"
+}</code></pre>
+                    <p class="text-gray-700 mb-2"><strong>Failure:</strong></p>
+                    <pre><code>{
+  "status": 1,
+  "error": "Failed to create share link"
+}</code></pre>
+                </div>
+            </details>
+
+            <hr class="my-8 border-gray-200">
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Usage Notes</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+                <li><strong>Authentication:</strong> Log in at <a
+                        href="https://developers.presentations.ai"
+                        class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai</a>,
+                    go to Settings &gt; API &gt; Register for API &gt; Reveal to get your key.
+                    Include it as <code>Authorization: Bearer &lt;your-api-key&gt;</code>.</li>
+                <li><strong>Export Types:</strong>
+                    <ul class="list-disc list-inside ml-6 mt-1">
+                        <li><code>ppt/pptx</code> → Downloadable PowerPoint</li>
+                        <li><code>pdf</code> → Sharable PDF</li>
+                        <li><code>image</code> → Slide previews in image format</li>
+                        <li><code>render</code> → Rendered preview of the presentation</li>
+                        <li><code>share</code> → Public shareable link</li>
+                    </ul>
+                </li>
+                <li><strong>Best Practices:</strong> Specify <code>domain</code> for better context, use descriptive
+                    topics, and test with small <code>slideCount</code> values initially.</li>
+                <li><strong>Target Audience & Tone:</strong> Use <code>targetAudience</code> to tailor content for
+                    specific groups (e.g., students, executives) and <code>tone</code> to set the style (e.g.,
+                    professional, casual, educational).</li>
+                <li><strong>Callback URL:</strong> If provided and valid, results will be sent asynchronously to your
+                    endpoint. If invalid, you will receive an error message.</li>
+            </ul>
+
+            <hr class="my-8 border-gray-200">
+
+            <p class="text-gray-700">
+                For more details, visit <a href="https://app.presentations.ai"
+                    class="text-blue-600 hover:text-blue-800 underline">Presentations.AI</a> or contact <a
+                    href="mailto:support@presentations.ai"
+                    class="text-blue-600 hover:text-blue-800 underline">support@presentations.ai</a>.
+            </p>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto hidden lg:block">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#authorization" class="block text-sm text-gray-600 hover:text-gray-900">Authorization</a>
+                    <a href="#request-body" class="block text-sm text-gray-600 hover:text-gray-900">Request Body</a>
+                    <a href="#callback-url-flow" class="block text-sm text-gray-600 hover:text-gray-900">Callback URL
+                        Flow</a>
+                    <a href="#response" class="block text-sm text-gray-600 hover:text-gray-900">Response depends on
+                        exportType</a>
+                    <a href="#usage-notes" class="block text-sm text-gray-600 hover:text-gray-900">Usage Notes</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+</body>
+
+</html>

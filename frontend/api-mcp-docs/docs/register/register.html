@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Registration - Presentations.AI Developer Documentation</title>
+    <link rel="icon"
+        href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .admonition {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .admonition-info {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .admonition-success {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .admonition-warning {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .admonition-tip {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+            (function () {
+                const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+                const depth = Math.max(parts.length - 1, 0);
+                const prefix = depth > 0 ? '../'.repeat(depth) : '';
+                const load = (src) => new Promise((resolve) => {
+                    const s = document.createElement('script');
+                    s.src = prefix + src;
+                    s.onload = resolve;
+                    document.head.appendChild(s);
+                });
+                load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                    if (window.renderHeader) window.renderHeader(prefix);
+                }));
+            })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">GETTING STARTED</h2>
+                <nav class="space-y-0.5">
+                    <a href="../index.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Introduction to Presentations.AI API offerings
+                    </a>
+                    <a href="../../quickstart.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="register.html"
+                        class="block px-3 py-2 rounded-md bg-light-accent text-gray-900 font-medium text-sm">
+                        Account Registration
+                    </a>
+                    <a href="../../v1/topic-document.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Topic
+                    </a>
+                    <a href="../../v1/document-file.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from File
+                    </a>
+                    <a href="../content-updates/createfromcontent.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Content
+                      </a>
+                    <a href="../../v1/topic-singleslide.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create Single Slide
+                    </a>
+                    <a href="../../mcp-v1/create-document-from-content.html"
+                        class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        MCP Integration
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">Account Signup</h1>
+
+            <p class="text-base text-gray-700 mb-8 leading-relaxed">
+                To start using our API you need to register with our platform. Following are the steps involved:
+            </p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">1. Register for an account</h2>
+
+            <p class="text-gray-700 mb-4">
+                Go to the developer portal at <a id="register-link-3" href="/docs/login"
+                    class="text-blue-600 hover:text-blue-800 underline">developers.presentations.ai/docs/login</a>
+            </p>
+            <script>
+                (function() {
+                    const hostname = window.location.hostname;
+                    let loginUrl;
+                    if (hostname.includes('dev-apis') || hostname.includes('devmcp')) {
+                        loginUrl = 'https://dev-apis.presentations.ai/docs/login';
+                    } else if (hostname.includes('developers')) {
+                        loginUrl = 'https://developers.presentations.ai/docs/login';
+                    } else {
+                        loginUrl = window.location.origin + '/docs/login';
+                    }
+                    const registerLink = document.getElementById('register-link-3');
+                    if (registerLink) {
+                        registerLink.href = loginUrl;
+                    }
+                })();
+            </script>
+
+            <img src="../../assets/images/signup.png" alt="Registration" class="rounded-lg shadow-md mb-6 max-w-2xl">
+
+            <p class="text-gray-700 mb-6">
+                You can sign up using your LinkedIn/Google/Microsoft credentials or use your own email to sign up.
+                However you will have to confirm your account when you use your own credentials.
+            </p>
+
+            <div
+                class="admonition admonition-info bg-blue-50 dark:bg-gray-800 border-l-4 border-blue-400 dark:border-blue-500 p-4 mb-8">
+                <p class="text-blue-800 dark:text-blue-200"><strong>Note:</strong> If you have already signed up on our
+                    platform then you can directly login</p>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">2. Request for API Key</h2>
+
+            <p class="text-gray-700 mb-4">Click on the Register for API button.</p>
+
+            <img src="../../assets/images/requestApi.png" alt="API Request" class="rounded-lg shadow-md mb-6 max-w-2xl">
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">3. API Details</h2>
+
+            <p class="text-gray-700 mb-4">
+                After signup, the api key is displayed. Click on the Reveal button to see the key. Use this key as
+                Bearer Token in your API requests. On Sign-up 200 credits are given to you.
+            </p>
+
+            <img src="../../assets/images/api.png" alt="API Details" class="rounded-lg shadow-md mb-6 max-w-2xl">
+
+            <p class="text-gray-700 mb-8">
+                Click on the Reset button to generate a new API Key.
+            </p>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside
+            class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto ">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#register" class="block text-sm text-gray-600 hover:text-gray-900">1. Register for an
+                        account</a>
+                    <a href="#request-api-key" class="block text-sm text-gray-600 hover:text-gray-900">2. Request for
+                        API Key</a>
+                    <a href="#api-details" class="block text-sm text-gray-600 hover:text-gray-900">3. API Details</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+</body>
+
+</html>

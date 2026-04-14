@@ -1,0 +1,82 @@
+site_name: Presentations.AI Developer Documentation
+site_description: Complete guide to Presentations.AI REST API and MCP server integration
+
+site_url: https://dev-apis.presentations.ai
+
+theme:
+    name: material
+    logo: assets/presentations_ai_white.svg
+    favicon: assets/favicon.ico
+    custom_dir: overrides
+    palette:
+        - scheme: default
+          primary: custom
+          accent: custom
+          toggle:
+              icon: material/brightness-7
+              name: Switch to dark mode
+        - scheme: slate
+          primary: custom
+          accent: custom
+          toggle:
+              icon: material/brightness-4
+              name: Switch to light mode
+    features:
+        - navigation.instant
+        - navigation.instant.prefetch
+        - navigation.tracking
+        - navigation.sections
+        - navigation.expand
+        - toc.integrate
+        - content.code.copy
+        - content.code.select
+        - content.tabs.link
+
+markdown_extensions:
+    - admonition
+    - attr_list
+    - md_in_html
+    - pymdownx.superfences
+    - pymdownx.highlight:
+          anchor_linenums: true
+    - pymdownx.tabbed:
+          alternate_style: true
+    - toc:
+          permalink: true
+
+plugins:
+    - search
+    - macros
+
+nav:
+    - Home:
+          - Overview: index.md
+    - Getting Started:
+          - Quick Start: quickstart.md
+          - Account Registration: register/register.md
+    - API Reference:
+          - Endpoints:
+                - Create from Topic: v1/topic-document.md
+                - Create from File: v1/document-file.md # <-- Add this line
+                - Create Single Slide: v1/topic-singleslide.md # <-- Add this line
+          - Error Handling: error-handling.md
+    - MCP Server:
+          - Claude Desktop Setup: mcp-v1/create-document-from-content.md
+    # - Credits & Billing:
+    #     - API Usage: credits/credits.md
+extra_css:
+    - stylesheets/brand.css
+    - stylesheets/nav.css
+    - stylesheets/layout.css
+    - stylesheets/code.css
+
+extra:
+    generator: false
+    main_url: "https://app.presentations.ai"
+    developer_url_login: "https://dev-apis.presentations.ai/docs/login"
+    developer_url: "https://developers.presentations.ai"
+    response_url: "https://dev.presentations.ai"
+    developer_portal: "https://developers.presentations.ai/docs/developer"
+    docurl: "https://cdn.presentations.ai"
+
+copyright: Copyright &copy; 2025 Presentations.AI

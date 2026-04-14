@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Document Slide - Presentations.AI API Documentation</title>
+    <link rel="icon" href="https://cdnqcpai.pitchdeck.io/docs/brand/pai/pai.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e3a8a',
+                        'accent-blue': '#3b82f6',
+                        'light-accent': '#e0e7ff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+        pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        .admonition {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .admonition-warning {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+        (function () {
+            const parts = window.location.pathname.replace(/^\/+/, '').split('/');
+            const depth = Math.max(parts.length - 1, 0);
+            const prefix = depth > 0 ? '../'.repeat(depth) : '';
+            const load = (src) => new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = prefix + src;
+                s.onload = resolve;
+                document.head.appendChild(s);
+            });
+            load('assets/theme.js').then(() => load('assets/header.js').then(() => {
+                if (window.renderHeader) window.renderHeader(prefix);
+            }));
+        })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar -->
+        <aside class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen sticky h-[calc(100vh-6rem)] overflow-y-auto">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API REFERENCE</h2>
+                <nav class="space-y-0.5">
+                    <a href="../index.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Introduction to Presentations.AI API offerings
+                    </a>
+                    <a href="../../quickstart.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Quick Start Guide
+                    </a>
+                    <a href="../../register/register.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Account Registration
+                    </a>
+                    <a href="topic-document.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from Topic
+                    </a>
+                    <a href="document-file.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create from File
+                    </a>
+                    <a href="topic-singleslide.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        Create Single Slide
+                    </a>
+                    <a href="../../mcp-v1/create-document-from-content.html" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 text-sm">
+                        MCP Integration
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-10 py-6 md:py-10">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">POST <code class="text-lg">/v1/document/slide</code></h1>
+
+            <div class="admonition admonition-warning mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <strong class="text-yellow-900">🚧 Beta API Notice</strong>
+                        <p class="text-yellow-800 mt-1">The Generate API is currently in beta. Functionality, rate limits, and pricing are subject to change.</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-gray-700 mb-8 leading-relaxed">
+                Updates slide content for an existing document.
+            </p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">🔒 Authorization</h2>
+            <p class="text-gray-700 mb-6">Requires <code>checkWorkspace</code>.</p>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">📥 Request Body</h2>
+            
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Field</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Required</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>docId</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">✅</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Document ID to update.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>slides</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string (JSON)</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">✅</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">JSON array of slide content objects.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-gray-700 mb-4">Each slide object in the array must include:</p>
+
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slide Field</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>action</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Type of update (e.g., <code>update</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>slideContent</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">string</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">The updated slide text.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><code>index</code></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">number</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">Position of the slide.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">📤 Response</h2>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Success (200)</h3>
+            <pre class="mb-6"><code>{
+  "status": 0,
+  "message": "Slides updated successfully"
+}</code></pre>
+
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Failure</h3>
+            <pre class="mb-8"><code>{
+  "status": 1,
+  "error": "Slide content cannot be empty"
+}</code></pre>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside class="hidden lg:block w-64 bg-white border-l border-gray-200 min-h-screen sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto ">
+            <div class="p-5">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">TABLE OF CONTENTS</h2>
+                <nav class="space-y-1.5">
+                    <a href="#authorization" class="block text-sm text-gray-600 hover:text-gray-900">Authorization</a>
+                    <a href="#request-body" class="block text-sm text-gray-600 hover:text-gray-900">Request Body</a>
+                    <a href="#response" class="block text-sm text-gray-600 hover:text-gray-900">Response</a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+</body>
+</html>
