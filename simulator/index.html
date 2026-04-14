@@ -555,6 +555,12 @@
     font-family: 'PT Mono', monospace;
     font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: center;
   }
+  .rel-val {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px; min-width: 24px; text-align: center; font-weight: 700;
+  }
+  .rel-pass { color: var(--green); }
+  .rel-fail { color: var(--red); }
   .badge {
     font-family: 'Montserrat', sans-serif;
     font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
@@ -978,6 +984,7 @@
           <thead>
             <tr>
               <th>Feature</th>
+              <th>Rel</th>
               <th>Direct</th>
               <th>Uni (×0.4)</th>
               <th>Score</th>
@@ -1578,38 +1585,33 @@ function addStateSignals() {
 // 8b. Relevance Filter — determines which features are relevant to this user
 // ══════════════════════════════════════════════════════════════════════════════
 
+var RELEVANCE_THRESHOLD = 3;
+
 function computeRelevantFeatures() {
   var u = state.user;
   var relevant = new Set();
+  var relevanceScores = {};
 
   FEATURES.forEach(function(f) {
-    var score = 0;
+    // Relevance = mindset vector (0-5) + prompt synthesis (0-5)
+    // Scale 0-10. Only these two inputs — they represent user context + prompt.
+    var mindsetScore = (u.mindsetVector || {})[f.id] || 0;
+    var promptScore = (u.promptSynthesis || {})[f.id] || 0;
+    var relevance = mindsetScore + promptScore;
 
-    // Layer 1: Mindset vector contribution (0-5)
-    var mindset = u.mindsetVector || {};
-    score += (mindset[f.id] || 0);
+    relevanceScores[f.id] = relevance;
 
-    // Layer 2: Audience stakes contribution
-    var stakesSignal = 'stakes-' + (u.audienceStakes || 'internal');
-    var stakesWeights = DIRECT_MAP[stakesSignal] || {};
-    score += (stakesWeights[f.id] || 0);
-
-    // Layer 3: Prompt synthesis contribution (0-5)
-    var synthesis = u.promptSynthesis || {};
-    score += (synthesis[f.id] || 0);
-
-    // A feature is relevant if its combined context score > 0
-    // This means at least one context layer considers it useful
-    if (score > 0) {
+    if (relevance >= RELEVANCE_THRESHOLD) {
       relevant.add(f.id);
     }
   });
 
-  // hire-team is always potentially relevant (it fires on struggle signals,
-  // which come from actions, not context layers)
+  // hire-team is always potentially relevant (fires on struggle signals
+  // from actions, not context layers)
   relevant.add('hire-team');
 
   state.relevantFeatures = relevant;
+  state.relevanceScores = relevanceScores;
   return relevant;
 }
 
@@ -2508,8 +2510,12 @@ function renderMatrix() {
 
     var rowClass = !isRelevant ? 'filtered-row' : isTop && isAbove ? 'top-pick' : isAbove && !isShown ? 'qualified' : '';
 
+    var relScore = (state.relevanceScores || {})[f.id] || 0;
+    var relClass = relScore >= RELEVANCE_THRESHOLD ? 'rel-pass' : 'rel-fail';
+
     return '<tr class="' + rowClass + '">' +
       '<td class="feature-name">' + f.icon + ' ' + f.name + '</td>' +
+      '<td class="rel-val ' + relClass + '">' + relScore + '</td>' +
       '<td class="direct-val">' + f.direct + '</td>' +
       '<td class="universal-val">' + f.universalContrib + '</td>' +
       '<td class="score-bar-cell"><div class="score-bar-wrap">' +
