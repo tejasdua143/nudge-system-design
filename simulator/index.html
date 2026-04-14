@@ -563,6 +563,9 @@
   .badge.fire { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
   .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
   .badge.shown { background: rgba(0,0,0,0.03); color: var(--text-dim); border: 1px solid var(--border-light); }
+  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; }
+  .filtered-row { opacity: 0.35; }
+  .filtered-row td { color: var(--text-dim) !important; }
 
   /* ── Nudge Preview ── */
   .nudge-preview-empty {
@@ -1392,6 +1395,7 @@ let state = {
   lastMilestoneTime: 0,
   milestoneLog: [],
   isUserActive: false,
+  relevantFeatures: new Set(),
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1458,6 +1462,9 @@ function generateUser() {
 
   // Credit/session/domain signals
   addStateSignals();
+
+  // Compute which features are relevant for this user
+  computeRelevantFeatures();
 
   return state.user;
 }
@@ -1568,6 +1575,45 @@ function addStateSignals() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// 8b. Relevance Filter — determines which features are relevant to this user
+// ══════════════════════════════════════════════════════════════════════════════
+
+function computeRelevantFeatures() {
+  var u = state.user;
+  var relevant = new Set();
+
+  FEATURES.forEach(function(f) {
+    var score = 0;
+
+    // Layer 1: Mindset vector contribution (0-5)
+    var mindset = u.mindsetVector || {};
+    score += (mindset[f.id] || 0);
+
+    // Layer 2: Audience stakes contribution
+    var stakesSignal = 'stakes-' + (u.audienceStakes || 'internal');
+    var stakesWeights = DIRECT_MAP[stakesSignal] || {};
+    score += (stakesWeights[f.id] || 0);
+
+    // Layer 3: Prompt synthesis contribution (0-5)
+    var synthesis = u.promptSynthesis || {};
+    score += (synthesis[f.id] || 0);
+
+    // A feature is relevant if its combined context score > 0
+    // This means at least one context layer considers it useful
+    if (score > 0) {
+      relevant.add(f.id);
+    }
+  });
+
+  // hire-team is always potentially relevant (it fires on struggle signals,
+  // which come from actions, not context layers)
+  relevant.add('hire-team');
+
+  state.relevantFeatures = relevant;
+  return relevant;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // 9. ScoringEngine — calculateScores()
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -1620,9 +1666,10 @@ function evaluateAndFire() {
 
   const scores = calculateScores();
 
-  // Rank features by score, filter above threshold and not already shown
+  // Rank features by score, filter: relevant + above threshold + not already shown
   const ranked = FEATURES
     .map(f => ({ ...f, ...scores[f.id] }))
+    .filter(f => state.relevantFeatures.has(f.id))
     .filter(f => f.total >= CONFIG.THRESHOLD)
     .filter(f => !state.featuresShownThisSession.has(f.id))
     .sort((a, b) => b.total - a.total);
@@ -1815,6 +1862,7 @@ function rebuildSignalsFromActions() {
   state.activeSignals = new Set();
   profileUser();
   addStateSignals();
+  computeRelevantFeatures();
   actionSignals.forEach(function(s) { state.activeSignals.add(s); });
 }
 
@@ -1873,6 +1921,7 @@ function resetSimulator() {
     lastMilestoneTime: 0,
     milestoneLog: [],
     isUserActive: false,
+    relevantFeatures: new Set(),
     _llmLoading: false,
     _llmError: null,
     _llmSource: null,
@@ -2429,12 +2478,20 @@ function renderMatrix() {
 
   var topId = ranked.length > 0 && ranked[0].total >= CONFIG.THRESHOLD && !state.featuresShownThisSession.has(ranked[0].id) ? ranked[0].id : null;
 
+  // Separate relevant and filtered features — relevant first, then filtered (dimmed)
+  var relevant = ranked.filter(function(f) { return state.relevantFeatures.has(f.id); });
+  var filtered = ranked.filter(function(f) { return !state.relevantFeatures.has(f.id); });
+
+  // Only consider relevant features for NEXT badge
+  var relevantTopId = relevant.length > 0 && relevant[0].total >= CONFIG.THRESHOLD && !state.featuresShownThisSession.has(relevant[0].id) ? relevant[0].id : null;
+
   var body = document.getElementById('matrix-body');
-  body.innerHTML = ranked.map(function(f) {
+  body.innerHTML = relevant.concat(filtered).map(function(f) {
+    var isRelevant = state.relevantFeatures.has(f.id);
     var pct = Math.min((f.total / CONFIG.MAX_SCORE) * 100, 100);
     var threshPct = (CONFIG.THRESHOLD / CONFIG.MAX_SCORE) * 100;
     var isAbove = f.total >= CONFIG.THRESHOLD;
-    var isTop = f.id === topId;
+    var isTop = f.id === relevantTopId;
     var isShown = state.featuresShownThisSession.has(f.id);
 
     var barClass = 'low';
@@ -2444,11 +2501,12 @@ function renderMatrix() {
     if (isTop) { barClass = 'top'; numClass = 'top'; }
 
     var badge = '';
-    if (isShown) badge = '<span class="badge shown">SHOWN</span>';
+    if (!isRelevant) badge = '<span class="badge filtered">FILTERED</span>';
+    else if (isShown) badge = '<span class="badge shown">SHOWN</span>';
     else if (isTop && isAbove) badge = '<span class="badge fire">NEXT</span>';
     else if (isAbove) badge = '<span class="badge queued">QUEUED</span>';
 
-    var rowClass = isTop && isAbove ? 'top-pick' : isAbove && !isShown ? 'qualified' : '';
+    var rowClass = !isRelevant ? 'filtered-row' : isTop && isAbove ? 'top-pick' : isAbove && !isShown ? 'qualified' : '';
 
     return '<tr class="' + rowClass + '">' +
       '<td class="feature-name">' + f.icon + ' ' + f.name + '</td>' +
@@ -2479,7 +2537,8 @@ function renderGuardrails() {
     { label: 'Pro user', value: state.user.isProUser ? 'Yes' : 'No', status: state.user.isProUser ? 'blocked' : 'ok' },
     { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
     { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
-    { label: 'Features shown', value: state.featuresShownThisSession.size + '/9', status: 'ok' },
+    { label: 'Relevant', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/9', status: 'ok' },
+    { label: 'Shown', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 9), status: 'ok' },
     { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
     { label: 'Activity', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
   ].map(function(g) {
