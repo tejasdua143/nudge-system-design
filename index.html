@@ -1004,37 +1004,37 @@
 </head>
 <body>
   <div class="header">
-    <h1>Nudge Simulator v2</h1>
-    <p>Milestone-driven, per-feature scoring. Each action adds signals that score toward specific Pro features. Highest scorer above threshold fires.</p>
+    <h1>Smart Nudge Simulator</h1>
+    <p>Simulate how the nudge system decides which Pro feature to show, when, and why. Toggle user actions on the right and watch scores change in real time.</p>
   </div>
   <div class="layout">
     <div class="left-col">
       <div class="panel" id="panel-user">
-        <div class="panel-title">User Context</div>
+        <div class="panel-title">User Profile</div>
         <div id="user-context"></div>
-        <button class="reshuffle-btn" onclick="resetSimulator()">Reshuffle User</button>
+        <button class="reshuffle-btn" onclick="resetSimulator()">New Random User</button>
       </div>
       <div class="panel" id="panel-prompt">
-        <div class="panel-title">Prompt Analysis</div>
+        <div class="panel-title">Prompt Intelligence</div>
         <div id="prompt-input-area"></div>
         <div id="prompt-analysis"></div>
       </div>
     </div>
     <div class="center-col">
       <div class="panel" id="panel-guardrails">
-        <div class="panel-title">Guardrails</div>
+        <div class="panel-title">Safety Checks</div>
         <div class="guardrail-bar" id="guardrail-bar"></div>
       </div>
       <div class="panel" id="panel-matrix">
-        <div class="panel-title">Feature Score Matrix</div>
+        <div class="panel-title">Feature Scores</div>
         <table class="matrix-table">
           <thead>
             <tr>
               <th>Feature</th>
-              <th>Rel</th>
-              <th>Direct</th>
-              <th>Uni (×0.4)</th>
-              <th>Score</th>
+              <th>Fit</th>
+              <th>Action</th>
+              <th>Context</th>
+              <th>Total</th>
               <th></th>
             </tr>
           </thead>
@@ -1042,21 +1042,22 @@
         </table>
       </div>
       <div class="panel" id="panel-nudge-preview">
-        <div class="panel-title">Nudge Preview</div>
+        <div class="panel-title">Live Preview</div>
         <div id="nudge-preview"></div>
       </div>
       <div class="panel" id="panel-feed">
-        <div class="panel-title">Milestone Feed</div>
+        <div class="panel-title">Nudge History</div>
         <div id="feed-content"></div>
       </div>
     </div>
     <div class="right-col">
       <div class="panel" id="panel-actions">
-        <div class="panel-title">Actions</div>
+        <div class="panel-title">User Actions</div>
         <div class="action-grid" id="action-grid"></div>
       </div>
       <div class="panel" id="panel-signals">
         <div class="panel-title">Active Signals</div>
+
         <div class="signal-list" id="signal-list"></div>
       </div>
     </div>
@@ -1078,8 +1079,7 @@ const CONFIG = {
   SESSION_CAP: 3,
   COOLDOWN_MS: 60000,
   INTENT_FLOOR: 3,
-  ACTIVITY_PAUSE_MS: 3000,
-};
+  ACTIVITY_PAUSE_MS: 3000 };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. FEATURES — 9 feature definitions
@@ -1088,12 +1088,10 @@ const CONFIG = {
 const FEATURES = [
   { id: 'ai-models', name: 'Better AI Models', icon: '🧠', type: 'pro', verb: 'Upgrade to a better AI model', does: 'uses Standard or Advanced AI models for higher quality slides and smarter content' },
   { id: 'brand-kit', name: 'Brand Kit', icon: '🎨', type: 'pro', verb: 'Set up your Brand Kit', does: 'applies your custom brand colors and fonts across all slides' },
-  { id: 'unbranded', name: 'Unbranded Pro Templates', icon: '📐', type: 'pro', verb: 'Use unbranded templates', does: 'gives you professional templates without the Presentations.AI watermark' },
+  { id: 'unbranded', name: 'Remove Watermark', icon: '✨', type: 'pro', verb: 'Remove the watermark', does: 'removes the Presentations.AI watermark from your slides for a clean, professional finish' },
   { id: 'export', name: 'PowerPoint/PDF Export', icon: '📄', type: 'pro', verb: 'Export your deck', does: 'downloads your deck as a PowerPoint or PDF file' },
   { id: 'invite-collab', name: 'Invite Collaborators', icon: '👥', type: 'pro', verb: 'Invite collaborators', does: 'lets others view, comment, and edit your deck in real time' },
   { id: 'analytics', name: 'Viewer Analytics', icon: '📈', type: 'pro', verb: 'Turn on analytics', does: 'tracks who opened your deck, which slides they viewed, and for how long' },
-  { id: 'gen-speed', name: 'Generation Speed', icon: '⚡', type: 'pro', verb: 'Upgrade generation speed', does: 'generates your presentations at Medium or Fast speed instead of Slow' },
-  { id: 'pres-refresh', name: 'Presentation Refresh', icon: '🔄', type: 'pro', verb: 'Refresh your presentation', does: 'regenerates and updates your presentation with improved content or structure' },
   { id: 'hire-team', name: 'Hire Our Team', icon: '🤝', type: 'service', verb: 'Let us build it for you', does: 'our team creates a polished presentation for you' },
 ];
 
@@ -1102,51 +1100,50 @@ const FEATURES = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 const ACTIONS = [
-  // Editing actions
-  { id: 'edit-slide', label: 'Edit a slide', signals: ['manual-edit'], cat: 'edit' },
-  { id: 'edit-3x', label: 'Re-edit same slide 3x', signals: ['manual-edit', 're-edit-3x'], cat: 'edit' },
-  { id: 'edit-5plus', label: 'Make 5+ edits', signals: ['manual-edit', 'edits-5plus'], cat: 'edit' },
-  { id: 'format-edits', label: 'Formatting edits (spacing, alignment)', signals: ['format-edits', 'manual-edit'], cat: 'edit' },
-  { id: 'resize-move', label: 'Resize/move elements', signals: ['format-edits', 'manual-edit'], cat: 'edit' },
-  { id: 'undo-redo', label: 'Undo/redo repeatedly', signals: ['undo-redo', 'manual-edit'], cat: 'edit' },
-  { id: 'change-font', label: 'Change font/style', signals: ['style-change', 'manual-edit'], cat: 'edit' },
-  { id: 'delete-slide', label: 'Delete a slide', signals: ['slide-delete', 'manual-edit'], cat: 'edit' },
+  // Slide editing — mutually exclusive actions
+  { id: 'text-edit', label: 'Edit text on a slide', signals: ['text-edit'], cat: 'edit' },
+  { id: 'style-change', label: 'Change font/color/size from toolbar', signals: ['style-change'], cat: 'edit' },
+  { id: 'element-move', label: 'Drag or resize an element', signals: ['element-move'], cat: 'edit' },
+  { id: 'undo-redo', label: 'Undo / redo (Ctrl+Z/Y)', signals: ['undo-redo'], cat: 'edit' },
+  { id: 'slide-delete', label: 'Delete a slide', signals: ['slide-delete'], cat: 'edit' },
 
-  // Content actions
-  { id: 'add-chart', label: 'Add a chart/graph', signals: ['data-content'], cat: 'content' },
-  { id: 'add-image', label: 'Add an image/media', signals: ['media-added'], cat: 'content' },
-  { id: 'duplicate-slide', label: 'Duplicate a slide', signals: ['slide-duplicate'], cat: 'content' },
-  { id: 'add-slide', label: 'Add a new slide manually', signals: ['manual-slide-add'], cat: 'content' },
-  { id: 'reorder-slides', label: 'Reorder slides', signals: ['slide-reorder'], cat: 'content' },
-  { id: 'gen-15-slides', label: 'Generate 15+ slides', signals: ['slides-15plus'], cat: 'content' },
+  // Adding content — from Insert menu
+  { id: 'insert-text', label: 'Insert title or list', signals: ['insert-text'], cat: 'content' },
+  { id: 'insert-object', label: 'Insert list or media', signals: ['insert-object'], cat: 'content' },
+  { id: 'insert-slide-prompt', label: 'Insert slide with a prompt', signals: ['insert-slide-prompt'], cat: 'content' },
+  { id: 'insert-slide-template', label: 'Insert slide from template', signals: ['insert-slide-template'], cat: 'content' },
+  { id: 'slide-duplicate', label: 'Duplicate a slide', signals: ['slide-duplicate'], cat: 'content' },
+  { id: 'slide-reorder', label: 'Drag slide to reorder', signals: ['slide-reorder'], cat: 'content' },
 
-  // Navigation & preview
-  { id: 'play-slideshow', label: 'Play slideshow', signals: ['slideshow'], cat: 'preview' },
-  { id: 'edit-after-preview', label: 'Edit after preview', signals: ['slideshow-then-edit', 'manual-edit'], cat: 'preview' },
-  { id: 'idle-30s', label: 'Idle 30+ sec on a slide', signals: ['idle-on-slide'], cat: 'preview' },
-  { id: 'change-template', label: 'Change template/layout', signals: ['template-switch'], cat: 'preview' },
+  // Previewing & customizing
+  { id: 'play-preview', label: 'Play / present slideshow', signals: ['play-preview'], cat: 'preview' },
+  { id: 'edit-after-preview', label: 'Edit after playing preview', signals: ['edit-after-preview', 'text-edit'], cat: 'preview' },
+  { id: 'idle-30s', label: 'Idle 30s on a slide', signals: ['idle-30s'], cat: 'preview' },
+  { id: 'theme-global', label: 'Change deck theme (global)', signals: ['theme-global'], cat: 'preview' },
+  { id: 'layout-slide', label: 'Change single slide layout', signals: ['layout-slide'], cat: 'preview' },
+  { id: 'deck-regenerate', label: 'Regenerate entire deck', signals: ['deck-regenerate'], cat: 'preview' },
 
   // Sharing & export
-  { id: 'click-share', label: 'Click share', signals: ['share-clicked'], cat: 'share' },
-  { id: 'copy-link', label: 'Copy deck link (free share)', signals: ['link-copied', 'share-clicked'], cat: 'share' },
-  { id: 'download-attempt', label: 'Try to download (hits paywall)', signals: ['export-attempt'], cat: 'share' },
+  { id: 'share-link-copy', label: 'Copy free share link', signals: ['share-link-copy'], cat: 'share' },
+  { id: 'invite-attempt', label: 'Click invite collaborators (Pro gate)', signals: ['invite-attempt', 'gate-hit'], cat: 'share' },
+  { id: 'export-click', label: 'Open export options', signals: ['export-click'], cat: 'share' },
+  { id: 'export-download', label: 'Click download (hits paywall)', signals: ['export-download', 'gate-hit'], cat: 'share' },
 
-  // Prompt & creation
-  { id: 'mention-brand', label: 'Mention brand/company in prompt', signals: ['brand-mention'], cat: 'prompt' },
-  { id: 'mention-team', label: 'Use "we/our/team" in prompt', signals: ['team-language'], cat: 'prompt' },
-  { id: 'mention-metrics', label: 'Use data/metrics in prompt', signals: ['data-content'], cat: 'prompt' },
-  { id: 'deck-complete', label: 'Complete deck (AI create done)', signals: ['deck-edited'], cat: 'prompt' },
-  { id: 'started-blank', label: 'Start from blank (no template)', signals: ['started-blank'], cat: 'prompt' },
-  { id: 'upload-doc', label: 'Upload document/file with prompt', signals: ['doc-uploaded'], cat: 'prompt' },
-  { id: 'upload-long-doc', label: 'Upload long doc (20+ pages)', signals: ['doc-uploaded', 'doc-long'], cat: 'prompt' },
+  // Creation context
+  { id: 'prompt-brand', label: 'Brand/company in prompt', signals: ['prompt-brand'], cat: 'prompt' },
+  { id: 'prompt-team', label: '"we/our/team" in prompt', signals: ['prompt-team'], cat: 'prompt' },
+  { id: 'doc-upload', label: 'Upload a document', signals: ['doc-upload'], cat: 'prompt' },
+  { id: 'doc-upload-long', label: 'Upload long doc (20+ pages)', signals: ['doc-upload', 'doc-upload-long'], cat: 'prompt' },
 
-  // Session & journey
-  { id: 'start-new-deck', label: 'Start 2nd deck', signals: ['multi-deck', 'new-deck-session2'], cat: 'session' },
-  { id: 'switch-decks', label: 'Switch between decks', signals: ['deck-switch', 'multi-deck'], cat: 'session' },
-  { id: 'time-15', label: 'Spend 15+ min', signals: ['time-15'], cat: 'session' },
-  { id: 'time-20', label: 'Spend 20+ min', signals: ['time-20', 'time-15'], cat: 'session' },
-  { id: 'visit-pricing', label: 'Visit pricing page', signals: ['pricing-visit'], cat: 'session' },
-  { id: 'gate-hit', label: 'Click a Pro feature (gate hit)', signals: ['gate-hit'], cat: 'session' },
+  // Session — auto-fired thresholds
+  { id: 'edit-streak-3', label: 'Same slide edited 3+ times', signals: ['edit-streak-3'], cat: 'session' },
+  { id: 'edit-count-5', label: '5+ total edits across slides', signals: ['edit-count-5'], cat: 'session' },
+  { id: 'session-15min', label: '15 minutes in editor', signals: ['session-15min'], cat: 'session' },
+  { id: 'session-20min', label: '20 minutes in editor', signals: ['session-20min', 'session-15min'], cat: 'session' },
+  { id: 'second-deck', label: 'Start a 2nd deck', signals: ['second-deck'], cat: 'session' },
+  { id: 'deck-switch', label: 'Switch between decks', signals: ['deck-switch'], cat: 'session' },
+  { id: 'pricing-visit', label: 'Visit pricing page', signals: ['pricing-visit'], cat: 'session' },
+  { id: 'gate-hit', label: 'Click any Pro-gated feature', signals: ['gate-hit'], cat: 'session' },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1156,63 +1153,66 @@ const ACTIONS = [
 
 // Direct signal map: signal -> { featureId: weight }
 const DIRECT_MAP = {
-  'manual-edit':           { 'ai-models': 1, 'pres-refresh': 1 },
-  'edits-5plus':           { 'ai-models': 5, 'pres-refresh': 2, 'hire-team': 3 },
-  're-edit-3x':            { 'ai-models': 5, 'pres-refresh': 3, 'hire-team': 4 },
-  'format-edits':          { 'ai-models': 4, 'brand-kit': 2, 'hire-team': 2 },
-  'undo-redo':             { 'ai-models': 4, 'pres-refresh': 3, 'hire-team': 4 },
-  'style-change':          { 'brand-kit': 4, 'ai-models': 2, 'hire-team': 2 },
-  'slide-delete':          { 'ai-models': 2, 'pres-refresh': 2 },
+  // ── Slide editing signals ──
+  'text-edit':             { 'ai-models': 2 },
+  'style-change':          { 'brand-kit': 3, 'ai-models': 1 },
+  'element-move':          { 'brand-kit': 2 },
+  'undo-redo':             { 'ai-models': 3, 'hire-team': 3 },
+  'slide-delete':          { 'ai-models': 2 },
 
-  'slides-15plus':         { 'ai-models': 3, 'gen-speed': 5, 'invite-collab': 3 },
-  'media-added':           { 'ai-models': 3 },
-  'slide-duplicate':       { 'unbranded': 2, 'pres-refresh': 2 },
-  'manual-slide-add':      { 'unbranded': 3, 'ai-models': 2 },
-  'slide-reorder':         { 'ai-models': 3, 'pres-refresh': 3 },
-  'data-content':          { 'analytics': 5 },
+  // ── Content addition signals ──
+  'insert-text':           { 'ai-models': 2 },
+  'insert-object':         { 'brand-kit': 2 },
+  'insert-slide-prompt':   { 'ai-models': 3 },
+  'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
+  'slide-duplicate':       {},
+  'slide-reorder':         {},
 
-  'slideshow':             { 'unbranded': 4, 'export': 4 },
-  'slideshow-then-edit':   { 'ai-models': 4, 'pres-refresh': 4, 'hire-team': 2 },
-  'idle-on-slide':         { 'ai-models': 3, 'pres-refresh': 3 },
-  'template-switch':       { 'unbranded': 5, 'brand-kit': 3, 'hire-team': 3 },
+  // ── Preview & customization signals ──
+  'play-preview':          { 'unbranded': 4, 'export': 3 },
+  'edit-after-preview':    { 'ai-models': 4, 'hire-team': 2 },
+  'idle-30s':              { 'ai-models': 2 },
+  'theme-global':          { 'brand-kit': 4, 'unbranded': 3 },
+  'layout-slide':          { 'brand-kit': 2, 'ai-models': 1 },
+  'deck-regenerate':       { 'ai-models': 3, 'hire-team': 2 },
 
-  'share-clicked':         { 'unbranded': 5, 'analytics': 4, 'export': 3 },
-  'link-copied':           { 'unbranded': 4, 'analytics': 4 },
-  'export-attempt':        { 'export': 5 },
+  // ── Sharing & export signals ──
+  'share-link-copy':       { 'unbranded': 4, 'analytics': 3 },
+  'invite-attempt':        { 'invite-collab': 5 },
+  'export-click':          { 'export': 3 },
+  'export-download':       { 'export': 5, 'unbranded': 2 },
 
-  'brand-mention':         { 'brand-kit': 5 },
-  'team-language':         { 'invite-collab': 5 },
-  'started-blank':         { 'unbranded': 4, 'ai-models': 3 },
-  'deck-edited':           { 'unbranded': 2, 'export': 3 },
+  // ── Creation context signals ──
+  'prompt-brand':          { 'brand-kit': 5 },
+  'prompt-team':           { 'invite-collab': 5 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'hire-team': 2, 'analytics': 2, 'ai-models': -2 },
+  'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
 
-  'new-deck-session2':     { 'unbranded': 3, 'pres-refresh': 4, 'gen-speed': 3 },
-  'deck-switch':           { 'brand-kit': 3, 'pres-refresh': 3 },
+  // ── Session threshold signals ──
+  'edit-streak-3':         { 'ai-models': 4, 'hire-team': 3 },
+  'edit-count-5':          { 'ai-models': 3, 'hire-team': 2 },
+  'session-15min':         {},
+  'session-20min':         { 'ai-models': 2 },
+  'second-deck':           { 'brand-kit': 3, 'unbranded': 2 },
+  'deck-switch':           { 'brand-kit': 3 },
   'gate-hit':              {},
-  'time-20':               { 'ai-models': 3, 'gen-speed': 4 },
-
-  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
-  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
-  'stakes-internal':       { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2 },
-
-  'prompt-synthesis':      {},  // populated at runtime from PROMPT_SYNTHESIS lookup
-
-  'bought-export':         { 'export': 4 },
-  'multi-deck':            { 'brand-kit': 3, 'pres-refresh': 3 },
-
-  'deck-veteran':          { 'brand-kit': 3, 'pres-refresh': 3, 'gen-speed': 2 },
-  'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
-  'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
-
-  'acq-paid':              { 'gen-speed': 2, 'export': 2 },
-  'acq-referral':          { 'invite-collab': 3 },
-
   'pricing-visit':         {},
 
-  // Document upload signals
-  'doc-uploaded':          { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'pres-refresh': 3, 'hire-team': 2, 'analytics': 2, 'invite-collab': 2, 'ai-models': -2 },
-  'doc-long':              { 'hire-team': 4, 'pres-refresh': 3, 'gen-speed': 3, 'export': 2 },
+  // ── Context layer signals ──
+  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
+  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
+  'stakes-internal':       { 'ai-models': 2, 'invite-collab': 2 },
 
-  // Mindset vector signal (populated at runtime from MINDSET_VECTORS lookup)
+  // ── User state signals ──
+  'bought-export':         { 'export': 4 },
+  'deck-veteran':          { 'brand-kit': 3 },
+  'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
+  'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
+  'acq-paid':              {},
+  'acq-referral':          { 'invite-collab': 3 },
+
+  // ── Runtime signals (populated dynamically) ──
+  'prompt-synthesis':      {},
   'mindset-vector':        {},
 };
 
@@ -1223,166 +1223,165 @@ const UNIVERSAL_MAP = {
   'returning-user':   4,
   'pricing-visit':    3,
   'bought-export':    4,
-  'time-15':          3,
-  'multi-deck':       3,
+  'session-15min':    3,
+  'second-deck':      3,
   'zero-dismissals':  1,
   'gate-hit':         3,
-  'export-attempt':   2,
+  'export-download':  2,
   'company-domain':   2,
   'tier-1-country':   2,
   'deck-veteran':     3,
-  'acq-paid':         2,
-  'acq-referral':     3,
-  'doc-uploaded':     3,
+  'acq-organic':      1,
+  'acq-paid':         0,
+  'acq-referral':     2,
+  'doc-upload':       3,
 };
 
 // Mindset vectors: 'role|audienceStakes' -> per-feature weights (0-5)
 const MINDSET_VECTORS = {
-  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Leadership|internal':           { 'gen-speed': 3, 'invite-collab': 3, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
+  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Sales|internal':                { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|internal':                { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Marketing|internal':            { 'brand-kit': 3, 'gen-speed': 2, 'invite-collab': 2, 'ai-models': 2, 'pres-refresh': 1, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
+  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'gen-speed': 1, 'analytics': 1, 'hire-team': 0, 'pres-refresh': 0 },
-  'Product|internal':              { 'invite-collab': 4, 'gen-speed': 3, 'pres-refresh': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|internal':              { 'invite-collab': 4, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'pres-refresh': 2, 'ai-models': 2, 'gen-speed': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'gen-speed': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Engineering|low-external':      { 'ai-models': 3, 'gen-speed': 2, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Engineering|internal':          { 'invite-collab': 3, 'gen-speed': 3, 'ai-models': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Data Analytics|internal':       { 'analytics': 3, 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Consulting|internal':           { 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'gen-speed': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Operations|low-external':       { 'gen-speed': 2, 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Operations|internal':           { 'gen-speed': 3, 'invite-collab': 3, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|low-external':       { 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'gen-speed': 1, 'invite-collab': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Finance|internal':              { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'pres-refresh': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'gen-speed': 1, 'hire-team': 0, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'pres-refresh': 2, 'gen-speed': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Teacher|high-external':         { 'export': 4, 'gen-speed': 3, 'ai-models': 3, 'unbranded': 2, 'pres-refresh': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|low-external':          { 'export': 3, 'gen-speed': 3, 'ai-models': 2, 'pres-refresh': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|internal':              { 'export': 3, 'gen-speed': 3, 'pres-refresh': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|internal':              { 'export': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'gen-speed': 2, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0, 'pres-refresh': 0 },
-  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'gen-speed': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0, 'pres-refresh': 0 },
-  'Student|internal':              { 'gen-speed': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-};
+  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 } };
 
-var MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
+var MINDSET_FALLBACK = { 'ai-models': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 };
 
 // Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
 const PROMPT_SYNTHESIS = {
   // Founder topics
   'Series A pitch for fintech startup':
-    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Seed round deck for healthtech':
-    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 2, 'hire-team': 1 },
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Product demo for enterprise AI tool':
-    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'hire-team': 1 },
 
   // Sales topics
   'Enterprise SaaS proposal for Fortune 500':
-    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Partnership pitch to retail chain':
-    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'hire-team': 1 },
   'ROI case study for CFO':
-    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'gen-speed': 1, 'pres-refresh': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'hire-team': 0 },
 
   // Corporate topics
   'Q1 business review':
-    { 'pres-refresh': 4, 'gen-speed': 4, 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
   'Product roadmap for H2':
-    { 'invite-collab': 4, 'pres-refresh': 3, 'gen-speed': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
   'Team restructuring proposal':
-    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'gen-speed': 2, 'unbranded': 2, 'brand-kit': 1, 'pres-refresh': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0 },
   'OKR review and planning':
-    { 'pres-refresh': 4, 'invite-collab': 4, 'gen-speed': 3, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
 
   // Creative topics
   'Design portfolio for senior role':
-    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'pres-refresh': 2, 'gen-speed': 1, 'invite-collab': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'invite-collab': 1, 'hire-team': 1 },
   'Agency credentials deck':
-    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'pres-refresh': 3, 'ai-models': 3, 'gen-speed': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'ai-models': 3, 'hire-team': 1 },
   'Brand identity presentation':
-    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'pres-refresh': 2, 'gen-speed': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
 
   // Educator topics
   'Introduction to machine learning':
-    { 'export': 4, 'ai-models': 4, 'pres-refresh': 4, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Data visualization workshop':
-    { 'ai-models': 4, 'export': 4, 'pres-refresh': 3, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'export': 4, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Research methodology lecture':
-    { 'export': 4, 'pres-refresh': 4, 'ai-models': 3, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
 
   // Student topics
   'Final thesis defense':
-    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'gen-speed': 3, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'pres-refresh': 1, 'hire-team': 2 },
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'hire-team': 2 },
   'Startup pitch for entrepreneurship class':
-    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'gen-speed': 2, 'analytics': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'analytics': 2, 'hire-team': 1 },
   'Capstone project presentation':
-    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'gen-speed': 3, 'brand-kit': 2, 'analytics': 1, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'brand-kit': 2, 'analytics': 1, 'hire-team': 1 },
 
   // Weak / vague prompts
   'pitch deck':
-    { 'unbranded': 2, 'export': 2, 'ai-models': 1, 'brand-kit': 1, 'analytics': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'ai-models': 1, 'brand-kit': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
   'startup stuff':
-    { 'ai-models': 1, 'gen-speed': 1, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
   'sales presentation':
-    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 1, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 1, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'deck for client meeting':
-    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 1, 'invite-collab': 1, 'hire-team': 0 },
   'slides for meeting':
-    { 'gen-speed': 2, 'ai-models': 1, 'export': 1, 'invite-collab': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'export': 1, 'invite-collab': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'quarterly update slides':
-    { 'pres-refresh': 3, 'gen-speed': 2, 'invite-collab': 2, 'ai-models': 1, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'invite-collab': 2, 'ai-models': 1, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
   'portfolio presentation':
-    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 1, 'analytics': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
   'make a presentation':
-    { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
   'lecture slides':
-    { 'export': 2, 'pres-refresh': 2, 'gen-speed': 1, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'presentation for class':
-    { 'export': 2, 'ai-models': 1, 'gen-speed': 1, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'help me with a ppt':
-    { 'ai-models': 1, 'gen-speed': 1, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 2 },
+    { 'ai-models': 1, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 2 },
 
   // Urgent prompts
   'investor meeting tomorrow need a deck':
-    { 'gen-speed': 5, 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 5 },
+    { 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 5 },
   'urgent proposal for client demo Friday':
-    { 'gen-speed': 5, 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'pres-refresh': 0, 'hire-team': 4 },
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'hire-team': 4 },
   'board deck due end of day':
-    { 'gen-speed': 5, 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'pres-refresh': 0, 'hire-team': 5 },
+    { 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'hire-team': 5 },
   'client pitch deck needed by tonight':
-    { 'gen-speed': 5, 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 4 },
+    { 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'hire-team': 4 },
   'guest lecture tomorrow on AI ethics':
-    { 'gen-speed': 4, 'export': 4, 'ai-models': 4, 'pres-refresh': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
   'group project due tomorrow':
-    { 'gen-speed': 4, 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'pres-refresh': 0, 'hire-team': 3 },
-};
+    { 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'hire-team': 3 } };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 5. ROLES, AUDIENCES, TOPICS, and user generation data
@@ -1410,8 +1409,7 @@ const AUDIENCES = {
   Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
   Creative: ['Potential clients', 'Recruiters', 'Art directors'],
   Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
-  Student: ['Professor', 'Panel judges', 'Classmates'],
-};
+  Student: ['Professor', 'Panel judges', 'Classmates'] };
 
 const TOPICS = {
   Founder: ['Series A pitch for fintech startup', 'Seed round deck for healthtech', 'Product demo for enterprise AI tool', 'pitch deck', 'startup stuff', 'investor meeting tomorrow need a deck'],
@@ -1419,8 +1417,7 @@ const TOPICS = {
   Corporate: ['Q1 business review', 'Product roadmap for H2', 'Team restructuring proposal', 'OKR review and planning', 'slides for meeting', 'quarterly update slides', 'board deck due end of day'],
   Creative: ['Design portfolio for senior role', 'Agency credentials deck', 'Brand identity presentation', 'portfolio presentation', 'make a presentation', 'client pitch deck needed by tonight'],
   Educator: ['Introduction to machine learning', 'Data visualization workshop', 'Research methodology lecture', 'lecture slides', 'guest lecture tomorrow on AI ethics'],
-  Student: ['Final thesis defense', 'Startup pitch for entrepreneurship class', 'Capstone project presentation', 'presentation for class', 'help me with a ppt', 'group project due tomorrow'],
-};
+  Student: ['Final thesis defense', 'Startup pitch for entrepreneurship class', 'Capstone project presentation', 'presentation for class', 'help me with a ppt', 'group project due tomorrow'] };
 
 const COMPANY_DOMAINS = {
   Founder: ['@startup.io', '@startup.io', '@gmail.com'],
@@ -1428,8 +1425,7 @@ const COMPANY_DOMAINS = {
   Corporate: ['@deloitte.com', '@jpmorgan.com', '@company.com', '@gmail.com'],
   Creative: ['@agency.co', '@studio.design', '@gmail.com', '@gmail.com'],
   Educator: ['@stanford.edu', '@university.edu', '@gmail.com'],
-  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com'],
-};
+  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com'] };
 
 const TIER_1 = ['US', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Sweden', 'Switzerland', 'Japan', 'Singapore'];
 const TIER_2 = ['India', 'Brazil', 'Indonesia', 'Philippines', 'Mexico', 'Nigeria', 'Vietnam', 'Colombia', 'Egypt', 'Bangladesh', 'Pakistan', 'Kenya'];
@@ -1449,8 +1445,7 @@ let state = {
   lastMilestoneTime: 0,
   milestoneLog: [],
   isUserActive: false,
-  relevantFeatures: new Set(),
-};
+  relevantFeatures: new Set() };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 7. SignalCollector — generateUser()
@@ -1470,8 +1465,7 @@ function generateUser() {
   const DECK_HISTORY = {
     1: { completed: pick([1, 1, 1, 2]), shared: pick([0, 0, 0, 1]), published: pick([0, 0, 0]) },
     2: { completed: pick([2, 3, 4, 5]), shared: pick([0, 1, 1, 2]), published: pick([0, 0, 1]) },
-    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) },
-  };
+    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) } };
   const deckHistory = DECK_HISTORY[Math.min(sessionNum, 3)];
 
   // Company domain
@@ -1505,8 +1499,7 @@ function generateUser() {
     decksCompleted: deckHistory.completed,
     decksShared: deckHistory.shared,
     decksPublished: deckHistory.published,
-    acqChannel,
-  };
+    acqChannel };
 
   // Reset signals for new user
   state.activeSignals = new Set();
@@ -1579,10 +1572,7 @@ function synthesizeFromKeywords(prompt) {
     'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
     'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
     'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
-    'gen-speed':     ['fast', 'quick', 'speed', 'slow', 'waiting', 'generate'],
-    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version', 'improve', 'fix'],
-    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'],
-  };
+    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'] };
 
   // Urgency detection — broader patterns
   var urgencyPatterns = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush',
@@ -1643,6 +1633,7 @@ function addStateSignals() {
   if (u.decksPublished >= 1) state.activeSignals.add('deck-publisher');
 
   // Acquisition channel signals
+  if (u.acqChannel === 'organic') state.activeSignals.add('acq-organic');
   if (u.acqChannel === 'paid') state.activeSignals.add('acq-paid');
   if (u.acqChannel === 'referral') state.activeSignals.add('acq-referral');
 }
@@ -1716,8 +1707,7 @@ function calculateScores() {
       universalContrib: Math.round(universalContrib * 10) / 10,
       total: Math.round(total * 10) / 10,
       directSignals,
-      universalSignals,
-    };
+      universalSignals };
   });
 
   state.featureScores = scores;
@@ -1768,8 +1758,7 @@ function fireMilestone(feature) {
     universal: feature.universalContrib,
     directSignals: feature.directSignals,
     universalSignals: feature.universalSignals,
-    time: new Date().toLocaleTimeString(),
-  });
+    time: new Date().toLocaleTimeString() });
 
   renderNudgePreview(feature, copy);
   renderFeed();
@@ -1842,41 +1831,25 @@ function generateCopy(feature) {
   const copies = {
     'ai-models': {
       title: 'Upgrade to a better AI model',
-      body: 'Generate higher quality slides for your ' + topic + ' deck. Better AI means sharper content, smarter layouts, and more polished output for ' + u.audience + '.',
-    },
+      body: 'Generate higher quality slides for your ' + topic + ' deck. Better AI means sharper content, smarter layouts, and more polished output for ' + u.audience + '.' },
     'brand-kit': {
       title: 'Set up your Brand Kit',
-      body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.',
-    },
+      body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.' },
     'unbranded': {
-      title: 'Use unbranded Pro templates',
-      body: 'Professional templates without the Presentations.AI watermark. ' + u.audience + ' see your content, not our branding.',
-    },
+      title: 'Remove the watermark',
+      body: 'Remove the Presentations.AI watermark for a clean, professional finish. ' + u.audience + ' see your content, not our branding.' },
     'export': {
       title: 'Export your deck',
-      body: 'Download your ' + topic + ' deck as a PowerPoint or PDF. Ready to email to ' + u.audience + ', present offline, or print.',
-    },
+      body: 'Download your ' + topic + ' deck as a PowerPoint or PDF. Ready to email to ' + u.audience + ', present offline, or print.' },
     'invite-collab': {
       title: 'Invite collaborators',
-      body: 'Add people to your ' + topic + ' deck for real-time editing. Get a second opinion before it goes to ' + u.audience + '.',
-    },
+      body: 'Add people to your ' + topic + ' deck for real-time editing. Get a second opinion before it goes to ' + u.audience + '.' },
     'analytics': {
       title: 'Turn on viewer analytics',
-      body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.',
-    },
-    'gen-speed': {
-      title: 'Upgrade generation speed',
-      body: 'Generate your ' + topic + ' deck at Medium or Fast speed instead of Slow. Less waiting, faster iteration.',
-    },
-    'pres-refresh': {
-      title: 'Refresh your presentation',
-      body: 'Regenerate your ' + topic + ' deck with improved content and structure. A fresh version without starting from scratch.',
-    },
+      body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.' },
     'hire-team': {
       title: 'Let us build it for you',
-      body: 'Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.',
-    },
-  };
+      body: 'Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' } };
 
   const base = copies[feature.id] || { title: feature.verb, body: feature.does + '.' };
 
@@ -1890,10 +1863,7 @@ function generateCopy(feature) {
       'export': ' Send it anywhere — no workarounds needed.',
       'invite-collab': ' Get feedback in one place instead of email chains.',
       'analytics': ' Know exactly who engaged — no guessing.',
-      'gen-speed': ' Get your deck ready in minutes, not hours.',
-      'pres-refresh': ' Update your deck without rebuilding from zero.',
-      'hire-team': ' Save days of work for less than you think.',
-    };
+      'hire-team': ' Save days of work for less than you think.' };
     if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
   } else {
     // Tier 1: quality-focused append
@@ -1904,10 +1874,7 @@ function generateCopy(feature) {
       'export': ' Presentation-ready files that look exactly as designed.',
       'invite-collab': ' Streamlined review workflow for your team.',
       'analytics': ' Detailed engagement insights for data-driven follow-ups.',
-      'gen-speed': ' Priority generation so your workflow stays uninterrupted.',
-      'pres-refresh': ' AI-powered content refresh with structure preserved.',
-      'hire-team': ' White-glove service from our expert presentation team.',
-    };
+      'hire-team': ' White-glove service from our expert presentation team.' };
     if (qualityAppend[feature.id]) base.body = base.body + qualityAppend[feature.id];
   }
 
@@ -1992,8 +1959,7 @@ function resetSimulator() {
     relevantFeatures: new Set(),
     _llmLoading: false,
     _llmError: null,
-    _llmSource: null,
-  };
+    _llmSource: null };
 
   generateUser();
   renderUserContext();
@@ -2062,7 +2028,7 @@ function getUserContextImpact(label) {
       return { signalName: 'zero-dismissals', directWeights: {}, universalWeight: UNIVERSAL_MAP['zero-dismissals'] || 0 };
     }
     case 'Acquisition': {
-      if (u.acqChannel === 'organic') return null;
+      if (u.acqChannel === 'organic') return { signalName: 'acq-organic', directWeights: {}, universalWeight: UNIVERSAL_MAP['acq-organic'] || 0 };
       var sig2 = 'acq-' + u.acqChannel;
       return { signalName: sig2, directWeights: DIRECT_MAP[sig2] || {}, universalWeight: UNIVERSAL_MAP[sig2] || 0 };
     }
@@ -2149,14 +2115,14 @@ function renderPromptInput() {
   // Ollama status
   var ollamaStatus = 'none';
   var ollamaLabel = 'Ollama not checked';
-  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Ollama connected'; }
-  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Ollama not running'; }
+  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Local AI connected'; }
+  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Local AI not available'; }
 
   html += '<div class="api-key-row">';
-  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + ' (Gemma 2)</span>';
+  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + '</span>';
   html += '</div>';
 
-  html += '<div class="prompt-section-label">User Prompt</div>';
+  html += '<div class="prompt-section-label">What the user wants to create</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
   html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
   html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
@@ -2176,7 +2142,7 @@ function renderPromptAnalysis() {
   if (state._llmLoading) {
     html += '<div class="llm-loader">';
     html += '<div class="loader-dots"><span></span><span></span><span></span></div>';
-    html += ' Gemma 2 is analyzing your prompt...';
+    html += ' Analyzing prompt with local AI...';
     html += '</div>';
   }
 
@@ -2185,7 +2151,7 @@ function renderPromptAnalysis() {
   var audience = hasLLMAnalysis ? (u.audience || '\u2014') : null;
   var stakes = hasLLMAnalysis ? (u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014') : null;
 
-  html += '<div class="prompt-section-label">Inferred from Prompt</div>';
+  html += '<div class="prompt-section-label">What we infer</div>';
   if (audience) {
     var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
     html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
@@ -2193,18 +2159,18 @@ function renderPromptAnalysis() {
     html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
     html += '</div>';
   } else {
-    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Waiting for LLM analysis...' : (state._ollamaAvailable ? 'Type a prompt to analyze' : 'Requires Ollama running locally')) + '</div>';
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Analyzing prompt...' : (state._ollamaAvailable ? 'Enter a prompt above to see inferred audience and stakes' : 'Connect Ollama locally for AI-powered inference')) + '</div>';
   }
 
   // Signal extraction
   var synthesis = u.promptSynthesis || {};
 
   // Signal extraction
-  var sourceLabel = '(keyword fallback)';
-  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '(pre-analyzed)';
-  if (state._llmSource === u.topic) sourceLabel = '(local LLM via Ollama)';
-  if (state._llmLoading) sourceLabel = '(analyzing...)';
-  html += '<div class="prompt-section-label">Signal Extraction ' + sourceLabel + '</div>';
+  var sourceLabel = '';
+  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '';
+  if (state._llmSource === u.topic) sourceLabel = '(AI-analyzed)';
+  if (state._llmLoading) sourceLabel = '';
+  html += '<div class="prompt-section-label">Feature relevance ' + sourceLabel + '</div>';
 
   // Sort features by synthesis score descending
   var entries = FEATURES.map(function(f) {
@@ -2223,8 +2189,7 @@ function renderPromptAnalysis() {
   });
 
   // Contribution note
-  html += '<div class="prompt-section-label" style="margin-top:14px">How it contributes</div>';
-  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">These scores feed directly into the Feature Score Matrix as the <strong>prompt-synthesis</strong> signal. A score of 5 means the LLM considers this feature highly relevant to the user\u2019s prompt.</div>';
+  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5;margin-top:12px">These scores reflect how relevant each Pro feature is to this user\u2019s prompt. Higher scores increase the chance that feature gets nudged.</div>';
 
   el.innerHTML = html;
 }
@@ -2286,15 +2251,15 @@ function synthesizeWithLLM(prompt) {
   state._llmError = null;
   renderPromptAnalysis();
 
-  var hasDoc = state.activeSignals.has('doc-uploaded');
-  var hasLongDoc = state.activeSignals.has('doc-long');
+  var hasDoc = state.activeSignals.has('doc-upload');
+  var hasLongDoc = state.activeSignals.has('doc-upload-long');
   var docContext = '';
-  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, pres-refresh, hire-team. Reduce ai-models.';
-  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded, pres-refresh. Reduce ai-models.';
+  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, hire-team. Reduce ai-models.';
+  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded. Reduce ai-models.';
 
   var role = state.user.role || 'unknown';
 
-  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "gen-speed": 0-5,\n    "pres-refresh": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Templates without watermark (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- gen-speed: Faster generation (NOT related to urgency)\n- pres-refresh: Regenerate/improve existing deck\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
+  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Remove watermark — clean professional finish (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
 
   fetch('http://localhost:11434/api/generate', {
     method: 'POST',
@@ -2302,9 +2267,7 @@ function synthesizeWithLLM(prompt) {
     body: JSON.stringify({
       model: 'gemma2',
       prompt: ollamaPrompt,
-      stream: false,
-    }),
-  })
+      stream: false }) })
   .then(function(res) {
     if (!res.ok) throw new Error('Ollama error ' + res.status);
     return res.json();
@@ -2461,13 +2424,12 @@ function buildTooltipHTML(action) {
 function renderActions() {
   var grid = document.getElementById('action-grid');
   var catLabels = {
-    edit: 'Editing',
-    content: 'Content',
-    preview: 'Navigation & Preview',
-    share: 'Sharing & Export',
-    prompt: 'Prompt & Creation',
-    session: 'Session & Journey',
-  };
+    edit: 'Slide Editing',
+    content: 'Adding Content',
+    preview: 'Previewing',
+    share: 'Sharing',
+    prompt: 'Creation',
+    session: 'Session' };
   var cats = ['edit', 'content', 'preview', 'share', 'prompt', 'session'];
 
   grid.innerHTML = cats.map(function(cat) {
@@ -2484,67 +2446,64 @@ function renderActions() {
 // ── renderSignals ──
 function renderSignals() {
   var allSignals = [
-    // Editing
-    { id: 'manual-edit', label: 'Manual edit', type: 'direct' },
-    { id: 'edits-5plus', label: '5+ manual edits', type: 'direct' },
-    { id: 're-edit-3x', label: 'Same slide re-edited 3x', type: 'direct' },
-    { id: 'format-edits', label: 'Formatting edits', type: 'direct' },
-    { id: 'undo-redo', label: 'Undo/redo repeatedly', type: 'direct' },
-    { id: 'style-change', label: 'Font/style change', type: 'direct' },
+    // Slide editing
+    { id: 'text-edit', label: 'Text edited', type: 'direct' },
+    { id: 'style-change', label: 'Style changed (font/color)', type: 'direct' },
+    { id: 'element-move', label: 'Element moved/resized', type: 'direct' },
+    { id: 'undo-redo', label: 'Undo/redo used', type: 'direct' },
     { id: 'slide-delete', label: 'Slide deleted', type: 'direct' },
     // Content
-    { id: 'slides-15plus', label: '15+ slides generated', type: 'direct' },
-    { id: 'media-added', label: 'Image/media added', type: 'direct' },
+    { id: 'insert-text', label: 'Inserted text/title', type: 'direct' },
+    { id: 'insert-object', label: 'Inserted object/media', type: 'direct' },
+    { id: 'insert-slide-prompt', label: 'Added slide with prompt', type: 'direct' },
+    { id: 'insert-slide-template', label: 'Added slide from template', type: 'direct' },
     { id: 'slide-duplicate', label: 'Slide duplicated', type: 'direct' },
-    { id: 'manual-slide-add', label: 'Manual slide added', type: 'direct' },
     { id: 'slide-reorder', label: 'Slides reordered', type: 'direct' },
-    { id: 'data-content', label: 'Data/metrics content', type: 'direct' },
-    // Preview
-    { id: 'slideshow', label: 'Slideshow played', type: 'direct' },
-    { id: 'slideshow-then-edit', label: 'Edit after preview', type: 'direct' },
-    { id: 'idle-on-slide', label: 'Idle 30s on slide', type: 'direct' },
-    { id: 'template-switch', label: 'Template/layout changed', type: 'direct' },
-    // Sharing
-    { id: 'share-clicked', label: 'Share clicked', type: 'direct' },
-    { id: 'link-copied', label: 'Deck link copied', type: 'direct' },
-    { id: 'export-attempt', label: 'Export attempt (paywall)', type: 'both' },
-    // Prompt
-    { id: 'brand-mention', label: 'Brand/company in prompt', type: 'direct' },
-    { id: 'team-language', label: 'Team/we/our language', type: 'direct' },
-    { id: 'started-blank', label: 'Started from blank', type: 'direct' },
-    { id: 'doc-uploaded', label: 'Document uploaded with prompt', type: 'both' },
-    { id: 'doc-long', label: 'Long document (20+ pages)', type: 'direct' },
-    { id: 'deck-edited', label: 'Deck edited post-gen', type: 'direct' },
-    // Session
-    { id: 'multi-deck', label: '2+ decks created', type: 'both' },
-    { id: 'new-deck-session2', label: 'New deck in session 2+', type: 'direct' },
-    { id: 'deck-switch', label: 'Switched between decks', type: 'direct' },
-    { id: 'gate-hit', label: 'Pro feature tapped', type: 'universal' },
-    { id: 'time-15', label: '15+ min in editor', type: 'universal' },
-    { id: 'time-20', label: '20+ min editing', type: 'direct' },
+    // Preview & customization
+    { id: 'play-preview', label: 'Played slideshow', type: 'direct' },
+    { id: 'edit-after-preview', label: 'Edited after preview', type: 'direct' },
+    { id: 'idle-30s', label: 'Idle 30s on slide', type: 'direct' },
+    { id: 'theme-global', label: 'Deck theme changed', type: 'direct' },
+    { id: 'layout-slide', label: 'Slide layout changed', type: 'direct' },
+    { id: 'deck-regenerate', label: 'Deck regenerated', type: 'direct' },
+    // Sharing & export
+    { id: 'share-link-copy', label: 'Share link copied', type: 'direct' },
+    { id: 'invite-attempt', label: 'Invite clicked (Pro gate)', type: 'direct' },
+    { id: 'export-click', label: 'Export options opened', type: 'direct' },
+    { id: 'export-download', label: 'Download clicked (paywall)', type: 'both' },
+    // Creation
+    { id: 'prompt-brand', label: 'Brand mentioned in prompt', type: 'direct' },
+    { id: 'prompt-team', label: 'Team language in prompt', type: 'direct' },
+    { id: 'doc-upload', label: 'Document uploaded', type: 'both' },
+    { id: 'doc-upload-long', label: 'Long document (20+ pages)', type: 'direct' },
+    // Session thresholds
+    { id: 'edit-streak-3', label: 'Same slide edited 3x', type: 'direct' },
+    { id: 'edit-count-5', label: '5+ edits total', type: 'direct' },
+    { id: 'second-deck', label: 'Started 2nd deck', type: 'both' },
+    { id: 'deck-switch', label: 'Switched decks', type: 'direct' },
+    { id: 'session-15min', label: '15 min in editor', type: 'universal' },
+    { id: 'session-20min', label: '20 min in editor', type: 'direct' },
+    { id: 'gate-hit', label: 'Pro feature clicked', type: 'universal' },
     { id: 'pricing-visit', label: 'Visited pricing', type: 'universal' },
-    // Layer 1: Mindset vector (role x stakes composite)
-    { id: 'mindset-vector', label: 'Mindset Vector (role \u00d7 stakes)', type: 'direct' },
-    // Layer 2: Audience stakes
-    { id: 'stakes-high-external', label: 'Stakes: High External', type: 'direct' },
-    { id: 'stakes-low-external', label: 'Stakes: Low External', type: 'direct' },
-    { id: 'stakes-internal', label: 'Stakes: Internal', type: 'direct' },
-    // Layer 3: Prompt synthesis
-    { id: 'prompt-synthesis', label: 'Prompt Synthesis (LLM)', type: 'direct' },
-    // Universal context
-    { id: 'credits-low', label: 'Credits < 30', type: 'universal' },
-    { id: 'credits-zero', label: 'Credits = 0', type: 'universal' },
+    // Context layers
+    { id: 'mindset-vector', label: 'Role-based profile', type: 'direct' },
+    { id: 'stakes-high-external', label: 'High-stakes audience', type: 'direct' },
+    { id: 'stakes-low-external', label: 'External audience', type: 'direct' },
+    { id: 'stakes-internal', label: 'Internal audience', type: 'direct' },
+    { id: 'prompt-synthesis', label: 'Prompt analysis', type: 'direct' },
+    // User state
+    { id: 'credits-low', label: 'Low credits', type: 'universal' },
+    { id: 'credits-zero', label: 'No credits left', type: 'universal' },
     { id: 'returning-user', label: 'Returning user', type: 'universal' },
     { id: 'bought-export', label: 'Bought single export', type: 'both' },
-    { id: 'zero-dismissals', label: '0 dismissals', type: 'universal' },
-    { id: 'company-domain', label: 'Company email domain', type: 'universal' },
+    { id: 'zero-dismissals', label: 'Never dismissed a nudge', type: 'universal' },
+    { id: 'company-domain', label: 'Company email', type: 'universal' },
     { id: 'tier-1-country', label: 'Tier 1 country', type: 'universal' },
-    // Deck history
-    { id: 'deck-veteran', label: '5+ decks completed', type: 'both' },
-    { id: 'deck-sharer', label: '2+ decks shared', type: 'direct' },
-    { id: 'deck-publisher', label: '1+ deck published', type: 'direct' },
-    // Acquisition channel
-    { id: 'acq-paid', label: 'Paid ad traffic', type: 'both' },
+    { id: 'deck-veteran', label: '5+ decks made', type: 'both' },
+    { id: 'deck-sharer', label: 'Shares decks often', type: 'direct' },
+    { id: 'deck-publisher', label: 'Published a deck', type: 'direct' },
+    { id: 'acq-organic', label: 'Organic traffic', type: 'universal' },
+    { id: 'acq-paid', label: 'Paid traffic', type: 'both' },
     { id: 'acq-referral', label: 'Referral traffic', type: 'both' },
   ];
 
@@ -2552,7 +2511,7 @@ function renderSignals() {
   var activeList = allSignals.filter(function(s) { return state.activeSignals.has(s.id); });
 
   if (activeList.length === 0) {
-    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No behavioral signals yet</div>';
+    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No signals yet — toggle actions above</div>';
     return;
   }
 
@@ -2575,22 +2534,22 @@ function buildFilterTooltip(feature) {
 
   var reason = '';
   if (mindsetScore === 0 && promptScore === 0) {
-    reason = 'Neither the user\u2019s role/audience nor their prompt suggest this feature is useful.';
+    reason = 'This feature isn\u2019t relevant to this user\u2019s role or what they\u2019re creating.';
   } else if (mindsetScore === 0) {
-    reason = 'The user\u2019s role (' + u.role + ') presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences doesn\u2019t align with this feature.';
+    reason = 'A ' + u.role + ' presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences typically doesn\u2019t need this feature.';
   } else if (promptScore === 0) {
-    reason = 'The user\u2019s prompt doesn\u2019t mention anything related to this feature.';
+    reason = 'Nothing in the prompt suggests this feature would be useful.';
   } else {
-    reason = 'Combined context score (' + total + ') is below the relevance threshold of ' + RELEVANCE_THRESHOLD + '.';
+    reason = 'Weak signal from both role and prompt \u2014 not enough to be worth nudging.';
   }
 
   var html = '<span class="badge filtered" onmouseenter="positionFilterTooltip(event)" onmouseleave="hideFilterTooltip()">FILTERED';
   html += '<div class="filter-tooltip" id="ft-' + feature.id + '">';
-  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Filtered Out</div>';
-  html += '<div class="ft-row"><span class="ft-label">Mindset: ' + mindsetKey + '</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
-  html += '<div class="ft-row"><span class="ft-label">Prompt: \u201c' + promptLabel + '\u201d</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
+  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Not relevant</div>';
+  html += '<div class="ft-row"><span class="ft-label">Role fit (' + mindsetKey + ')</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
+  html += '<div class="ft-row"><span class="ft-label">Prompt fit</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
   html += '<div class="ft-divider"></div>';
-  html += '<div class="ft-row"><span class="ft-label ft-total">Relevance score</span><span class="ft-val zero">' + total + ' (need \u2265' + RELEVANCE_THRESHOLD + ')</span></div>';
+  html += '<div class="ft-row"><span class="ft-label ft-total">Combined fit</span><span class="ft-val zero">' + total + ' (needs ' + RELEVANCE_THRESHOLD + '+)</span></div>';
   html += '<div class="ft-reason">' + reason + '</div>';
   html += '</div></span>';
   return html;
@@ -2682,13 +2641,13 @@ function renderGuardrails() {
 
   var bar = document.getElementById('guardrail-bar');
   bar.innerHTML = [
-    { label: 'Pro user', value: state.user.isProUser ? 'Yes' : 'No', status: state.user.isProUser ? 'blocked' : 'ok' },
-    { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
+    { label: 'Pro', value: state.user.isProUser ? 'Yes' : 'Free', status: state.user.isProUser ? 'blocked' : 'ok' },
+    { label: 'Nudges shown', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
     { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
-    { label: 'Relevant', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/9', status: 'ok' },
-    { label: 'Shown', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 9), status: 'ok' },
-    { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
-    { label: 'Activity', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
+    { label: 'In scope', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/7', status: 'ok' },
+    { label: 'Seen', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 7), status: 'ok' },
+    { label: 'Engagement', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Enough (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+    { label: 'User', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
   ].map(function(g) {
     if (g.toggle) {
       return '<div class="gr-item gr-toggle" onclick="toggleUserActive()"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
@@ -2702,7 +2661,7 @@ function renderFeed() {
   var content = document.getElementById('feed-content');
 
   if (state.milestoneLog.length === 0) {
-    content.innerHTML = '<div class="empty-feed">Perform actions to trigger milestones.</div>';
+    content.innerHTML = '<div class="empty-feed">No nudges fired yet. Toggle actions to build up feature scores.</div>';
     return;
   }
 
@@ -2802,7 +2761,7 @@ function renderNudgePreview(feature, copy) {
 
   // Called with no args on reset — show empty state
   if (!feature || !copy) {
-    previewEl.innerHTML = '<div class="nudge-preview-empty">No milestone triggered yet. Perform actions to build up feature scores.</div>';
+    previewEl.innerHTML = '<div class="nudge-preview-empty">No nudge triggered yet. Toggle actions on the right to build up scores and trigger a nudge.</div>';
     return;
   }
 
@@ -2927,8 +2886,7 @@ async function loadConfigsFromFiles() {
       universal: '../config/universal-signal-map.json',
       mindset: '../config/mindset-vectors.json',
       prompt: '../config/prompt-synthesis-examples.json',
-      guardrails: '../config/guardrails.json',
-    };
+      guardrails: '../config/guardrails.json' };
 
     var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
     if (responses.some(function(r) { return !r.ok; })) return false;
