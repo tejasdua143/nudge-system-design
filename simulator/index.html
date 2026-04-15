@@ -1231,6 +1231,7 @@ const UNIVERSAL_MAP = {
   'company-domain':   2,
   'tier-1-country':   2,
   'deck-veteran':     3,
+  'acq-organic':      1,
   'acq-paid':         2,
   'acq-referral':     3,
   'doc-uploaded':     3,
@@ -1643,6 +1644,7 @@ function addStateSignals() {
   if (u.decksPublished >= 1) state.activeSignals.add('deck-publisher');
 
   // Acquisition channel signals
+  if (u.acqChannel === 'organic') state.activeSignals.add('acq-organic');
   if (u.acqChannel === 'paid') state.activeSignals.add('acq-paid');
   if (u.acqChannel === 'referral') state.activeSignals.add('acq-referral');
 }
@@ -2062,7 +2064,7 @@ function getUserContextImpact(label) {
       return { signalName: 'zero-dismissals', directWeights: {}, universalWeight: UNIVERSAL_MAP['zero-dismissals'] || 0 };
     }
     case 'Acquisition': {
-      if (u.acqChannel === 'organic') return null;
+      if (u.acqChannel === 'organic') return { signalName: 'acq-organic', directWeights: {}, universalWeight: UNIVERSAL_MAP['acq-organic'] || 0 };
       var sig2 = 'acq-' + u.acqChannel;
       return { signalName: sig2, directWeights: DIRECT_MAP[sig2] || {}, universalWeight: UNIVERSAL_MAP[sig2] || 0 };
     }
@@ -2544,6 +2546,7 @@ function renderSignals() {
     { id: 'deck-sharer', label: '2+ decks shared', type: 'direct' },
     { id: 'deck-publisher', label: '1+ deck published', type: 'direct' },
     // Acquisition channel
+    { id: 'acq-organic', label: 'Organic traffic', type: 'universal' },
     { id: 'acq-paid', label: 'Paid ad traffic', type: 'both' },
     { id: 'acq-referral', label: 'Referral traffic', type: 'both' },
   ];
