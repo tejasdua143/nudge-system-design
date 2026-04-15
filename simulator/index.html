@@ -1079,8 +1079,7 @@ const CONFIG = {
   SESSION_CAP: 3,
   COOLDOWN_MS: 60000,
   INTENT_FLOOR: 3,
-  ACTIVITY_PAUSE_MS: 3000,
-};
+  ACTIVITY_PAUSE_MS: 3000 };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. FEATURES — 9 feature definitions
@@ -1155,24 +1154,24 @@ const ACTIONS = [
 
 // Direct signal map: signal -> { featureId: weight }
 const DIRECT_MAP = {
-  'manual-edit':           { 'ai-models': 1, 'pres-refresh': 1 },
-  'edits-5plus':           { 'ai-models': 5, 'pres-refresh': 2, 'hire-team': 3 },
-  're-edit-3x':            { 'ai-models': 5, 'pres-refresh': 3, 'hire-team': 4 },
+  'manual-edit':           { 'ai-models': 1 },
+  'edits-5plus':           { 'ai-models': 5, 'hire-team': 3 },
+  're-edit-3x':            { 'ai-models': 5, 'hire-team': 4 },
   'format-edits':          { 'brand-kit': 3, 'ai-models': 1, 'hire-team': 2 },
-  'undo-redo':             { 'ai-models': 4, 'pres-refresh': 3, 'hire-team': 4 },
+  'undo-redo':             { 'ai-models': 4, 'hire-team': 4 },
   'style-change':          { 'brand-kit': 4, 'ai-models': 2, 'hire-team': 2 },
-  'slide-delete':          { 'ai-models': 2, 'pres-refresh': 2 },
+  'slide-delete':          { 'ai-models': 2 },
 
-  'slides-15plus':         { 'ai-models': 3, 'gen-speed': 5, 'invite-collab': 3 },
+  'slides-15plus':         { 'ai-models': 3, 'invite-collab': 3 },
   'media-added':           { 'ai-models': 3, 'brand-kit': 2 },
-  'slide-duplicate':       { 'pres-refresh': 2, 'ai-models': 1 },
-  'manual-slide-add':      { 'ai-models': 2, 'pres-refresh': 1 },
-  'slide-reorder':         { 'ai-models': 3, 'pres-refresh': 3 },
+  'slide-duplicate':       { 'ai-models': 1 },
+  'manual-slide-add':      { 'ai-models': 2 },
+  'slide-reorder':         { 'ai-models': 3 },
   'data-content':          { 'analytics': 3, 'export': 2, 'ai-models': 2 },
 
   'slideshow':             { 'unbranded': 4, 'export': 4 },
-  'slideshow-then-edit':   { 'ai-models': 4, 'pres-refresh': 4, 'hire-team': 2 },
-  'idle-on-slide':         { 'ai-models': 3, 'pres-refresh': 3 },
+  'slideshow-then-edit':   { 'ai-models': 4, 'hire-team': 2 },
+  'idle-on-slide':         { 'ai-models': 3 },
   'template-switch':       { 'unbranded': 5, 'brand-kit': 3, 'hire-team': 3 },
 
   'share-clicked':         { 'unbranded': 5, 'analytics': 4, 'export': 3 },
@@ -1184,21 +1183,21 @@ const DIRECT_MAP = {
   'started-blank':         { 'unbranded': 4, 'ai-models': 3 },
   'deck-edited':           { 'unbranded': 2, 'export': 3 },
 
-  'new-deck-session2':     { 'unbranded': 3, 'pres-refresh': 4, 'gen-speed': 3 },
-  'deck-switch':           { 'brand-kit': 3, 'pres-refresh': 3 },
+  'new-deck-session2':     { 'unbranded': 3 },
+  'deck-switch':           { 'brand-kit': 3 },
   'gate-hit':              {},
-  'time-20':               { 'ai-models': 3, 'gen-speed': 4 },
+  'time-20':               { 'ai-models': 3 },
 
   'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
   'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
-  'stakes-internal':       { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2 },
+  'stakes-internal':       { 'ai-models': 2, 'invite-collab': 2 },
 
   'prompt-synthesis':      {},  // populated at runtime from PROMPT_SYNTHESIS lookup
 
   'bought-export':         { 'export': 4 },
-  'multi-deck':            { 'brand-kit': 3, 'pres-refresh': 3 },
+  'multi-deck':            { 'brand-kit': 3 },
 
-  'deck-veteran':          { 'brand-kit': 3, 'pres-refresh': 3, 'gen-speed': 2 },
+  'deck-veteran':          { 'brand-kit': 3 },
   'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
   'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
 
@@ -1208,12 +1207,11 @@ const DIRECT_MAP = {
   'pricing-visit':         {},
 
   // Document upload signals
-  'doc-uploaded':          { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'pres-refresh': 3, 'hire-team': 2, 'analytics': 2, 'invite-collab': 2, 'ai-models': -2 },
-  'doc-long':              { 'hire-team': 4, 'pres-refresh': 3, 'gen-speed': 3, 'export': 2 },
+  'doc-uploaded':          { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'hire-team': 2, 'analytics': 2, 'invite-collab': 2, 'ai-models': -2 },
+  'doc-long':              { 'hire-team': 4, 'export': 2 },
 
   // Mindset vector signal (populated at runtime from MINDSET_VECTORS lookup)
-  'mindset-vector':        {},
-};
+  'mindset-vector':        {} };
 
 // Universal signals: signal -> base score (applied at CONFIG.UNIVERSAL_MULTIPLIER to all features)
 const UNIVERSAL_MAP = {
@@ -1233,156 +1231,153 @@ const UNIVERSAL_MAP = {
   'acq-organic':      1,
   'acq-paid':         0,
   'acq-referral':     2,
-  'doc-uploaded':     3,
-};
+  'doc-uploaded':     3 };
 
 // Mindset vectors: 'role|audienceStakes' -> per-feature weights (0-5)
 const MINDSET_VECTORS = {
-  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Leadership|internal':           { 'gen-speed': 3, 'invite-collab': 3, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
+  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Sales|internal':                { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|internal':                { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Marketing|internal':            { 'brand-kit': 3, 'gen-speed': 2, 'invite-collab': 2, 'ai-models': 2, 'pres-refresh': 1, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
+  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'gen-speed': 1, 'analytics': 1, 'hire-team': 0, 'pres-refresh': 0 },
-  'Product|internal':              { 'invite-collab': 4, 'gen-speed': 3, 'pres-refresh': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|internal':              { 'invite-collab': 4, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'pres-refresh': 2, 'ai-models': 2, 'gen-speed': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'gen-speed': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Engineering|low-external':      { 'ai-models': 3, 'gen-speed': 2, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Engineering|internal':          { 'invite-collab': 3, 'gen-speed': 3, 'ai-models': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Data Analytics|internal':       { 'analytics': 3, 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'pres-refresh': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1, 'gen-speed': 1, 'pres-refresh': 0 },
-  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0 },
-  'Consulting|internal':           { 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'gen-speed': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Operations|low-external':       { 'gen-speed': 2, 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Operations|internal':           { 'gen-speed': 3, 'invite-collab': 3, 'pres-refresh': 2, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|low-external':       { 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'gen-speed': 1, 'invite-collab': 1, 'hire-team': 1, 'pres-refresh': 0 },
-  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 },
-  'Finance|internal':              { 'gen-speed': 2, 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'pres-refresh': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'gen-speed': 1, 'hire-team': 0, 'invite-collab': 0, 'pres-refresh': 0 },
-  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'pres-refresh': 2, 'gen-speed': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Teacher|high-external':         { 'export': 4, 'gen-speed': 3, 'ai-models': 3, 'unbranded': 2, 'pres-refresh': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|low-external':          { 'export': 3, 'gen-speed': 3, 'ai-models': 2, 'pres-refresh': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|internal':              { 'export': 3, 'gen-speed': 3, 'pres-refresh': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|internal':              { 'export': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'gen-speed': 2, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0, 'pres-refresh': 0 },
-  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'gen-speed': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0, 'pres-refresh': 0 },
-  'Student|internal':              { 'gen-speed': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-};
+  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 } };
 
-var MINDSET_FALLBACK = { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0, 'pres-refresh': 0 };
+var MINDSET_FALLBACK = { 'ai-models': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 };
 
 // Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
 const PROMPT_SYNTHESIS = {
   // Founder topics
   'Series A pitch for fintech startup':
-    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Seed round deck for healthtech':
-    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 2, 'hire-team': 1 },
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Product demo for enterprise AI tool':
-    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'hire-team': 1 },
 
   // Sales topics
   'Enterprise SaaS proposal for Fortune 500':
-    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
   'Partnership pitch to retail chain':
-    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'gen-speed': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'hire-team': 1 },
   'ROI case study for CFO':
-    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'gen-speed': 1, 'pres-refresh': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'hire-team': 0 },
 
   // Corporate topics
   'Q1 business review':
-    { 'pres-refresh': 4, 'gen-speed': 4, 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
   'Product roadmap for H2':
-    { 'invite-collab': 4, 'pres-refresh': 3, 'gen-speed': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
   'Team restructuring proposal':
-    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'gen-speed': 2, 'unbranded': 2, 'brand-kit': 1, 'pres-refresh': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0 },
   'OKR review and planning':
-    { 'pres-refresh': 4, 'invite-collab': 4, 'gen-speed': 3, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
 
   // Creative topics
   'Design portfolio for senior role':
-    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'pres-refresh': 2, 'gen-speed': 1, 'invite-collab': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'invite-collab': 1, 'hire-team': 1 },
   'Agency credentials deck':
-    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'pres-refresh': 3, 'ai-models': 3, 'gen-speed': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'ai-models': 3, 'hire-team': 1 },
   'Brand identity presentation':
-    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'pres-refresh': 2, 'gen-speed': 1, 'hire-team': 1 },
+    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
 
   // Educator topics
   'Introduction to machine learning':
-    { 'export': 4, 'ai-models': 4, 'pres-refresh': 4, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Data visualization workshop':
-    { 'ai-models': 4, 'export': 4, 'pres-refresh': 3, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'ai-models': 4, 'export': 4, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Research methodology lecture':
-    { 'export': 4, 'pres-refresh': 4, 'ai-models': 3, 'gen-speed': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+    { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
 
   // Student topics
   'Final thesis defense':
-    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'gen-speed': 3, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'pres-refresh': 1, 'hire-team': 2 },
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'hire-team': 2 },
   'Startup pitch for entrepreneurship class':
-    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'gen-speed': 2, 'analytics': 2, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'analytics': 2, 'hire-team': 1 },
   'Capstone project presentation':
-    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'gen-speed': 3, 'brand-kit': 2, 'analytics': 1, 'pres-refresh': 1, 'hire-team': 1 },
+    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'brand-kit': 2, 'analytics': 1, 'hire-team': 1 },
 
   // Weak / vague prompts
   'pitch deck':
-    { 'unbranded': 2, 'export': 2, 'ai-models': 1, 'brand-kit': 1, 'analytics': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'ai-models': 1, 'brand-kit': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
   'startup stuff':
-    { 'ai-models': 1, 'gen-speed': 1, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
   'sales presentation':
-    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 1, 'brand-kit': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 1, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'deck for client meeting':
-    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 1, 'gen-speed': 1, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 1, 'invite-collab': 1, 'hire-team': 0 },
   'slides for meeting':
-    { 'gen-speed': 2, 'ai-models': 1, 'export': 1, 'invite-collab': 1, 'pres-refresh': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'export': 1, 'invite-collab': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'quarterly update slides':
-    { 'pres-refresh': 3, 'gen-speed': 2, 'invite-collab': 2, 'ai-models': 1, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'invite-collab': 2, 'ai-models': 1, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
   'portfolio presentation':
-    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 1, 'analytics': 1, 'gen-speed': 1, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
   'make a presentation':
-    { 'ai-models': 1, 'gen-speed': 1, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'ai-models': 1, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
   'lecture slides':
-    { 'export': 2, 'pres-refresh': 2, 'gen-speed': 1, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'presentation for class':
-    { 'export': 2, 'ai-models': 1, 'gen-speed': 1, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'pres-refresh': 0, 'hire-team': 0 },
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'help me with a ppt':
-    { 'ai-models': 1, 'gen-speed': 1, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'pres-refresh': 0, 'hire-team': 2 },
+    { 'ai-models': 1, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 2 },
 
   // Urgent prompts
   'investor meeting tomorrow need a deck':
-    { 'gen-speed': 5, 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 5 },
+    { 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 5 },
   'urgent proposal for client demo Friday':
-    { 'gen-speed': 5, 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'pres-refresh': 0, 'hire-team': 4 },
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'hire-team': 4 },
   'board deck due end of day':
-    { 'gen-speed': 5, 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'pres-refresh': 0, 'hire-team': 5 },
+    { 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'hire-team': 5 },
   'client pitch deck needed by tonight':
-    { 'gen-speed': 5, 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'pres-refresh': 0, 'hire-team': 4 },
+    { 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'hire-team': 4 },
   'guest lecture tomorrow on AI ethics':
-    { 'gen-speed': 4, 'export': 4, 'ai-models': 4, 'pres-refresh': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
   'group project due tomorrow':
-    { 'gen-speed': 4, 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'pres-refresh': 0, 'hire-team': 3 },
-};
+    { 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'hire-team': 3 } };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 5. ROLES, AUDIENCES, TOPICS, and user generation data
@@ -1410,8 +1405,7 @@ const AUDIENCES = {
   Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
   Creative: ['Potential clients', 'Recruiters', 'Art directors'],
   Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
-  Student: ['Professor', 'Panel judges', 'Classmates'],
-};
+  Student: ['Professor', 'Panel judges', 'Classmates'] };
 
 const TOPICS = {
   Founder: ['Series A pitch for fintech startup', 'Seed round deck for healthtech', 'Product demo for enterprise AI tool', 'pitch deck', 'startup stuff', 'investor meeting tomorrow need a deck'],
@@ -1419,8 +1413,7 @@ const TOPICS = {
   Corporate: ['Q1 business review', 'Product roadmap for H2', 'Team restructuring proposal', 'OKR review and planning', 'slides for meeting', 'quarterly update slides', 'board deck due end of day'],
   Creative: ['Design portfolio for senior role', 'Agency credentials deck', 'Brand identity presentation', 'portfolio presentation', 'make a presentation', 'client pitch deck needed by tonight'],
   Educator: ['Introduction to machine learning', 'Data visualization workshop', 'Research methodology lecture', 'lecture slides', 'guest lecture tomorrow on AI ethics'],
-  Student: ['Final thesis defense', 'Startup pitch for entrepreneurship class', 'Capstone project presentation', 'presentation for class', 'help me with a ppt', 'group project due tomorrow'],
-};
+  Student: ['Final thesis defense', 'Startup pitch for entrepreneurship class', 'Capstone project presentation', 'presentation for class', 'help me with a ppt', 'group project due tomorrow'] };
 
 const COMPANY_DOMAINS = {
   Founder: ['@startup.io', '@startup.io', '@gmail.com'],
@@ -1428,8 +1421,7 @@ const COMPANY_DOMAINS = {
   Corporate: ['@deloitte.com', '@jpmorgan.com', '@company.com', '@gmail.com'],
   Creative: ['@agency.co', '@studio.design', '@gmail.com', '@gmail.com'],
   Educator: ['@stanford.edu', '@university.edu', '@gmail.com'],
-  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com'],
-};
+  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com'] };
 
 const TIER_1 = ['US', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Sweden', 'Switzerland', 'Japan', 'Singapore'];
 const TIER_2 = ['India', 'Brazil', 'Indonesia', 'Philippines', 'Mexico', 'Nigeria', 'Vietnam', 'Colombia', 'Egypt', 'Bangladesh', 'Pakistan', 'Kenya'];
@@ -1449,8 +1441,7 @@ let state = {
   lastMilestoneTime: 0,
   milestoneLog: [],
   isUserActive: false,
-  relevantFeatures: new Set(),
-};
+  relevantFeatures: new Set() };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 7. SignalCollector — generateUser()
@@ -1470,8 +1461,7 @@ function generateUser() {
   const DECK_HISTORY = {
     1: { completed: pick([1, 1, 1, 2]), shared: pick([0, 0, 0, 1]), published: pick([0, 0, 0]) },
     2: { completed: pick([2, 3, 4, 5]), shared: pick([0, 1, 1, 2]), published: pick([0, 0, 1]) },
-    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) },
-  };
+    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) } };
   const deckHistory = DECK_HISTORY[Math.min(sessionNum, 3)];
 
   // Company domain
@@ -1505,8 +1495,7 @@ function generateUser() {
     decksCompleted: deckHistory.completed,
     decksShared: deckHistory.shared,
     decksPublished: deckHistory.published,
-    acqChannel,
-  };
+    acqChannel };
 
   // Reset signals for new user
   state.activeSignals = new Set();
@@ -1579,8 +1568,7 @@ function synthesizeFromKeywords(prompt) {
     'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
     'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
     'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
-    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'],
-  };
+    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'] };
 
   // Urgency detection — broader patterns
   var urgencyPatterns = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush',
@@ -1715,8 +1703,7 @@ function calculateScores() {
       universalContrib: Math.round(universalContrib * 10) / 10,
       total: Math.round(total * 10) / 10,
       directSignals,
-      universalSignals,
-    };
+      universalSignals };
   });
 
   state.featureScores = scores;
@@ -1767,8 +1754,7 @@ function fireMilestone(feature) {
     universal: feature.universalContrib,
     directSignals: feature.directSignals,
     universalSignals: feature.universalSignals,
-    time: new Date().toLocaleTimeString(),
-  });
+    time: new Date().toLocaleTimeString() });
 
   renderNudgePreview(feature, copy);
   renderFeed();
@@ -1841,33 +1827,25 @@ function generateCopy(feature) {
   const copies = {
     'ai-models': {
       title: 'Upgrade to a better AI model',
-      body: 'Generate higher quality slides for your ' + topic + ' deck. Better AI means sharper content, smarter layouts, and more polished output for ' + u.audience + '.',
-    },
+      body: 'Generate higher quality slides for your ' + topic + ' deck. Better AI means sharper content, smarter layouts, and more polished output for ' + u.audience + '.' },
     'brand-kit': {
       title: 'Set up your Brand Kit',
-      body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.',
-    },
+      body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.' },
     'unbranded': {
       title: 'Remove the watermark',
-      body: 'Remove the Presentations.AI watermark for a clean, professional finish. ' + u.audience + ' see your content, not our branding.',
-    },
+      body: 'Remove the Presentations.AI watermark for a clean, professional finish. ' + u.audience + ' see your content, not our branding.' },
     'export': {
       title: 'Export your deck',
-      body: 'Download your ' + topic + ' deck as a PowerPoint or PDF. Ready to email to ' + u.audience + ', present offline, or print.',
-    },
+      body: 'Download your ' + topic + ' deck as a PowerPoint or PDF. Ready to email to ' + u.audience + ', present offline, or print.' },
     'invite-collab': {
       title: 'Invite collaborators',
-      body: 'Add people to your ' + topic + ' deck for real-time editing. Get a second opinion before it goes to ' + u.audience + '.',
-    },
+      body: 'Add people to your ' + topic + ' deck for real-time editing. Get a second opinion before it goes to ' + u.audience + '.' },
     'analytics': {
       title: 'Turn on viewer analytics',
-      body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.',
-    },
+      body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.' },
     'hire-team': {
       title: 'Let us build it for you',
-      body: 'Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.',
-    },
-  };
+      body: 'Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' } };
 
   const base = copies[feature.id] || { title: feature.verb, body: feature.does + '.' };
 
@@ -1881,8 +1859,7 @@ function generateCopy(feature) {
       'export': ' Send it anywhere — no workarounds needed.',
       'invite-collab': ' Get feedback in one place instead of email chains.',
       'analytics': ' Know exactly who engaged — no guessing.',
-      'hire-team': ' Save days of work for less than you think.',
-    };
+      'hire-team': ' Save days of work for less than you think.' };
     if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
   } else {
     // Tier 1: quality-focused append
@@ -1893,8 +1870,7 @@ function generateCopy(feature) {
       'export': ' Presentation-ready files that look exactly as designed.',
       'invite-collab': ' Streamlined review workflow for your team.',
       'analytics': ' Detailed engagement insights for data-driven follow-ups.',
-      'hire-team': ' White-glove service from our expert presentation team.',
-    };
+      'hire-team': ' White-glove service from our expert presentation team.' };
     if (qualityAppend[feature.id]) base.body = base.body + qualityAppend[feature.id];
   }
 
@@ -1979,8 +1955,7 @@ function resetSimulator() {
     relevantFeatures: new Set(),
     _llmLoading: false,
     _llmError: null,
-    _llmSource: null,
-  };
+    _llmSource: null };
 
   generateUser();
   renderUserContext();
@@ -2275,8 +2250,8 @@ function synthesizeWithLLM(prompt) {
   var hasDoc = state.activeSignals.has('doc-uploaded');
   var hasLongDoc = state.activeSignals.has('doc-long');
   var docContext = '';
-  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, pres-refresh, hire-team. Reduce ai-models.';
-  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded, pres-refresh. Reduce ai-models.';
+  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, hire-team. Reduce ai-models.';
+  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded. Reduce ai-models.';
 
   var role = state.user.role || 'unknown';
 
@@ -2288,9 +2263,7 @@ function synthesizeWithLLM(prompt) {
     body: JSON.stringify({
       model: 'gemma2',
       prompt: ollamaPrompt,
-      stream: false,
-    }),
-  })
+      stream: false }) })
   .then(function(res) {
     if (!res.ok) throw new Error('Ollama error ' + res.status);
     return res.json();
@@ -2452,8 +2425,7 @@ function renderActions() {
     preview: 'Previewing',
     share: 'Sharing',
     prompt: 'Creation',
-    session: 'Session',
-  };
+    session: 'Session' };
   var cats = ['edit', 'content', 'preview', 'share', 'prompt', 'session'];
 
   grid.innerHTML = cats.map(function(cat) {
@@ -2914,8 +2886,7 @@ async function loadConfigsFromFiles() {
       universal: '../config/universal-signal-map.json',
       mindset: '../config/mindset-vectors.json',
       prompt: '../config/prompt-synthesis-examples.json',
-      guardrails: '../config/guardrails.json',
-    };
+      guardrails: '../config/guardrails.json' };
 
     var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
     if (responses.some(function(r) { return !r.ok; })) return false;
