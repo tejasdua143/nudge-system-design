@@ -1154,19 +1154,19 @@ const ACTIONS = [
 // Direct signal map: signal -> { featureId: weight }
 const DIRECT_MAP = {
   // ── Slide editing signals ──
-  'text-edit':             { 'ai-models': 2, 'hire-team': 1 },
+  'text-edit':             { 'ai-models': 2 },
   'style-change':          { 'brand-kit': 3, 'ai-models': 1 },
-  'element-move':          { 'brand-kit': 2, 'hire-team': 1 },
+  'element-move':          { 'brand-kit': 2 },
   'undo-redo':             { 'ai-models': 3, 'hire-team': 3 },
   'slide-delete':          { 'ai-models': 2 },
 
   // ── Content addition signals ──
   'insert-text':           { 'ai-models': 2 },
-  'insert-object':         { 'brand-kit': 2, 'analytics': 1 },
+  'insert-object':         { 'brand-kit': 2 },
   'insert-slide-prompt':   { 'ai-models': 3 },
   'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
-  'slide-duplicate':       { 'ai-models': 1 },
-  'slide-reorder':         { 'ai-models': 2 },
+  'slide-duplicate':       {},
+  'slide-reorder':         {},
 
   // ── Preview & customization signals ──
   'play-preview':          { 'unbranded': 4, 'export': 3 },
@@ -1185,7 +1185,7 @@ const DIRECT_MAP = {
   // ── Creation context signals ──
   'prompt-brand':          { 'brand-kit': 5 },
   'prompt-team':           { 'invite-collab': 5 },
-  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'hire-team': 2, 'analytics': 2, 'invite-collab': 2, 'ai-models': -2 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'hire-team': 2, 'analytics': 2, 'ai-models': -2 },
   'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
 
   // ── Session threshold signals ──
