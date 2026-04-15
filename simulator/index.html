@@ -1159,17 +1159,17 @@ const DIRECT_MAP = {
   'manual-edit':           { 'ai-models': 1, 'pres-refresh': 1 },
   'edits-5plus':           { 'ai-models': 5, 'pres-refresh': 2, 'hire-team': 3 },
   're-edit-3x':            { 'ai-models': 5, 'pres-refresh': 3, 'hire-team': 4 },
-  'format-edits':          { 'ai-models': 4, 'brand-kit': 2, 'hire-team': 2 },
+  'format-edits':          { 'brand-kit': 3, 'ai-models': 1, 'hire-team': 2 },
   'undo-redo':             { 'ai-models': 4, 'pres-refresh': 3, 'hire-team': 4 },
   'style-change':          { 'brand-kit': 4, 'ai-models': 2, 'hire-team': 2 },
   'slide-delete':          { 'ai-models': 2, 'pres-refresh': 2 },
 
   'slides-15plus':         { 'ai-models': 3, 'gen-speed': 5, 'invite-collab': 3 },
-  'media-added':           { 'ai-models': 3 },
-  'slide-duplicate':       { 'unbranded': 2, 'pres-refresh': 2 },
-  'manual-slide-add':      { 'unbranded': 3, 'ai-models': 2 },
+  'media-added':           { 'ai-models': 3, 'brand-kit': 2 },
+  'slide-duplicate':       { 'pres-refresh': 2, 'ai-models': 1 },
+  'manual-slide-add':      { 'ai-models': 2, 'pres-refresh': 1 },
   'slide-reorder':         { 'ai-models': 3, 'pres-refresh': 3 },
-  'data-content':          { 'analytics': 5 },
+  'data-content':          { 'analytics': 3, 'export': 2, 'ai-models': 2 },
 
   'slideshow':             { 'unbranded': 4, 'export': 4 },
   'slideshow-then-edit':   { 'ai-models': 4, 'pres-refresh': 4, 'hire-team': 2 },
@@ -1178,7 +1178,7 @@ const DIRECT_MAP = {
 
   'share-clicked':         { 'unbranded': 5, 'analytics': 4, 'export': 3 },
   'link-copied':           { 'unbranded': 4, 'analytics': 4 },
-  'export-attempt':        { 'export': 5 },
+  'export-attempt':        { 'export': 5, 'unbranded': 2 },
 
   'brand-mention':         { 'brand-kit': 5 },
   'team-language':         { 'invite-collab': 5 },
@@ -1203,7 +1203,7 @@ const DIRECT_MAP = {
   'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
   'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
 
-  'acq-paid':              { 'gen-speed': 2, 'export': 2 },
+  'acq-paid':              {},
   'acq-referral':          { 'invite-collab': 3 },
 
   'pricing-visit':         {},
