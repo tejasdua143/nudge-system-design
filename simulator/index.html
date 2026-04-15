@@ -1088,12 +1088,10 @@ const CONFIG = {
 const FEATURES = [
   { id: 'ai-models', name: 'Better AI Models', icon: '🧠', type: 'pro', verb: 'Upgrade to a better AI model', does: 'uses Standard or Advanced AI models for higher quality slides and smarter content' },
   { id: 'brand-kit', name: 'Brand Kit', icon: '🎨', type: 'pro', verb: 'Set up your Brand Kit', does: 'applies your custom brand colors and fonts across all slides' },
-  { id: 'unbranded', name: 'Unbranded Pro Templates', icon: '📐', type: 'pro', verb: 'Use unbranded templates', does: 'gives you professional templates without the Presentations.AI watermark' },
+  { id: 'unbranded', name: 'Remove Watermark', icon: '✨', type: 'pro', verb: 'Remove the watermark', does: 'removes the Presentations.AI watermark from your slides for a clean, professional finish' },
   { id: 'export', name: 'PowerPoint/PDF Export', icon: '📄', type: 'pro', verb: 'Export your deck', does: 'downloads your deck as a PowerPoint or PDF file' },
   { id: 'invite-collab', name: 'Invite Collaborators', icon: '👥', type: 'pro', verb: 'Invite collaborators', does: 'lets others view, comment, and edit your deck in real time' },
   { id: 'analytics', name: 'Viewer Analytics', icon: '📈', type: 'pro', verb: 'Turn on analytics', does: 'tracks who opened your deck, which slides they viewed, and for how long' },
-  { id: 'gen-speed', name: 'Generation Speed', icon: '⚡', type: 'pro', verb: 'Upgrade generation speed', does: 'generates your presentations at Medium or Fast speed instead of Slow' },
-  { id: 'pres-refresh', name: 'Presentation Refresh', icon: '🔄', type: 'pro', verb: 'Refresh your presentation', does: 'regenerates and updates your presentation with improved content or structure' },
   { id: 'hire-team', name: 'Hire Our Team', icon: '🤝', type: 'service', verb: 'Let us build it for you', does: 'our team creates a polished presentation for you' },
 ];
 
@@ -1580,8 +1578,6 @@ function synthesizeFromKeywords(prompt) {
     'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
     'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
     'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
-    'gen-speed':     ['fast', 'quick', 'speed', 'slow', 'waiting', 'generate'],
-    'pres-refresh':  ['update', 'refresh', 'redo', 'restructure', 'revise', 'iterate', 'new version', 'improve', 'fix'],
     'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'],
   };
 
@@ -1851,8 +1847,8 @@ function generateCopy(feature) {
       body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.',
     },
     'unbranded': {
-      title: 'Use unbranded Pro templates',
-      body: 'Professional templates without the Presentations.AI watermark. ' + u.audience + ' see your content, not our branding.',
+      title: 'Remove the watermark',
+      body: 'Remove the Presentations.AI watermark for a clean, professional finish. ' + u.audience + ' see your content, not our branding.',
     },
     'export': {
       title: 'Export your deck',
@@ -1865,14 +1861,6 @@ function generateCopy(feature) {
     'analytics': {
       title: 'Turn on viewer analytics',
       body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.',
-    },
-    'gen-speed': {
-      title: 'Upgrade generation speed',
-      body: 'Generate your ' + topic + ' deck at Medium or Fast speed instead of Slow. Less waiting, faster iteration.',
-    },
-    'pres-refresh': {
-      title: 'Refresh your presentation',
-      body: 'Regenerate your ' + topic + ' deck with improved content and structure. A fresh version without starting from scratch.',
     },
     'hire-team': {
       title: 'Let us build it for you',
@@ -1892,8 +1880,6 @@ function generateCopy(feature) {
       'export': ' Send it anywhere — no workarounds needed.',
       'invite-collab': ' Get feedback in one place instead of email chains.',
       'analytics': ' Know exactly who engaged — no guessing.',
-      'gen-speed': ' Get your deck ready in minutes, not hours.',
-      'pres-refresh': ' Update your deck without rebuilding from zero.',
       'hire-team': ' Save days of work for less than you think.',
     };
     if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
@@ -1906,8 +1892,6 @@ function generateCopy(feature) {
       'export': ' Presentation-ready files that look exactly as designed.',
       'invite-collab': ' Streamlined review workflow for your team.',
       'analytics': ' Detailed engagement insights for data-driven follow-ups.',
-      'gen-speed': ' Priority generation so your workflow stays uninterrupted.',
-      'pres-refresh': ' AI-powered content refresh with structure preserved.',
       'hire-team': ' White-glove service from our expert presentation team.',
     };
     if (qualityAppend[feature.id]) base.body = base.body + qualityAppend[feature.id];
@@ -2296,7 +2280,7 @@ function synthesizeWithLLM(prompt) {
 
   var role = state.user.role || 'unknown';
 
-  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "gen-speed": 0-5,\n    "pres-refresh": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Templates without watermark (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- gen-speed: Faster generation (NOT related to urgency)\n- pres-refresh: Regenerate/improve existing deck\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
+  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Remove watermark — clean professional finish (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
 
   fetch('http://localhost:11434/api/generate', {
     method: 'POST',
