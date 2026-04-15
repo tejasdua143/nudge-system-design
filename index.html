@@ -1108,8 +1108,9 @@ const ACTIONS = [
   { id: 'slide-delete', label: 'Delete a slide', signals: ['slide-delete'], cat: 'edit' },
 
   // Adding content — from Insert menu
-  { id: 'insert-text', label: 'Insert title or list', signals: ['insert-text'], cat: 'content' },
-  { id: 'insert-object', label: 'Insert list or media', signals: ['insert-object'], cat: 'content' },
+  { id: 'insert-title', label: 'Insert a title', signals: ['insert-title'], cat: 'content' },
+  { id: 'insert-list', label: 'Insert a list', signals: ['insert-list'], cat: 'content' },
+  { id: 'insert-media', label: 'Insert media (image/video)', signals: ['insert-media'], cat: 'content' },
   { id: 'insert-slide-prompt', label: 'Insert slide with a prompt', signals: ['insert-slide-prompt'], cat: 'content' },
   { id: 'insert-slide-template', label: 'Insert slide from template', signals: ['insert-slide-template'], cat: 'content' },
   { id: 'slide-duplicate', label: 'Duplicate a slide', signals: ['slide-duplicate'], cat: 'content' },
@@ -1156,28 +1157,29 @@ const DIRECT_MAP = {
   // ── Slide editing signals ──
   'text-edit':             { 'ai-models': 2 },
   'style-change':          { 'brand-kit': 3, 'ai-models': 1 },
-  'element-move':          { 'brand-kit': 2 },
+  'element-move':          { 'brand-kit': 2, 'ai-models': 1 },
   'undo-redo':             { 'ai-models': 3, 'hire-team': 3 },
   'slide-delete':          { 'ai-models': 2 },
 
   // ── Content addition signals ──
-  'insert-text':           { 'ai-models': 2 },
-  'insert-object':         { 'brand-kit': 2 },
+  'insert-title':          { 'ai-models': 2 },
+  'insert-list':           { 'ai-models': 2 },
+  'insert-media':          { 'brand-kit': 2 },
   'insert-slide-prompt':   { 'ai-models': 3 },
   'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
   'slide-duplicate':       {},
-  'slide-reorder':         {},
+  'slide-reorder':         { 'ai-models': 1 },
 
   // ── Preview & customization signals ──
   'play-preview':          { 'unbranded': 4, 'export': 3 },
-  'edit-after-preview':    { 'ai-models': 4, 'hire-team': 2 },
-  'idle-30s':              { 'ai-models': 2 },
+  'edit-after-preview':    { 'ai-models': 2, 'hire-team': 1 },
+  'idle-30s':              {},
   'theme-global':          { 'brand-kit': 4, 'unbranded': 3 },
-  'layout-slide':          { 'brand-kit': 2, 'ai-models': 1 },
-  'deck-regenerate':       { 'ai-models': 3, 'hire-team': 2 },
+  'layout-slide':          { 'brand-kit': 2, 'ai-models': 1, 'hire-team': 1 },
+  'deck-regenerate':       { 'ai-models': 5, 'hire-team': 5 },
 
   // ── Sharing & export signals ──
-  'share-link-copy':       { 'unbranded': 4, 'analytics': 3 },
+  'share-link-copy':       { 'unbranded': 4, 'analytics': 3, 'invite-collab': 2 },
   'invite-attempt':        { 'invite-collab': 5 },
   'export-click':          { 'export': 3 },
   'export-download':       { 'export': 5, 'unbranded': 2 },
@@ -1185,7 +1187,7 @@ const DIRECT_MAP = {
   // ── Creation context signals ──
   'prompt-brand':          { 'brand-kit': 5 },
   'prompt-team':           { 'invite-collab': 5 },
-  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'hire-team': 2, 'analytics': 2, 'ai-models': -2 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'ai-models': 2, 'hire-team': 2, 'analytics': 2 },
   'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
 
   // ── Session threshold signals ──
@@ -2453,8 +2455,9 @@ function renderSignals() {
     { id: 'undo-redo', label: 'Undo/redo used', type: 'direct' },
     { id: 'slide-delete', label: 'Slide deleted', type: 'direct' },
     // Content
-    { id: 'insert-text', label: 'Inserted text/title', type: 'direct' },
-    { id: 'insert-object', label: 'Inserted object/media', type: 'direct' },
+    { id: 'insert-title', label: 'Inserted a title', type: 'direct' },
+    { id: 'insert-list', label: 'Inserted a list', type: 'direct' },
+    { id: 'insert-media', label: 'Inserted media', type: 'direct' },
     { id: 'insert-slide-prompt', label: 'Added slide with prompt', type: 'direct' },
     { id: 'insert-slide-template', label: 'Added slide from template', type: 'direct' },
     { id: 'slide-duplicate', label: 'Slide duplicated', type: 'direct' },
