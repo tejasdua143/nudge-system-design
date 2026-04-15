@@ -1004,37 +1004,37 @@
 </head>
 <body>
   <div class="header">
-    <h1>Nudge Simulator v2</h1>
-    <p>Milestone-driven, per-feature scoring. Each action adds signals that score toward specific Pro features. Highest scorer above threshold fires.</p>
+    <h1>Smart Nudge Simulator</h1>
+    <p>Simulate how the nudge system decides which Pro feature to show, when, and why. Toggle user actions on the right and watch scores change in real time.</p>
   </div>
   <div class="layout">
     <div class="left-col">
       <div class="panel" id="panel-user">
-        <div class="panel-title">User Context</div>
+        <div class="panel-title">User Profile</div>
         <div id="user-context"></div>
-        <button class="reshuffle-btn" onclick="resetSimulator()">Reshuffle User</button>
+        <button class="reshuffle-btn" onclick="resetSimulator()">New Random User</button>
       </div>
       <div class="panel" id="panel-prompt">
-        <div class="panel-title">Prompt Analysis</div>
+        <div class="panel-title">Prompt Intelligence</div>
         <div id="prompt-input-area"></div>
         <div id="prompt-analysis"></div>
       </div>
     </div>
     <div class="center-col">
       <div class="panel" id="panel-guardrails">
-        <div class="panel-title">Guardrails</div>
+        <div class="panel-title">Safety Checks</div>
         <div class="guardrail-bar" id="guardrail-bar"></div>
       </div>
       <div class="panel" id="panel-matrix">
-        <div class="panel-title">Feature Score Matrix</div>
+        <div class="panel-title">Feature Scores</div>
         <table class="matrix-table">
           <thead>
             <tr>
               <th>Feature</th>
-              <th>Rel</th>
-              <th>Direct</th>
-              <th>Uni (×0.4)</th>
-              <th>Score</th>
+              <th>Fit</th>
+              <th>Action</th>
+              <th>Context</th>
+              <th>Total</th>
               <th></th>
             </tr>
           </thead>
@@ -1042,21 +1042,22 @@
         </table>
       </div>
       <div class="panel" id="panel-nudge-preview">
-        <div class="panel-title">Nudge Preview</div>
+        <div class="panel-title">Live Preview</div>
         <div id="nudge-preview"></div>
       </div>
       <div class="panel" id="panel-feed">
-        <div class="panel-title">Milestone Feed</div>
+        <div class="panel-title">Nudge History</div>
         <div id="feed-content"></div>
       </div>
     </div>
     <div class="right-col">
       <div class="panel" id="panel-actions">
-        <div class="panel-title">Actions</div>
+        <div class="panel-title">User Actions</div>
         <div class="action-grid" id="action-grid"></div>
       </div>
       <div class="panel" id="panel-signals">
         <div class="panel-title">Active Signals</div>
+
         <div class="signal-list" id="signal-list"></div>
       </div>
     </div>
@@ -2135,14 +2136,14 @@ function renderPromptInput() {
   // Ollama status
   var ollamaStatus = 'none';
   var ollamaLabel = 'Ollama not checked';
-  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Ollama connected'; }
-  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Ollama not running'; }
+  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Local AI connected'; }
+  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Local AI not available'; }
 
   html += '<div class="api-key-row">';
-  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + ' (Gemma 2)</span>';
+  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + '</span>';
   html += '</div>';
 
-  html += '<div class="prompt-section-label">User Prompt</div>';
+  html += '<div class="prompt-section-label">What the user wants to create</div>';
   html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
   html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
   html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
@@ -2162,7 +2163,7 @@ function renderPromptAnalysis() {
   if (state._llmLoading) {
     html += '<div class="llm-loader">';
     html += '<div class="loader-dots"><span></span><span></span><span></span></div>';
-    html += ' Gemma 2 is analyzing your prompt...';
+    html += ' Analyzing prompt with local AI...';
     html += '</div>';
   }
 
@@ -2171,7 +2172,7 @@ function renderPromptAnalysis() {
   var audience = hasLLMAnalysis ? (u.audience || '\u2014') : null;
   var stakes = hasLLMAnalysis ? (u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014') : null;
 
-  html += '<div class="prompt-section-label">Inferred from Prompt</div>';
+  html += '<div class="prompt-section-label">What we infer</div>';
   if (audience) {
     var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
     html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
@@ -2179,18 +2180,18 @@ function renderPromptAnalysis() {
     html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
     html += '</div>';
   } else {
-    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Waiting for LLM analysis...' : (state._ollamaAvailable ? 'Type a prompt to analyze' : 'Requires Ollama running locally')) + '</div>';
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Analyzing prompt...' : (state._ollamaAvailable ? 'Enter a prompt above to see inferred audience and stakes' : 'Connect Ollama locally for AI-powered inference')) + '</div>';
   }
 
   // Signal extraction
   var synthesis = u.promptSynthesis || {};
 
   // Signal extraction
-  var sourceLabel = '(keyword fallback)';
-  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '(pre-analyzed)';
-  if (state._llmSource === u.topic) sourceLabel = '(local LLM via Ollama)';
-  if (state._llmLoading) sourceLabel = '(analyzing...)';
-  html += '<div class="prompt-section-label">Signal Extraction ' + sourceLabel + '</div>';
+  var sourceLabel = '';
+  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '';
+  if (state._llmSource === u.topic) sourceLabel = '(AI-analyzed)';
+  if (state._llmLoading) sourceLabel = '';
+  html += '<div class="prompt-section-label">Feature relevance ' + sourceLabel + '</div>';
 
   // Sort features by synthesis score descending
   var entries = FEATURES.map(function(f) {
@@ -2209,8 +2210,7 @@ function renderPromptAnalysis() {
   });
 
   // Contribution note
-  html += '<div class="prompt-section-label" style="margin-top:14px">How it contributes</div>';
-  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">These scores feed directly into the Feature Score Matrix as the <strong>prompt-synthesis</strong> signal. A score of 5 means the LLM considers this feature highly relevant to the user\u2019s prompt.</div>';
+  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5;margin-top:12px">These scores reflect how relevant each Pro feature is to this user\u2019s prompt. Higher scores increase the chance that feature gets nudged.</div>';
 
   el.innerHTML = html;
 }
@@ -2447,12 +2447,12 @@ function buildTooltipHTML(action) {
 function renderActions() {
   var grid = document.getElementById('action-grid');
   var catLabels = {
-    edit: 'Editing',
-    content: 'Content',
-    preview: 'Navigation & Preview',
-    share: 'Sharing & Export',
-    prompt: 'Prompt & Creation',
-    session: 'Session & Journey',
+    edit: 'Slide Editing',
+    content: 'Adding Content',
+    preview: 'Previewing',
+    share: 'Sharing',
+    prompt: 'Creation',
+    session: 'Session',
   };
   var cats = ['edit', 'content', 'preview', 'share', 'prompt', 'session'];
 
@@ -2539,7 +2539,7 @@ function renderSignals() {
   var activeList = allSignals.filter(function(s) { return state.activeSignals.has(s.id); });
 
   if (activeList.length === 0) {
-    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No behavioral signals yet</div>';
+    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No signals yet — toggle actions above</div>';
     return;
   }
 
@@ -2562,22 +2562,22 @@ function buildFilterTooltip(feature) {
 
   var reason = '';
   if (mindsetScore === 0 && promptScore === 0) {
-    reason = 'Neither the user\u2019s role/audience nor their prompt suggest this feature is useful.';
+    reason = 'This feature isn\u2019t relevant to this user\u2019s role or what they\u2019re creating.';
   } else if (mindsetScore === 0) {
-    reason = 'The user\u2019s role (' + u.role + ') presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences doesn\u2019t align with this feature.';
+    reason = 'A ' + u.role + ' presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences typically doesn\u2019t need this feature.';
   } else if (promptScore === 0) {
-    reason = 'The user\u2019s prompt doesn\u2019t mention anything related to this feature.';
+    reason = 'Nothing in the prompt suggests this feature would be useful.';
   } else {
-    reason = 'Combined context score (' + total + ') is below the relevance threshold of ' + RELEVANCE_THRESHOLD + '.';
+    reason = 'Weak signal from both role and prompt \u2014 not enough to be worth nudging.';
   }
 
   var html = '<span class="badge filtered" onmouseenter="positionFilterTooltip(event)" onmouseleave="hideFilterTooltip()">FILTERED';
   html += '<div class="filter-tooltip" id="ft-' + feature.id + '">';
-  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Filtered Out</div>';
-  html += '<div class="ft-row"><span class="ft-label">Mindset: ' + mindsetKey + '</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
-  html += '<div class="ft-row"><span class="ft-label">Prompt: \u201c' + promptLabel + '\u201d</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
+  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Not relevant</div>';
+  html += '<div class="ft-row"><span class="ft-label">Role fit (' + mindsetKey + ')</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
+  html += '<div class="ft-row"><span class="ft-label">Prompt fit</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
   html += '<div class="ft-divider"></div>';
-  html += '<div class="ft-row"><span class="ft-label ft-total">Relevance score</span><span class="ft-val zero">' + total + ' (need \u2265' + RELEVANCE_THRESHOLD + ')</span></div>';
+  html += '<div class="ft-row"><span class="ft-label ft-total">Combined fit</span><span class="ft-val zero">' + total + ' (needs ' + RELEVANCE_THRESHOLD + '+)</span></div>';
   html += '<div class="ft-reason">' + reason + '</div>';
   html += '</div></span>';
   return html;
@@ -2669,13 +2669,13 @@ function renderGuardrails() {
 
   var bar = document.getElementById('guardrail-bar');
   bar.innerHTML = [
-    { label: 'Pro user', value: state.user.isProUser ? 'Yes' : 'No', status: state.user.isProUser ? 'blocked' : 'ok' },
-    { label: 'Milestones fired', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
+    { label: 'Pro', value: state.user.isProUser ? 'Yes' : 'Free', status: state.user.isProUser ? 'blocked' : 'ok' },
+    { label: 'Nudges shown', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
     { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
-    { label: 'Relevant', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/9', status: 'ok' },
-    { label: 'Shown', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 9), status: 'ok' },
-    { label: 'Intent floor', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Pass (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
-    { label: 'Activity', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
+    { label: 'In scope', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/7', status: 'ok' },
+    { label: 'Seen', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 7), status: 'ok' },
+    { label: 'Engagement', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Enough (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+    { label: 'User', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
   ].map(function(g) {
     if (g.toggle) {
       return '<div class="gr-item gr-toggle" onclick="toggleUserActive()"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
@@ -2689,7 +2689,7 @@ function renderFeed() {
   var content = document.getElementById('feed-content');
 
   if (state.milestoneLog.length === 0) {
-    content.innerHTML = '<div class="empty-feed">Perform actions to trigger milestones.</div>';
+    content.innerHTML = '<div class="empty-feed">No nudges fired yet. Toggle actions to build up feature scores.</div>';
     return;
   }
 
@@ -2789,7 +2789,7 @@ function renderNudgePreview(feature, copy) {
 
   // Called with no args on reset — show empty state
   if (!feature || !copy) {
-    previewEl.innerHTML = '<div class="nudge-preview-empty">No milestone triggered yet. Perform actions to build up feature scores.</div>';
+    previewEl.innerHTML = '<div class="nudge-preview-empty">No nudge triggered yet. Toggle actions on the right to build up scores and trigger a nudge.</div>';
     return;
   }
 
