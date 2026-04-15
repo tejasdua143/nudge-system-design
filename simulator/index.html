@@ -1830,54 +1830,97 @@ function generateCopy(feature) {
   const u = state.user;
   const topic = u.topic.split(' ').length > 4 ? u.topic.split(' ').slice(0, 4).join(' ') + '...' : u.topic;
 
-  const copies = {
-    'ai-models': {
-      title: 'Upgrade to a better AI model',
-      body: 'Generate higher quality slides for your ' + topic + ' deck. Better AI means sharper content, smarter layouts, and more polished output for ' + u.audience + '.' },
-    'brand-kit': {
-      title: 'Set up your Brand Kit',
-      body: 'Apply your brand colors and fonts across every slide. Your ' + topic + ' deck looks like yours, not a template.' },
-    'unbranded': {
-      title: 'Remove the watermark',
-      body: 'Remove the Presentations.AI watermark for a clean, professional finish. ' + u.audience + ' see your content, not our branding.' },
-    'export': {
-      title: 'Export your deck',
-      body: 'Download your ' + topic + ' deck as a PowerPoint or PDF. Ready to email to ' + u.audience + ', present offline, or print.' },
-    'invite-collab': {
-      title: 'Invite collaborators',
-      body: 'Add people to your ' + topic + ' deck for real-time editing. Get a second opinion before it goes to ' + u.audience + '.' },
-    'analytics': {
-      title: 'Turn on viewer analytics',
-      body: 'See who in ' + u.audience + ' opened your ' + topic + ' deck, which slides they viewed, and how long they spent.' },
-    'hire-team': {
-      title: 'Let us build it for you',
-      body: 'Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' } };
+  // Sub-feature copy: each feature has multiple sub-features.
+  // Pick the most relevant one based on active signals.
+  var signals = state.activeSignals;
 
-  const base = copies[feature.id] || { title: feature.verb, body: feature.does + '.' };
+  var subFeatures = {
+    'ai-models': [
+      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+        body: 'Stop editing what the AI got wrong. With Advanced Models, your slides come out sharper and more polished \u2014 less fixing, more presenting.' },
+      { id: 'ai-credits', title: 'More AI Credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
+        body: 'You\u2019re using AI to build your deck \u2014 unlock 5,000 credits so you never hit the limit mid-flow.' },
+      { id: 'project-knowledge', title: 'Project Knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
+        body: 'Teach the AI about your project. With Project Knowledge, it remembers your content and generates slides that actually match your material.' },
+    ],
+    'brand-kit': [
+      { id: 'brand-fonts', title: 'Custom Brand Fonts', signals: ['style-change'],
+        body: 'Stop adjusting fonts manually. With Custom Brand Fonts, set your typeface once and every slide matches automatically.' },
+      { id: 'brand-colors', title: 'Custom Brand Colors', signals: ['theme-global', 'layout-slide'],
+        body: 'Your brand has specific colors. Set them once in your Brand Kit and every new slide uses them by default.' },
+      { id: 'brand-assets', title: 'Custom Brand Assets', signals: ['insert-media', 'prompt-brand'],
+        body: 'Upload your logo, icons, and images to your Brand Kit. They\u2019re always available, ready to drop into any slide.' },
+      { id: 'brand-voice', title: 'Custom Brand Voice', signals: ['text-edit', 'insert-title', 'insert-list'],
+        body: 'The AI writes in your brand\u2019s tone. Set your voice once and every generated slide sounds like you.' },
+    ],
+    'unbranded': [
+      { id: 'unbranded-links', title: 'Unbranded Public Links', signals: ['share-link-copy', 'play-preview'],
+        body: 'When you share this deck, your audience sees your content \u2014 not our watermark. Clean, professional links that look like yours.' },
+      { id: 'unbranded-export', title: 'Clean Exports', signals: ['export-click', 'export-download'],
+        body: 'Export a polished deck without the Presentations.AI watermark. Ready to email, print, or present offline.' },
+    ],
+    'export': [
+      { id: 'ppt-export', title: 'PowerPoint Export', signals: ['export-click', 'export-download'],
+        body: 'Download your deck as a .pptx file. Edit it in PowerPoint, share it over email, present it anywhere \u2014 no internet needed.' },
+      { id: 'pdf-export', title: 'PDF Export', signals: ['play-preview', 'share-link-copy'],
+        body: 'Export a presentation-ready PDF. Perfect for emailing to ' + u.audience + ' or printing for an in-person meeting.' },
+      { id: 'embed', title: 'Presentation Embeds', signals: ['share-link-copy'],
+        body: 'Embed your deck directly on a website or landing page. Your ' + topic + ' presentation, live and interactive, wherever you need it.' },
+    ],
+    'invite-collab': [
+      { id: 'guests', title: 'Invite Guests', signals: ['share-link-copy', 'prompt-team'],
+        body: 'Invite up to 10 guests to view and comment on your deck. Get feedback before it goes to ' + u.audience + '.' },
+      { id: 'workspace', title: 'Workspace Members', signals: ['prompt-team', 'invite-attempt'],
+        body: 'Add your team to a shared workspace. Everyone can edit, comment, and build decks together \u2014 no more emailing files back and forth.' },
+      { id: 'present-remotely', title: 'Present Remotely', signals: ['play-preview'],
+        body: 'Present your deck live to anyone, anywhere. Share a link and your audience follows along in real time as you present.' },
+      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+        body: 'Made changes you regret? Version History lets you go back to any previous state. 30 days of history, every edit tracked.' },
+    ],
+    'analytics': [
+      { id: 'page-views', title: 'Page Views', signals: ['share-link-copy', 'play-preview'],
+        body: 'See exactly how many people opened your ' + topic + ' deck. Know if your audience is actually viewing it.' },
+      { id: 'slide-engagement', title: 'Slide Engagement', signals: ['share-link-copy'],
+        body: 'See which slides ' + u.audience + ' spent the most time on. Know what\u2019s landing and what they\u2019re skipping.' },
+      { id: 'demographics', title: 'Viewer Demographics', signals: ['export-click', 'export-download'],
+        body: 'See where your viewers are and what devices they\u2019re using. Useful context for follow-up conversations with ' + u.audience + '.' },
+    ],
+    'hire-team': [
+      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+        body: 'Spending too long on this? Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' },
+    ],
+  };
+
+  // Pick the best sub-feature: find the one with the most matching active signals
+  var candidates = subFeatures[feature.id] || [];
+  var best = null;
+  var bestScore = -1;
+
+  candidates.forEach(function(sub) {
+    var matchCount = 0;
+    sub.signals.forEach(function(sig) { if (signals.has(sig)) matchCount++; });
+    if (matchCount > bestScore) { bestScore = matchCount; best = sub; }
+  });
+
+  // Fallback to first sub-feature if none match
+  if (!best && candidates.length > 0) best = candidates[0];
+
+  var base = best
+    ? { title: best.title, body: best.body }
+    : { title: feature.verb, body: feature.does + '.' };
 
   // Tier modifiers
   if (u.countryTier === 2) {
-    // Tier 2: value-focused append
-    const valueAppend = {
+    var valueAppend = {
       'ai-models': ' Save hours of manual editing.',
-      'brand-kit': ' Set it once, reuse across every deck — no redesign work.',
+      'brand-kit': ' Set it once, reuse across every deck.',
       'unbranded': ' Look established without hiring a designer.',
-      'export': ' Send it anywhere — no workarounds needed.',
-      'invite-collab': ' Get feedback in one place instead of email chains.',
-      'analytics': ' Know exactly who engaged — no guessing.',
-      'hire-team': ' Save days of work for less than you think.' };
+      'export': ' Send it anywhere \u2014 no workarounds.',
+      'invite-collab': ' Get feedback in one place.',
+      'analytics': ' Know exactly who engaged.',
+      'hire-team': ' Save days of work for less than you think.',
+    };
     if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
-  } else {
-    // Tier 1: quality-focused append
-    const qualityAppend = {
-      'ai-models': ' Enterprise-grade AI for polished, boardroom-ready output.',
-      'brand-kit': ' Pixel-perfect brand consistency across your entire library.',
-      'unbranded': ' Clean, professional finish that matches your brand standards.',
-      'export': ' Presentation-ready files that look exactly as designed.',
-      'invite-collab': ' Streamlined review workflow for your team.',
-      'analytics': ' Detailed engagement insights for data-driven follow-ups.',
-      'hire-team': ' White-glove service from our expert presentation team.' };
-    if (qualityAppend[feature.id]) base.body = base.body + qualityAppend[feature.id];
   }
 
   return base;
