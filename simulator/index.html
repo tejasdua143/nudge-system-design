@@ -159,6 +159,229 @@
     letter-spacing: 0.3px;
   }
   .reshuffle-btn:hover { opacity: 0.85; }
+  .randomise-all-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.4px;
+  }
+  .randomise-all-btn:hover { opacity: 0.88; transform: scale(1.02); }
+
+  /* Randomise Everything Overlay */
+  .rand-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    animation: overlayIn 0.25s ease;
+    backdrop-filter: blur(6px);
+    padding: 24px;
+  }
+  .rand-overlay.active { display: flex; }
+  .rand-card {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+    max-width: 960px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rand-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    z-index: 1;
+  }
+  .rand-header h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--primary);
+  }
+  .rand-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .rand-close:hover { background: var(--border-light); color: var(--text); }
+  .rand-body {
+    padding: 24px 32px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .rand-section {
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .rand-section.full-width {
+    grid-column: 1 / -1;
+  }
+  .rand-section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .rand-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .rand-row:last-child { border-bottom: none; }
+  .rand-row-label { color: var(--text-dim); font-size: 11px; font-weight: 500; }
+  .rand-row-value { font-weight: 600; color: var(--text); }
+  .rand-row-value.highlight { color: var(--accent); }
+  .rand-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .rand-action-chip {
+    padding: 5px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .rand-prompt-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .rand-prompt-icon {
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .rand-prompt-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    font-style: italic;
+  }
+  .rand-feature-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  .rand-feature-name {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 130px;
+  }
+  .rand-feature-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .rand-feature-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .rand-feature-score {
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: right;
+    color: var(--text);
+  }
+  .rand-feature-score.dim { color: var(--text-dim); }
+  .rand-nudge-result {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .rand-nudge-result .nudge-ui {
+    flex: 0 0 340px;
+    max-width: 340px;
+    font-size: 13px;
+  }
+  .rand-nudge-reason {
+    flex: 1;
+    min-width: 0;
+  }
+  .rand-nudge-empty {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .rand-reshuffle {
+    padding: 10px 28px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .rand-reshuffle:hover { opacity: 0.88; transform: scale(1.02); }
+  .rand-footer {
+    padding: 16px 32px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    border-top: 1px solid var(--border-light);
+  }
+  .rand-score-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .rand-score-badge.above { background: #DCFCE7; color: var(--green); }
+  .rand-score-badge.below { background: #FEF3C7; color: var(--yellow); }
 
   /* Prompt Analysis */
   .prompt-raw {
@@ -1006,6 +1229,7 @@
   <div class="header">
     <h1>Smart Nudge Simulator</h1>
     <p>Simulate how the nudge system decides which Pro feature to show, when, and why. Toggle user actions on the right and watch scores change in real time.</p>
+    <button class="randomise-all-btn" onclick="randomiseEverything()">Randomise Everything</button>
   </div>
   <div class="layout">
     <div class="left-col">
@@ -1066,6 +1290,9 @@
     <div class="nudge-modal" id="nudge-modal"></div>
   </div>
   <div class="toast-container" id="toast-container"></div>
+  <div class="rand-overlay" id="rand-overlay" onclick="if(event.target===this)closeRandOverlay()">
+    <div class="rand-card" id="rand-card"></div>
+  </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1874,64 +2101,108 @@ function generateCopy(feature) {
   const u = state.user;
   const topic = u.topic.split(' ').length > 4 ? u.topic.split(' ').slice(0, 4).join(' ') + '...' : u.topic;
 
-  // Sub-feature copy: each feature has multiple sub-features.
-  // Pick the most relevant one based on active signals.
+  // Copy framework:
+  //   Title  → contextual, names the pain tied to what user is building and for whom
+  //   Body   → one sentence, pain to solution. No em dashes splitting into two thoughts.
+  //   CTA    → feature-specific: "Get Brand Kit", "Try Analytics", etc.
+  //   Never  → undermine current product, call out specific user behaviour, append tier modifiers
+
   var signals = state.activeSignals;
 
   var subFeatures = {
     'ai-models': [
-      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
-        body: 'Stop editing what the AI got wrong. With Advanced Models, your slides come out sharper and more polished \u2014 less fixing, more presenting.' },
-      { id: 'ai-credits', title: 'More AI Credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
-        body: 'You\u2019re using AI to build your deck \u2014 unlock 5,000 credits so you never hit the limit mid-flow.' },
-      { id: 'project-knowledge', title: 'Project Knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
-        body: 'Teach the AI about your project. With Project Knowledge, it remembers your content and generates slides that actually match your material.' },
+      { id: 'advanced-models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+        title: 'Your ' + topic + ' deck could be better on the first try',
+        body: 'Pro AI models generate sharper copy and more polished layouts without the back-and-forth.',
+        cta: 'Upgrade to Pro' },
+      { id: 'ai-credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
+        title: 'Don\u2019t lose momentum on your ' + topic + ' deck',
+        body: 'You\u2019re running low on credits. Upgrade to keep generating without interruptions.',
+        cta: 'Upgrade to Pro' },
+      { id: 'project-knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
+        title: 'Make your ' + topic + ' slides even more accurate',
+        body: 'Upload your documents and the AI tailors every slide to your specific material.',
+        cta: 'Get Project Knowledge' },
     ],
     'brand-kit': [
-      { id: 'brand-fonts', title: 'Custom Brand Fonts', signals: ['style-change'],
-        body: 'Stop adjusting fonts manually. With Custom Brand Fonts, set your typeface once and every slide matches automatically.' },
-      { id: 'brand-colors', title: 'Custom Brand Colors', signals: ['theme-global', 'layout-slide'],
-        body: 'Your brand has specific colors. Set them once in your Brand Kit and every new slide uses them by default.' },
-      { id: 'brand-assets', title: 'Custom Brand Assets', signals: ['insert-media', 'prompt-brand'],
-        body: 'Upload your logo, icons, and images to your Brand Kit. They\u2019re always available, ready to drop into any slide.' },
-      { id: 'brand-voice', title: 'Custom Brand Voice', signals: ['text-edit', 'insert-title', 'insert-list'],
-        body: 'The AI writes in your brand\u2019s tone. Set your voice once and every generated slide sounds like you.' },
+      { id: 'brand-fonts', signals: ['style-change'],
+        title: 'Set your fonts once for the whole deck',
+        body: 'Brand Kit locks in your typeface and applies it across every slide automatically.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-colors', signals: ['theme-global', 'layout-slide'],
+        title: 'Your ' + topic + ' deck should look like it came from your brand',
+        body: 'Brand Kit applies your exact colors across every slide so ' + u.audience + ' sees a polished, on-brand presentation.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-assets', signals: ['insert-media', 'prompt-brand'],
+        title: 'Your ' + topic + ' deck is missing your brand assets',
+        body: 'Upload your logo and images once to Brand Kit and they\u2019re always ready when you need them.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-voice', signals: ['text-edit', 'insert-title', 'insert-list'],
+        title: 'Make sure ' + u.audience + ' hears your brand\u2019s voice in every slide',
+        body: 'Set your tone once in Brand Kit and every AI-generated slide in your ' + topic + ' deck sounds like you.',
+        cta: 'Get Brand Kit' },
     ],
     'unbranded': [
-      { id: 'unbranded-links', title: 'Unbranded Public Links', signals: ['share-link-copy', 'play-preview'],
-        body: 'When you share this deck, your audience sees your content \u2014 not our watermark. Clean, professional links that look like yours.' },
-      { id: 'unbranded-export', title: 'Clean Exports', signals: ['export-click', 'export-download'],
-        body: 'Export a polished deck without the Presentations.AI watermark. Ready to email, print, or present offline.' },
+      { id: 'unbranded-links', signals: ['share-link-copy', 'play-preview'],
+        title: 'Before you share your ' + topic + ' deck with ' + u.audience,
+        body: 'Remove the watermark so your presentation looks fully yours when they open it.',
+        cta: 'Remove Watermark' },
+      { id: 'unbranded-export', signals: ['export-click', 'export-download'],
+        title: 'Your ' + topic + ' export will carry our watermark',
+        body: 'Remove it for a polished file you can send directly to ' + u.audience + '.',
+        cta: 'Remove Watermark' },
     ],
     'export': [
-      { id: 'ppt-export', title: 'PowerPoint Export', signals: ['export-click', 'export-download'],
-        body: 'Download your deck as a .pptx file. Edit it in PowerPoint, share it over email, present it anywhere \u2014 no internet needed.' },
-      { id: 'pdf-export', title: 'PDF Export', signals: ['play-preview', 'share-link-copy'],
-        body: 'Export a presentation-ready PDF. Perfect for emailing to ' + u.audience + ' or printing for an in-person meeting.' },
-      { id: 'embed', title: 'Presentation Embeds', signals: ['share-link-copy'],
-        body: 'Embed your deck directly on a website or landing page. Your ' + topic + ' presentation, live and interactive, wherever you need it.' },
+      { id: 'ppt-export', signals: ['export-click', 'export-download'],
+        title: 'Take your ' + topic + ' deck offline',
+        body: 'Export to PowerPoint so you can edit, email, or present it anywhere.',
+        cta: 'Unlock Exports' },
+      { id: 'pdf-export', signals: ['play-preview', 'share-link-copy'],
+        title: 'Send ' + u.audience + ' a polished PDF of your ' + topic + ' deck',
+        body: 'Export a presentation-ready PDF that\u2019s perfect for email or print.',
+        cta: 'Unlock Exports' },
+      { id: 'embed', signals: ['share-link-copy'],
+        title: 'Your ' + topic + ' presentation could live on your website',
+        body: 'Embed it directly on any page so ' + u.audience + ' can view it live and interactive.',
+        cta: 'Unlock Embeds' },
     ],
     'invite-collab': [
-      { id: 'guests', title: 'Invite Guests', signals: ['share-link-copy', 'prompt-team'],
-        body: 'Invite up to 10 guests to view and comment on your deck. Get feedback before it goes to ' + u.audience + '.' },
-      { id: 'workspace', title: 'Workspace Members', signals: ['prompt-team', 'invite-attempt'],
-        body: 'Add your team to a shared workspace. Everyone can edit, comment, and build decks together \u2014 no more emailing files back and forth.' },
-      { id: 'present-remotely', title: 'Present Remotely', signals: ['play-preview'],
-        body: 'Present your deck live to anyone, anywhere. Share a link and your audience follows along in real time as you present.' },
-      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
-        body: 'Made changes you regret? Version History lets you go back to any previous state. 30 days of history, every edit tracked.' },
+      { id: 'guests', signals: ['share-link-copy', 'prompt-team'],
+        title: 'Get feedback on your ' + topic + ' deck before it reaches ' + u.audience,
+        body: 'Invite guests to view and comment, all in one place.',
+        cta: 'Invite Collaborators' },
+      { id: 'workspace', signals: ['prompt-team', 'invite-attempt'],
+        title: 'Your team should be building this ' + topic + ' deck with you',
+        body: 'Add them to a shared workspace where everyone can edit and comment together.',
+        cta: 'Invite Collaborators' },
+      { id: 'present-remotely', signals: ['play-preview'],
+        title: 'Present your ' + topic + ' deck live to ' + u.audience,
+        body: 'Share a link and your audience follows along in real time as you present.',
+        cta: 'Get Live Presenting' },
+      { id: 'version-history', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+        title: 'Keep a safety net for your ' + topic + ' deck',
+        body: 'Version History tracks every edit for 30 days so you can undo anything, anytime.',
+        cta: 'Get Version History' },
     ],
     'analytics': [
-      { id: 'page-views', title: 'Page Views', signals: ['share-link-copy', 'play-preview'],
-        body: 'See exactly how many people opened your ' + topic + ' deck. Know if your audience is actually viewing it.' },
-      { id: 'slide-engagement', title: 'Slide Engagement', signals: ['share-link-copy'],
-        body: 'See which slides ' + u.audience + ' spent the most time on. Know what\u2019s landing and what they\u2019re skipping.' },
-      { id: 'demographics', title: 'Viewer Demographics', signals: ['export-click', 'export-download'],
-        body: 'See where your viewers are and what devices they\u2019re using. Useful context for follow-up conversations with ' + u.audience + '.' },
+      { id: 'page-views', signals: ['share-link-copy', 'play-preview'],
+        title: 'Know when ' + u.audience + ' opens your ' + topic + ' deck',
+        body: 'Analytics shows exactly who viewed it and when.',
+        cta: 'Try Analytics' },
+      { id: 'slide-engagement', signals: ['share-link-copy'],
+        title: 'Find out which slides ' + u.audience + ' actually cared about',
+        body: 'See exactly where they spent the most time in your ' + topic + ' deck.',
+        cta: 'Try Analytics' },
+      { id: 'demographics', signals: ['export-click', 'export-download'],
+        title: 'See who\u2019s viewing your ' + topic + ' deck',
+        body: 'Analytics shows where your viewers are and what devices they\u2019re using.',
+        cta: 'Try Analytics' },
     ],
     'hire-team': [
-      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
-        body: 'Spending too long on this? Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' },
+      { id: 'hire-team', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+        title: 'Let our team build your ' + topic + ' deck for ' + u.audience,
+        body: 'You focus on the message, we handle the design and polish.',
+        cta: 'Talk to Our Team' },
     ],
   };
 
@@ -1949,25 +2220,9 @@ function generateCopy(feature) {
   // Fallback to first sub-feature if none match
   if (!best && candidates.length > 0) best = candidates[0];
 
-  var base = best
-    ? { title: best.title, body: best.body }
-    : { title: feature.verb, body: feature.does + '.' };
-
-  // Tier modifiers
-  if (u.countryTier === 2) {
-    var valueAppend = {
-      'ai-models': ' Save hours of manual editing.',
-      'brand-kit': ' Set it once, reuse across every deck.',
-      'unbranded': ' Look established without hiring a designer.',
-      'export': ' Send it anywhere \u2014 no workarounds.',
-      'invite-collab': ' Get feedback in one place.',
-      'analytics': ' Know exactly who engaged.',
-      'hire-team': ' Save days of work for less than you think.',
-    };
-    if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
-  }
-
-  return base;
+  return best
+    ? { title: best.title, body: best.body, cta: best.cta }
+    : { title: feature.verb, body: feature.does + '.', cta: feature.type === 'service' ? 'Talk to Our Team' : 'Upgrade to Pro' };
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2060,6 +2315,163 @@ function resetSimulator() {
   renderGuardrails();
   renderFeed();
   renderNudgePreview();
+}
+
+function randomiseEverything() {
+  // 1. Reset with a new random user
+  resetSimulator();
+
+  // 2. Shuffle the prompt
+  shufflePrompt();
+
+  // 3. Randomly toggle 2–5 actions
+  var shuffled = ACTIONS.slice().sort(function() { return Math.random() - 0.5; });
+  var count = 2 + Math.floor(Math.random() * 4); // 2 to 5
+  var pickedActions = [];
+  for (var i = 0; i < count && i < shuffled.length; i++) {
+    performAction(shuffled[i].id);
+    pickedActions.push(shuffled[i]);
+  }
+
+  // 4. Wait for activity pause then show overlay
+  // Activity pause is 3s — we wait for it to clear so the nudge can fire
+  setTimeout(function() {
+    // Force evaluate so nudge fires before we read state
+    evaluateAndFire();
+    // Close the regular nudge modal if it opened
+    closeNudgeModal();
+    // Build and show the overlay
+    showRandOverlay(pickedActions);
+  }, CONFIG.ACTIVITY_PAUSE_MS + 100);
+}
+
+function showRandOverlay(pickedActions) {
+  var u = state.user;
+  var scores = calculateScores();
+
+  // Determine which nudge would fire
+  var ranked = FEATURES
+    .map(function(f) { return Object.assign({}, f, scores[f.id]); })
+    .filter(function(f) { return state.relevantFeatures.has(f.id); })
+    .filter(function(f) { return f.total >= CONFIG.THRESHOLD; })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  var firedFeature = null;
+  var firedCopy = null;
+  if (state.milestoneLog.length > 0) {
+    firedFeature = state.milestoneLog[0].feature;
+    firedCopy = state.milestoneLog[0].copy;
+  }
+
+  var html = '';
+
+  // Header
+  html += '<div class="rand-header">';
+  html += '<h2>Randomised Scenario</h2>';
+  html += '<button class="rand-close" onclick="closeRandOverlay()">&times;</button>';
+  html += '</div>';
+
+  html += '<div class="rand-body">';
+
+  // ── Section 1: User Context ──
+  html += '<div class="rand-section">';
+  html += '<div class="rand-section-title">User Profile</div>';
+  html += randRow('Name', u.name);
+  html += randRow('Role', u.role);
+  html += randRow('Audience', u.audience);
+  html += randRow('Stakes', (u.audienceStakes || '').replace(/-/g, ' '), u.audienceStakes === 'high-external');
+  html += randRow('Email', u.email);
+  html += randRow('Country', u.country + (u.countryTier === 2 ? ' (Tier 2)' : ''));
+  html += randRow('Credits', u.credits + ' / 100', u.credits < 30);
+  html += randRow('Session #', u.sessionNum);
+  html += randRow('Acquisition', u.acqChannel);
+  html += randRow('Decks Completed', u.decksCompleted);
+  html += randRow('Decks Shared', u.decksShared);
+  html += '</div>';
+
+  // ── Section 2: Prompt Analysis ──
+  html += '<div class="rand-section">';
+  html += '<div class="rand-section-title">Prompt Analysis</div>';
+  html += '<div class="rand-prompt-bar">';
+  html += '<span class="rand-prompt-icon">&#x1F4AC;</span>';
+  html += '<span class="rand-prompt-text">"' + u.topic + '"</span>';
+  html += '</div>';
+  var synthesis = u.promptSynthesis || {};
+  var entries = FEATURES.map(function(f) {
+    return { id: f.id, name: f.name, icon: f.icon, score: synthesis[f.id] || 0 };
+  }).sort(function(a, b) { return b.score - a.score; });
+  entries.forEach(function(e) {
+    html += '<div class="rand-feature-row">';
+    html += '<span class="rand-feature-name">' + e.icon + ' ' + e.name + '</span>';
+    html += '<div class="rand-feature-bar"><div class="rand-feature-bar-fill" style="width:' + (e.score * 20) + '%"></div></div>';
+    html += '<span class="rand-feature-score ' + (e.score > 0 ? '' : 'dim') + '">' + e.score + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // ── Section 3: Actions Taken ──
+  html += '<div class="rand-section full-width">';
+  html += '<div class="rand-section-title">Actions Performed (' + pickedActions.length + ')</div>';
+  html += '<div class="rand-actions-grid">';
+  pickedActions.forEach(function(a) {
+    html += '<div class="rand-action-chip">' + a.label + '</div>';
+  });
+  html += '</div>';
+  html += '</div>';
+
+  // ── Section 4: Nudge Result ──
+  html += '<div class="rand-section full-width">';
+  html += '<div class="rand-section-title">Nudge Result</div>';
+  if (firedFeature && firedCopy) {
+    html += '<div class="rand-nudge-result">';
+    html += buildNudgeCardHTML(firedFeature, firedCopy);
+    html += '<div class="rand-nudge-reason">';
+    var m = state.milestoneLog[0];
+    html += '<div class="rand-row"><span class="rand-row-label">Feature</span><span class="rand-row-value">' + firedFeature.icon + ' ' + firedFeature.name + '</span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Score</span><span class="rand-row-value">' + m.score + ' <span class="rand-score-badge above">above ' + CONFIG.THRESHOLD + ' threshold</span></span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Direct</span><span class="rand-row-value">+' + m.direct + '</span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Universal (\u00d70.4)</span><span class="rand-row-value">+' + m.universal + '</span></div>';
+    if (m.directSignals.length > 0) {
+      html += '<div style="margin-top:10px"><span class="rand-row-label">Signals that fired it</span></div>';
+      m.directSignals.forEach(function(s) {
+        html += '<div class="rand-row"><span class="rand-row-label" style="padding-left:8px">' + s.name.replace(/-/g, ' ') + '</span><span class="rand-row-value highlight">+' + s.weight + '</span></div>';
+      });
+    }
+    html += '</div>';
+    html += '</div>';
+  } else {
+    // No nudge fired — show why
+    var reason = '';
+    var topCandidate = ranked.length > 0 ? ranked[0] : null;
+    if (topCandidate) {
+      reason = 'Closest: ' + topCandidate.icon + ' ' + topCandidate.name + ' scored ' + topCandidate.total + ' (needs ' + CONFIG.THRESHOLD + ')';
+    } else {
+      reason = 'No features reached the scoring threshold of ' + CONFIG.THRESHOLD;
+    }
+    html += '<div class="rand-nudge-empty">';
+    html += 'No nudge triggered this time.<br>';
+    html += '<span style="font-size:12px;margin-top:6px;display:inline-block">' + reason + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // end .rand-body
+
+  // Footer
+  html += '<div class="rand-footer">';
+  html += '<button class="rand-reshuffle" onclick="closeRandOverlay();randomiseEverything()">Randomise Again</button>';
+  html += '</div>';
+
+  document.getElementById('rand-card').innerHTML = html;
+  document.getElementById('rand-overlay').classList.add('active');
+}
+
+function randRow(label, value, highlight) {
+  return '<div class="rand-row"><span class="rand-row-label">' + label + '</span><span class="rand-row-value' + (highlight ? ' highlight' : '') + '">' + (value || '\u2014') + '</span></div>';
+}
+
+function closeRandOverlay() {
+  document.getElementById('rand-overlay').classList.remove('active');
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2786,7 +3198,7 @@ function renderFeed() {
 function buildNudgeCardHTML(feature, copy) {
   var isService = feature.type === 'service';
   var tagLabel = isService ? 'Service' : 'Milestone';
-  var ctaLabel = isService ? 'Talk to our team' : 'Upgrade to Pro';
+  var ctaLabel = (copy && copy.cta) ? copy.cta : (isService ? 'Talk to Our Team' : 'Upgrade to Pro');
   var badgeLabel = isService ? 'SERVICE' : 'PRO';
   var cssClass = isService ? 'nudge-ui service' : 'nudge-ui';
   var ctaClass = isService ? 'nudge-ui-cta service' : 'nudge-ui-cta';
