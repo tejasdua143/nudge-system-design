@@ -1,24 +1,24 @@
 {
   "_doc": "Direct signal → feature weight mappings. Each signal key maps to an object of featureId → integer weight. Signals not listed for a feature have weight 0.",
 
-  "manual-edit":           { "ai-models": 1, "pres-refresh": 1 },
-  "edits-5plus":           { "ai-models": 5, "pres-refresh": 2, "hire-team": 3 },
-  "re-edit-3x":            { "ai-models": 5, "pres-refresh": 3, "hire-team": 4 },
+  "manual-edit":           { "ai-models": 1 },
+  "edits-5plus":           { "ai-models": 5, "hire-team": 3 },
+  "re-edit-3x":            { "ai-models": 5, "hire-team": 4 },
   "format-edits":          { "ai-models": 4, "brand-kit": 2, "hire-team": 2 },
-  "undo-redo":             { "ai-models": 4, "pres-refresh": 3, "hire-team": 4 },
+  "undo-redo":             { "ai-models": 4, "hire-team": 4 },
   "style-change":          { "brand-kit": 4, "ai-models": 2, "hire-team": 2 },
-  "slide-delete":          { "ai-models": 2, "pres-refresh": 2 },
+  "slide-delete":          { "ai-models": 2 },
 
-  "slides-15plus":         { "ai-models": 3, "gen-speed": 5, "invite-collab": 3 },
+  "slides-15plus":         { "ai-models": 3, "invite-collab": 3 },
   "media-added":           { "ai-models": 3 },
-  "slide-duplicate":       { "unbranded": 2, "pres-refresh": 2 },
+  "slide-duplicate":       { "unbranded": 2 },
   "manual-slide-add":      { "unbranded": 3, "ai-models": 2 },
-  "slide-reorder":         { "ai-models": 3, "pres-refresh": 3 },
+  "slide-reorder":         { "ai-models": 3 },
   "data-content":          { "analytics": 5 },
 
   "slideshow":             { "unbranded": 4, "export": 4 },
-  "slideshow-then-edit":   { "ai-models": 4, "pres-refresh": 4, "hire-team": 2 },
-  "idle-on-slide":         { "ai-models": 3, "pres-refresh": 3 },
+  "slideshow-then-edit":   { "ai-models": 4, "hire-team": 2 },
+  "idle-on-slide":         { "ai-models": 3 },
   "template-switch":       { "unbranded": 5, "brand-kit": 3, "hire-team": 3 },
 
   "share-clicked":         { "unbranded": 5, "analytics": 4, "export": 3 },
@@ -30,29 +30,29 @@
   "started-blank":         { "unbranded": 4, "ai-models": 3 },
   "deck-edited":           { "unbranded": 2, "export": 3 },
 
-  "new-deck-session2":     { "unbranded": 3, "pres-refresh": 4, "gen-speed": 3 },
-  "deck-switch":           { "brand-kit": 3, "pres-refresh": 3 },
+  "new-deck-session2":     { "unbranded": 3 },
+  "deck-switch":           { "brand-kit": 3 },
   "gate-hit":              {},
-  "time-20":               { "ai-models": 3, "gen-speed": 4 },
+  "time-20":               { "ai-models": 3 },
 
   "stakes-high-external":  { "unbranded": 3, "analytics": 2, "brand-kit": 2, "hire-team": 2 },
   "stakes-low-external":   { "unbranded": 2, "brand-kit": 1 },
-  "stakes-internal":       { "gen-speed": 2, "ai-models": 2, "invite-collab": 2 },
+  "stakes-internal":       { "ai-models": 2, "invite-collab": 2 },
 
   "prompt-synthesis":      {},
 
   "bought-export":         { "export": 4 },
-  "multi-deck":            { "brand-kit": 3, "pres-refresh": 3 },
+  "multi-deck":            { "brand-kit": 3 },
 
-  "deck-veteran":          { "brand-kit": 3, "pres-refresh": 3, "gen-speed": 2 },
+  "deck-veteran":          { "brand-kit": 3 },
   "deck-sharer":           { "analytics": 3, "unbranded": 2, "invite-collab": 2 },
   "deck-publisher":        { "analytics": 2, "unbranded": 3 },
 
-  "acq-paid":              { "gen-speed": 2, "export": 2 },
+  "acq-paid":              { "export": 2 },
   "acq-referral":          { "invite-collab": 3 },
 
   "pricing-visit":         {},
 
-  "doc-uploaded":          { "export": 4, "brand-kit": 3, "unbranded": 3, "pres-refresh": 3, "hire-team": 2, "analytics": 2, "invite-collab": 2, "ai-models": -2 },
-  "doc-long":              { "hire-team": 4, "pres-refresh": 3, "gen-speed": 3, "export": 2 }
+  "doc-uploaded":          { "export": 4, "brand-kit": 3, "unbranded": 3, "hire-team": 2, "analytics": 2, "invite-collab": 2, "ai-models": -2 },
+  "doc-long":              { "hire-team": 4, "export": 2 }
 }

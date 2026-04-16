@@ -1,6 +1,6 @@
 # Smart Nudge System v2 — System Overview
 
-> A milestone-driven, per-feature scoring system that determines which Pro feature to nudge, when, and with what copy — personalized through 3-layer context profiling and a signal-to-feature scoring matrix.
+> A milestone-driven, per-feature scoring system that determines which Pro feature to nudge, when, and with what copy — personalized through 3-layer context profiling, a relevance filter, and a signal-to-feature scoring matrix.
 
 **Goal:** Convert free users to Pro purchases in the first 1-2 sessions
 **Current conversion:** ~1% → target 2-3%
@@ -10,30 +10,28 @@
 
 ## Core Concept
 
-Every signal — from the user's role at signup to a mouse click in the editor — contributes a weighted score toward specific Pro features. The highest-scoring feature that crosses the threshold fires as a milestone nudge.
+Every signal — from the user's role at signup to a mouse click in the editor — contributes a weighted score toward specific Pro features. Features are first filtered for relevance, then scored. The highest-scoring relevant feature that crosses the threshold fires as a milestone nudge.
 
 ```
-Signal → Per-Feature Score → Highest Feature Wins → Milestone Nudge
+Signal → Relevance Filter → Per-Feature Score → Highest Feature Wins → Milestone Nudge
 ```
 
-There is one overlay type: the milestone nudge card. The intelligence is in *which feature* was selected, not in the overlay format.
+There is one overlay type: the milestone nudge card. The intelligence is in *which feature* was selected and *what copy* was generated, not in the overlay format.
 
 ---
 
-## The Nine Features
+## The Seven Features
 
-Eight Pro features + one service upsell.
+Six Pro features + one service upsell.
 
 | ID | Name | Type | What It Does |
 |----|------|------|-------------|
 | `ai-models` | Better AI Models | Pro | Higher quality slides, smarter content |
-| `brand-kit` | Brand Kit | Pro | Custom brand colors and fonts across all slides |
-| `unbranded` | Unbranded Pro Templates | Pro | Professional templates without watermark |
+| `brand-kit` | Brand Kit | Pro | Custom brand colors, fonts, logos, and voice across all slides |
+| `unbranded` | Remove Watermark | Pro | Clean links and exports without the Presentations.AI watermark |
 | `export` | PowerPoint/PDF Export | Pro | Downloadable files for offline use |
-| `invite-collab` | Invite Collaborators | Pro | Real-time editing with others |
+| `invite-collab` | Invite Collaborators | Pro | Real-time editing, guest feedback, version history |
 | `analytics` | Viewer Analytics | Pro | Track who opened, which slides, how long |
-| `gen-speed` | Generation Speed | Pro | Medium/Fast generation instead of Slow |
-| `pres-refresh` | Presentation Refresh | Pro | Regenerate with improved content/structure |
 | `hire-team` | Hire Our Team | Service | We create the presentation for you |
 
 ### Hire Our Team — Service Upsell
@@ -41,16 +39,16 @@ Eight Pro features + one service upsell.
 Not a Pro plan feature — a paid service where our team builds the presentation for the user. Surfaces when the system detects the user is struggling rather than flowing.
 
 **Key signals:**
-- Too many edits (re-edit-3x, edits-5plus, undo-redo)
-- Time pressure (urgent prompt language, "due tomorrow", "needed by tonight")
+- Too many edits (edit-streak-3, edit-count-5, undo-redo)
+- Document uploads (especially long documents)
+- Deck regeneration attempts
 - High-stakes audience (investors, enterprise clients, board, C-suite)
-- Template/style thrashing (template-switch, style-change, format-edits)
 
 **The nudge framing is different:** instead of "unlock this feature," it's "let us handle it." The CTA routes to a service booking flow, not the Pro pricing page.
 
 ---
 
-## Architecture — Six Engines + Renderer + Shared State
+## Architecture — Seven Engines + Renderer + Shared State
 
 ```
 USER ACTIONS
@@ -67,12 +65,17 @@ USER ACTIONS
          │
          ▼
 ┌──────────────────┐
+│ Relevance Filter  │  Filters features by mindset + prompt fit (threshold ≥ 3)
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
 │ Scoring Engine    │  Per-feature scoring: Direct signals + Universal signals (×0.4)
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│ Milestone         │  Rank features by score, pick the highest above threshold (14)
+│ Milestone         │  Rank relevant features by score, pick highest above threshold (14)
 │ Selector          │
 └────────┬─────────┘
          │
@@ -83,7 +86,7 @@ USER ACTIONS
          │
          ▼
 ┌──────────────────┐
-│ Copy Engine       │  Personalized copy from topic + audience + country tier
+│ Copy Engine       │  Contextual sub-feature copy from topic + audience + active signals
 └────────┬─────────┘
          │
          ▼
@@ -105,46 +108,61 @@ All engines read from and write to a central **NudgeState Bus**. Each engine own
 - `acqChannel` (organic | paid | referral)
 
 ### Context Layers
-- `mindset` — derived from role (persuader, brand-builder, operator, analyst, educator, learner)
+- `mindsetVector` — per-feature weights derived from role × audience stakes (0-5 per feature)
 - `audienceStakes` — derived from audience (high-external, low-external, internal)
-- `promptSynthesis` — LLM-extracted per-feature relevance scores (0-5) from raw prompt
+- `promptSynthesis` — per-feature relevance scores (0-5) from prompt analysis
 
 ### Session State
-- `credits`, `sessionNumber`, `boughtExport`, `dismissals`
+- `credits`, `sessionNum`, `boughtExport`, `dismissals`
 - `decksCompleted`, `decksShared`, `decksPublished`
 
 ### Signals
 - `activeSignals: Set<string>` — all currently active signals from all sources
+- `activeActions: Set<string>` — currently toggled user actions
 - `signalLog: SignalEvent[]` — append-only history
 
 ### Scoring State
 - `featureScores: Map<FeatureId, { direct, universalRaw, universalContrib, total, directSignals[], universalSignals[] }>`
+- `relevantFeatures: Set<FeatureId>` — features that passed the relevance filter
+- `relevanceScores: Map<FeatureId, number>` — combined mindset + prompt score per feature
 
 ### Guardrails
 - `milestonesThisSession`, `featuresShownThisSession: Set<FeatureId>`
 - `lastMilestoneTime`, `isUserActive`
 
 ### Meta
-- `isProUser` (kill switch), `sessionStartTime`
+- `isProUser` (kill switch)
 
-### Overlay
-- `activeOverlay`, `copyCache`
+---
+
+## Relevance Filter
+
+Before scoring, features are filtered for relevance to this specific user. A feature must be contextually relevant to appear in the scoring pipeline at all.
+
+```
+Relevance Score = Mindset Vector (0-5) + Prompt Synthesis (0-5)
+Feature is relevant when Relevance Score ≥ 3
+```
+
+Only **mindset** and **prompt synthesis** determine relevance — not action signals. This means a feature can't become relevant just because the user clicked a lot; the user's role and prompt must indicate it's a good fit.
+
+**Exception:** `hire-team` is always marked as relevant. It fires on struggle signals from actions, not context layers.
 
 ---
 
 ## Scoring Math
 
-For each of the 9 features (8 Pro + hire-team):
+For each of the 7 features:
 
 ```
 Direct Score    = SUM of all matching signal weights for that feature
 Universal Score = SUM of all universal signal weights × 0.4
 Total Score     = Direct + Universal
 
-Feature fires when Total ≥ THRESHOLD (14)
+Feature fires when: relevant AND Total ≥ THRESHOLD (14)
 ```
 
-**Direct signals** are feature-specific — `share-clicked` adds +5 to `unbranded` and +4 to `analytics` but nothing to `gen-speed`.
+**Direct signals** are feature-specific — `share-link-copy` adds weight to `unbranded` and `analytics` but nothing to `ai-models`.
 
 **Universal signals** boost all features equally — `returning-user` adds +4 to the universal pool, which contributes `4 × 0.4 = 1.6` to every feature. The 0.4 multiplier prevents universal signals from dominating feature-specific behavior.
 
@@ -152,79 +170,95 @@ Feature fires when Total ≥ THRESHOLD (14)
 
 ## 3-Layer Context Profiling
 
-Replaces flat archetype detection from v1.
+### Layer 1: Mindset (role × audience stakes)
 
-### Layer 1: Mindset (from role × audience × prompt)
-
-The mindset is not a static label from the user's role. It's a **computed feature weight vector** shaped by the combination of role, audience, and prompt context together.
+A **computed feature weight vector** (0-5 per feature) shaped by the combination of the user's role and their audience's stakes level.
 
 Same role, different feature biases:
 
-| Role | Audience | Prompt | Resulting feature bias |
-|------|----------|--------|----------------------|
-| Leadership | Investors | "Series A pitch" | unbranded, analytics, export, brand-kit (persuader, high external stakes) |
-| Leadership | Team | "Q1 business review" | gen-speed, invite-collab, pres-refresh (operator, internal) |
-| Leadership | Board | "board deck due end of day" | gen-speed, export, ai-models, hire-team (urgency + high stakes) |
-| Sales | Enterprise clients | "Enterprise SaaS proposal" | analytics, unbranded, export, brand-kit (persuader, deal-closing) |
-| Sales | Prospects | "quick product overview" | gen-speed, ai-models (speed, lower stakes) |
-| Design | Recruiters | "Design portfolio" | brand-kit, unbranded, export (craft, personal brand) |
-| Design | Team | "Design system update" | invite-collab, pres-refresh (collaborative, internal) |
-| Student | Panel judges | "Final thesis defense" | export, ai-models, unbranded (high stakes for a student) |
-| Student | Classmates | "help me with a ppt" | gen-speed, ai-models (low effort, low stakes) |
+| Role | Audience | Resulting feature bias |
+|------|----------|----------------------|
+| Leadership | Investors | unbranded, analytics, export, brand-kit |
+| Leadership | Team | invite-collab (internal, collaborative) |
+| Sales | Enterprise clients | analytics, unbranded, export, brand-kit |
+| Design | Recruiters | brand-kit, unbranded, export |
+| Student | Panel judges | export, ai-models, unbranded |
+| Student | Classmates | ai-models (low stakes) |
 
-The mindset step outputs a per-feature weight vector (same format as prompt synthesis: 0-5 per feature) computed from role × audience. This feeds into the Scoring Engine as a direct signal alongside everything else.
+**Scale:** 13 roles × 3 audience stakes = 39 unique vectors + 1 fallback. Total: 40 vectors.
 
 ### Layer 2: Audience Stakes
 
-Categorizes the audience by external pressure level. A secondary signal layer that adds weight on top of the mindset.
+Categorizes the audience by external pressure level:
 
-| Audience | Stakes | Feature bias |
-|----------|--------|-------------|
-| Investors, VCs, Board, Angel investors, Enterprise clients, C-suite buyers | high-external | unbranded, analytics, brand-kit, hire-team |
-| Prospects, Potential clients, Recruiters, Art directors | low-external | unbranded, brand-kit |
-| Team, leadership, classmates, etc. | internal | gen-speed, ai-models, invite-collab |
+| Stakes Level | Audiences | Feature bias |
+|---|---|---|
+| high-external | Investors, VCs, Board members, Angel investors, Enterprise clients, C-suite buyers, Panel judges, Professor, Executives | unbranded, analytics, brand-kit, hire-team |
+| low-external | Prospects, Potential clients, Recruiters, Art directors, Workshop attendees, Corporate trainees | unbranded, brand-kit |
+| internal | Everything else (Leadership team, Stakeholders, Cross-functional team, Students, Classmates) | ai-models, invite-collab |
 
-### Layer 3: Prompt Synthesis (LLM-generated)
+### Layer 3: Prompt Synthesis
 
-The LLM reads the raw user prompt and returns per-feature relevance scores (0-5).
+Analyzes the user's prompt to produce per-feature relevance scores (0-5).
 
-- Rich prompts get strong, differentiated scores
-- Weak prompts ("make a presentation") get near-zero scores across the board
-- Urgent prompts ("investor meeting tomorrow") boost gen-speed, export, ai-models, hire-team
-- Struggle language ("help me", "I need", "can you just") boosts hire-team
+**Sources (in priority order):**
+1. **Local LLM** (Ollama with Gemma 2) — real-time analysis when available
+2. **Lookup table** — 30+ pre-computed prompt-to-score mappings
+3. **Keyword fallback** — regex-based keyword matching for unknown prompts
 
-Re-runs when the user creates a new deck with a different prompt.
-
-For prompts not in the lookup table, a keyword-based fallback (`synthesizeFromKeywords()`) generates approximate 0-5 scores by matching keywords like 'urgent', 'brand', 'team', etc. The Prompt Analysis panel shows '(LLM)' or '(keyword fallback)' to indicate the source.
+Re-runs when the user changes their prompt.
 
 ---
 
 ## Guardrails
 
-| Check | Threshold | Behavior | Implemented |
-|-------|-----------|----------|-------------|
-| Pro user | `isProUser === true` | Kill all nudges permanently | Yes |
-| Session cap | 3 milestones per session | Block additional nudges | Yes |
-| Cooldown | 60 seconds between milestones | Hold until elapsed | Yes (skip button for testing) |
-| Feature repeat | Feature already shown this session | Block (try next ranked feature) | Yes |
-| Intent floor | Universal signal sum < 3 | Block (not enough general engagement) | Yes |
-| Activity pause | Currently typing/dragging/generating | Hold until 3s idle | Yes (auto 3s debounce on action + manual toggle) |
+| Check | Threshold | Behavior |
+|-------|-----------|----------|
+| Pro user | `isProUser === true` | Kill all nudges permanently |
+| Session cap | 3 milestones per session | Block additional nudges |
+| Cooldown | 60 seconds between milestones | Hold until elapsed |
+| Feature repeat | Feature already shown this session | Block |
+| Intent floor | Universal signal sum < 3 | Block (not enough engagement) |
+| Activity pause | User interacting right now | Hold until 3s idle |
 
 ---
 
-## Copy Personalization
+## Copy Engine — Contextual Sub-Feature Copy
 
-Copy is generated per feature using:
-- **topic** — user's raw prompt, inserted directly into copy
-- **audience** — who they're presenting to
-- **countryTier** — determines copy modifier append
+Copy is not a static template per feature. Each feature has 1-4 **sub-features**, each with its own title, body, and CTA. The system picks the best sub-feature based on which active signals match.
 
-### Tier Modifiers
+### Copy Framework
 
-| Tier | Tone | Example (ai-models) |
-|------|------|-------------------|
-| Tier 1 (US, UK, Germany...) | Quality-focused | "Enterprise-grade AI for polished, boardroom-ready output." |
-| Tier 2 (India, Brazil, Indonesia...) | Value/efficiency-focused | "Save hours of manual editing." |
+| Element | Rule |
+|---|---|
+| **Title** | Names the pain tied to what the user is building and for whom. Never names the feature. |
+| **Body** | One sentence. Connects the pain to the solution. Uses topic/audience context when natural. |
+| **CTA** | Always feature-specific: "Get Brand Kit", "Try Analytics", "Unlock Exports", etc. |
+| **Dismiss** | Always "Not now". |
+| **Tone** | The product is on the user's side, pointing out a better way. Confident, not commanding. |
+
+### Sub-Feature Selection
+
+1. For the winning feature, look up its sub-feature candidates.
+2. Score each candidate by how many of its trigger signals are currently active.
+3. Pick the candidate with the most matches.
+4. Fallback to the first candidate if none match.
+
+**Example:** If `brand-kit` wins and the user has been changing fonts (`style-change` signal), the "brand-fonts" sub-feature fires with: *"Set your fonts once for the whole deck"*. If instead they uploaded media (`insert-media` signal), the "brand-assets" sub-feature fires with: *"Your {topic} deck is missing your brand assets"*.
+
+### Sub-Feature Count
+
+| Feature | Sub-features |
+|---|---|
+| ai-models | 3 (advanced models, credits, project knowledge) |
+| brand-kit | 4 (fonts, colors, assets, voice) |
+| unbranded | 2 (links, exports) |
+| export | 3 (PowerPoint, PDF, embeds) |
+| invite-collab | 4 (guests, workspace, present remotely, version history) |
+| analytics | 3 (page views, slide engagement, demographics) |
+| hire-team | 1 |
+
+**Total: 20 copy variants.**
 
 ---
 
@@ -235,103 +269,89 @@ Two card variants depending on feature type:
 ### Pro Feature Nudge
 ```
 ┌──────────────────────────────────────────┐
-│ [icon]  Milestone                   PRO  │
+│ [icon]  Milestone                        │
 │                                          │
-│  Title: feature verb                     │
-│  Body: personalized copy                 │
+│  Title: contextual pain statement        │
+│  Body: one sentence, pain → solution     │
 │                                          │
-│  [Upgrade to Pro]  [Not now]             │
+│  [Get Brand Kit]  [Not now]              │
 │                                          │
-│  PRO · Feature Name                      │
+│  PRO · Brand Kit                         │
 └──────────────────────────────────────────┘
 ```
 
 ### Hire Our Team Nudge
 ```
 ┌──────────────────────────────────────────┐
-│ [icon]  Milestone                        │
+│ [🤝]  Service                            │
 │                                          │
-│  Let us build it for you                 │
-│  Body: personalized copy referencing     │
-│  their struggle + topic + audience       │
+│  You don't have to build this yourself   │
+│  Body: personalized with audience        │
 │                                          │
-│  [Talk to our team]  [Not now]           │
+│  [Talk to Our Team]  [Not now]           │
 │                                          │
-│  Hire Our Team                           │
+│  SERVICE · Hire Our Team                 │
 └──────────────────────────────────────────┘
 ```
-
-The hire-team nudge routes to a service booking flow, not the Pro pricing page.
 
 ---
 
 ## Feedback Loop
 
-Feature suppression and milestone counting happen at **fire time** (in `fireMilestone()`), not at dismiss time. The user's response determines additional side effects:
-
 | User action | System response |
 |-------------|----------------|
-| Clicks "Upgrade to Pro" | `isProUser = true`. All nudges disabled permanently. Toast notification shown. |
-| Clicks "Talk to our team" | Route to service booking flow (hire-team only). Toast notification shown. |
+| Clicks CTA ("Get Brand Kit", etc.) | `isProUser = true`. All nudges disabled permanently. Toast shown. |
+| Clicks "Talk to Our Team" | Route to service booking flow (hire-team only). Toast shown. |
 | Clicks "Not now" | `dismissals++`. Removes `zero-dismissals` signal. Closes modal. |
 | Ignores (auto-dismiss, 10s) | Modal auto-closes. Feature already suppressed from fire time. Toast shown. |
 
-**Note:** `milestonesThisSession` is incremented and the feature is added to `featuresShownThisSession` when the milestone fires, not when the user reacts. This ensures the session cap and repeat-block guardrails take effect immediately.
+Feature suppression and milestone counting happen at **fire time** (in `fireMilestone()`), not at dismiss time.
 
 ---
 
 ## Engine Specs
 
-Each engine has a detailed spec document:
-
 - [01-nudge-state.md](01-nudge-state.md) — State schema and ownership rules
 - [02-signal-collector.md](02-signal-collector.md) — Event to signal mapping
 - [03-context-profiler.md](03-context-profiler.md) — 3-layer profiling system
 - [04-scoring-engine.md](04-scoring-engine.md) — Direct map, universal map, scoring math
-- [05-milestone-selector.md](05-milestone-selector.md) — Ranking, threshold, fallback
+- [05-milestone-selector.md](05-milestone-selector.md) — Relevance filter, ranking, threshold
 - [06-guardrails.md](06-guardrails.md) — Caps, cooldowns, intent floor
-- [07-copy-engine.md](07-copy-engine.md) — Personalization and tier modifiers
+- [07-copy-engine.md](07-copy-engine.md) — Contextual sub-feature copy system
 - [08-renderer.md](08-renderer.md) — Milestone nudge card component
+
+---
+
+## Config Files
+
+| File | Contents |
+|------|----------|
+| `direct-signal-map.json` | Signal → feature weight mappings |
+| `universal-signal-map.json` | Signal → universal weight mappings |
+| `mindset-vectors.json` | Layer 1 mindset vectors: role × audienceStakes → per-feature weights (39 combos + fallback) |
+| `prompt-synthesis-examples.json` | Example LLM outputs per topic type (30+ prompts) |
+| `context-layers.json` | Audience stakes classification rules (high-external / low-external / internal audiences) |
+| `guardrails.json` | Session cap, cooldown, threshold, intent floor, activity pause |
+| `feature-contributors.json` | Feature-centric view of all scoring inputs (reference doc) |
 
 ---
 
 ## Simulator
 
-A unified, modular interactive simulator at `simulator/index.html` — single portable HTML file (~2400 lines), vanilla JS, no build tools.
+An interactive simulator at `simulator/index.html` — single portable HTML file, vanilla JS, no build tools.
 
 **3-column layout:**
 - Left (300px): User Context + Prompt Analysis
 - Center (fluid): Guardrails + Feature Score Matrix + Nudge Preview + Milestone Feed
 - Right (300px): Actions + Active Signals
 
-**Panels:**
-- **User Context** — randomized profiles with scoring impact tooltips on hover. "Reshuffle User" button generates a new random profile.
-- **Prompt Analysis** — shows raw user prompt with shuffle button (cycles through all available prompts for the same user profile), plus LLM signal extraction bar chart (0-5 per feature).
-- **Actions** — ~32 toggleable action buttons grouped by 6 categories (Editing, Content, Navigation & Preview, Sharing & Export, Prompt & Creation, Session & Journey). Each has a hover tooltip showing score impact per feature.
-- **Active Signals** — lists all currently active signals with type badges (DIR / UNI / D+U).
-- **Guardrails** — status bar showing Pro user kill switch, milestones fired, cooldown, features shown, intent floor, and activity pause (auto 3s debounce on action click + manual toggle override).
-- **Feature Score Matrix** — 9-row table sorted by total score, with bar visualization, threshold line, and badges (NEXT / QUEUED / SHOWN).
-- **Nudge Preview** — inline card preview + modal overlay with "Why this fired" breakdown. Two card variants: Pro (purple) and Service/hire-team (orange).
-- **Milestone Feed** — reverse-chronological log of all fired milestones with full signal breakdown.
-
-**Config loading** — when served via HTTP (e.g., `python3 -m http.server`), the simulator fetches configs from `../config/*.json` at startup. When opened directly as a file, it uses inline embedded defaults. Config changes take effect on HTTP reload.
-
-**Toast notifications** — upgrade and service booking actions show inline animated toast notifications instead of browser alerts.
-
-**Feedback loop:** Nudge card buttons are wired — "Not now" increments dismissals and removes zero-dismissals signal; "Upgrade to Pro" sets isProUser and kills all future nudges; "Talk to our team" (hire-team) routes to service booking flow.
-
----
-
-## Config Files
-
-All tunable values are externalized as config:
-
-| File | Contents |
-|------|----------|
-| `direct-signal-map.json` | Signal → feature weight mappings (~40+ entries) |
-| `universal-signal-map.json` | Signal → universal weight mappings (~15 entries) |
-| `mindset-vectors.json` | Layer 1 mindset vectors: role × audienceStakes → per-feature weights (39 combos + fallback) |
-| `prompt-synthesis-examples.json` | Example LLM outputs per topic type (30+ prompts) |
-| `context-layers.json` | Audience stakes classification rules (high-external / low-external / internal audiences) |
-| `copy-templates.json` | Per-feature copy templates with {topic}/{audience} variables + tier modifiers |
-| `guardrails.json` | Session cap, cooldown, threshold, intent floor, activity pause |
+**Key features:**
+- Randomized user profiles with scoring impact tooltips
+- Editable prompt input with live keyword synthesis + optional local LLM analysis (Ollama/Gemma 2)
+- ~32 toggleable action buttons with per-feature impact tooltips
+- Real-time score matrix with relevance filter badges and threshold visualization
+- Nudge card rendering (pro + service variants) with "Why this fired" breakdown
+- "Randomise Everything" button with full-screen overlay showing the complete scenario
+- Guardrail status bar with all 6 checks visible
+- Milestone feed with signal breakdown history
+- Toast notifications for upgrade/dismiss/auto-dismiss actions
