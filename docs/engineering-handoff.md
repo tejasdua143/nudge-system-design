@@ -12,7 +12,7 @@ Generic upgrade popups don't move this number. The insight: users convert when t
 
 The system handles 9 upgrade opportunities:
 
-**Pro features (purple card)**
+**Pro features (Pro variant card)**
 
 | ID | Feature |
 |---|---|
@@ -25,7 +25,7 @@ The system handles 9 upgrade opportunities:
 | `gen-speed` | Generation Speed |
 | `pres-refresh` | Presentation Refresh |
 
-**Service upsell (orange card)**
+**Service upsell (Service variant card)**
 
 | ID | Feature |
 |---|---|
@@ -96,7 +96,7 @@ Sub-variant selection: count how many of the user's active signals match each va
 
 ### 7. Renderer
 
-Renders the nudge card as a fixed overlay (bottom-right). Pro features use a purple accent; `hire-team` uses orange. The card has a dismiss button; dismissed state persists for the session. The card animates out on dismiss (translate-y + opacity, 250ms).
+Renders the nudge card as a fixed overlay (bottom-right). Pro features use the Pro variant; `hire-team` uses the Service variant. The card has a dismiss button; dismissed state persists for the session. The card animates out on dismiss (translate-y + opacity, 250ms).
 
 The component lives in the paids design system at `components/ui/nudge-card.tsx`.
 
@@ -140,11 +140,11 @@ Each engine has a full spec in `specs/`:
 
 | File | Covers |
 |---|---|
-| `specs/01-nudge-state.md` | State schema, event bus API |
-| `specs/02-signal-collector.md` | Full signal taxonomy, event listener setup |
-| `specs/03-context-profiler.md` | Mindset vector math, audience classification, LLM prompt |
-| `specs/04-scoring-engine.md` | Scoring formula derivation, edge cases |
-| `specs/05-milestone-selector.md` | Selection algorithm, tie-breaking |
-| `specs/06-guardrails.md` | All guardrail logic, override conditions |
-| `specs/07-copy-engine.md` | All 20 copy variants, interpolation grammar |
-| `specs/08-renderer.md` | NudgeCard props, animation, dismiss persistence |
+| [specs/01-nudge-state.md](../specs/01-nudge-state.md) | State schema, event bus API |
+| [specs/02-signal-collector.md](../specs/02-signal-collector.md) | Full signal taxonomy, event listener setup |
+| [specs/03-context-profiler.md](../specs/03-context-profiler.md) | Mindset vector math, audience classification, LLM prompt |
+| [specs/04-scoring-engine.md](../specs/04-scoring-engine.md) | Scoring formula derivation, edge cases |
+| [specs/05-milestone-selector.md](../specs/05-milestone-selector.md) | Selection algorithm, tie-breaking |
+| [specs/06-guardrails.md](../specs/06-guardrails.md) | All guardrail logic, override conditions |
+| [specs/07-copy-engine.md](../specs/07-copy-engine.md) | All 20 copy variants, interpolation grammar |
+| [specs/08-renderer.md](../specs/08-renderer.md) | NudgeCard props, animation, dismiss persistence |
