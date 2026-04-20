@@ -39,6 +39,61 @@ One overlay format. No variations in layout or complexity. The intelligence is e
 
 User actions flow through a 7-stage pipeline before anything appears on screen.
 
+```
+  User Action
+      │
+      ▼
+┌─────────────────────┐
+│   Signal Collector  │◄── direct-signal-map.json
+│                     │◄── universal-signal-map.json
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Context Profiler   │◄── mindset-vectors.json
+│  Layer 1: Mindset   │◄── context-layers.json
+│  Layer 2: Stakes    │◄── prompt-synthesis-examples.json
+│  Layer 3: Prompt    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│   Scoring Engine    │   Direct + (Universal × 0.4) ≥ 14
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Milestone Selector  │◄── feature-contributors.json
+│  (picks #1 feature) │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│     Guardrails      │◄── guardrails.json
+│  cap · cooldown ·   │
+│  intent · pause     │
+└──────────┬──────────┘
+           │ pass
+           ▼
+┌─────────────────────┐
+│    Copy Engine      │◄── copy-templates.json
+│  20 sub-variants    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│      Renderer       │
+└──────────┬──────────┘
+           │
+    ┌──────┴───────┐
+    ▼              ▼
+Pro variant    Service variant
+(8 Pro         (hire-team)
+ features)
+```
+
+> All engines share a central **NudgeState** bus — they read signals, scores, and session state from it rather than calling each other directly.
+
 ### 1. Signal Collector
 
 Watches 40+ behavioral signals as the user works: which buttons they click, how many times they edit a slide, how long they spend on a prompt, what role they set, what template they chose.
