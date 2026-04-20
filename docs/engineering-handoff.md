@@ -10,7 +10,7 @@ Generic upgrade popups don't move this number. The insight: users convert when t
 
 ## What
 
-The system handles 9 upgrade opportunities:
+The system handles 7 upgrade opportunities:
 
 **Pro features (Pro variant card)**
 
@@ -22,8 +22,6 @@ The system handles 9 upgrade opportunities:
 | `export` | PowerPoint / PDF Export |
 | `invite-collab` | Invite Collaborators |
 | `analytics` | Viewer Analytics |
-| `gen-speed` | Generation Speed |
-| `pres-refresh` | Presentation Refresh |
 
 **Service upsell (Service variant card)**
 

@@ -1,83 +1,327 @@
 {
   "_doc": "Simulated LLM prompt synthesis output. In production, LLM generates this per user. Scale: 0-5.",
-
-  "Series A pitch for fintech startup":
-    { "unbranded": 5, "analytics": 4, "export": 4, "brand-kit": 4, "ai-models": 3, "invite-collab": 3, "gen-speed": 2, "pres-refresh": 1, "hire-team": 1 },
-  "Seed round deck for healthtech":
-    { "unbranded": 5, "analytics": 4, "export": 4, "brand-kit": 3, "ai-models": 3, "invite-collab": 3, "gen-speed": 2, "pres-refresh": 2, "hire-team": 1 },
-  "Product demo for enterprise AI tool":
-    { "brand-kit": 4, "unbranded": 4, "ai-models": 4, "analytics": 3, "export": 3, "invite-collab": 2, "gen-speed": 2, "pres-refresh": 1, "hire-team": 1 },
-
-  "Enterprise SaaS proposal for Fortune 500":
-    { "analytics": 5, "unbranded": 5, "export": 4, "brand-kit": 4, "ai-models": 3, "invite-collab": 3, "gen-speed": 2, "pres-refresh": 1, "hire-team": 1 },
-  "Partnership pitch to retail chain":
-    { "unbranded": 4, "analytics": 4, "export": 4, "brand-kit": 3, "ai-models": 3, "invite-collab": 2, "gen-speed": 2, "pres-refresh": 1, "hire-team": 1 },
-  "ROI case study for CFO":
-    { "ai-models": 4, "analytics": 4, "export": 4, "unbranded": 4, "brand-kit": 2, "invite-collab": 2, "gen-speed": 1, "pres-refresh": 1, "hire-team": 0 },
-
-  "Q1 business review":
-    { "pres-refresh": 4, "gen-speed": 4, "invite-collab": 3, "ai-models": 3, "export": 2, "brand-kit": 2, "unbranded": 1, "analytics": 1, "hire-team": 0 },
-  "Product roadmap for H2":
-    { "invite-collab": 4, "pres-refresh": 3, "gen-speed": 3, "ai-models": 3, "export": 2, "brand-kit": 1, "unbranded": 1, "analytics": 1, "hire-team": 0 },
-  "Team restructuring proposal":
-    { "ai-models": 4, "invite-collab": 3, "export": 3, "analytics": 2, "gen-speed": 2, "unbranded": 2, "brand-kit": 1, "pres-refresh": 1, "hire-team": 0 },
-  "OKR review and planning":
-    { "pres-refresh": 4, "invite-collab": 4, "gen-speed": 3, "ai-models": 3, "export": 2, "analytics": 2, "brand-kit": 1, "unbranded": 1, "hire-team": 0 },
-
-  "Design portfolio for senior role":
-    { "brand-kit": 5, "unbranded": 5, "export": 4, "ai-models": 3, "analytics": 3, "pres-refresh": 2, "gen-speed": 1, "invite-collab": 1, "hire-team": 1 },
-  "Agency credentials deck":
-    { "brand-kit": 5, "unbranded": 5, "analytics": 4, "export": 4, "invite-collab": 3, "pres-refresh": 3, "ai-models": 3, "gen-speed": 1, "hire-team": 1 },
-  "Brand identity presentation":
-    { "brand-kit": 5, "unbranded": 4, "export": 3, "ai-models": 3, "analytics": 2, "invite-collab": 2, "pres-refresh": 2, "gen-speed": 1, "hire-team": 1 },
-
-  "Introduction to machine learning":
-    { "export": 4, "ai-models": 4, "pres-refresh": 4, "gen-speed": 3, "unbranded": 2, "invite-collab": 1, "brand-kit": 1, "analytics": 1, "hire-team": 0 },
-  "Data visualization workshop":
-    { "ai-models": 4, "export": 4, "pres-refresh": 3, "gen-speed": 3, "unbranded": 2, "invite-collab": 2, "brand-kit": 1, "analytics": 1, "hire-team": 0 },
-  "Research methodology lecture":
-    { "export": 4, "pres-refresh": 4, "ai-models": 3, "gen-speed": 3, "unbranded": 2, "invite-collab": 1, "brand-kit": 1, "analytics": 1, "hire-team": 0 },
-
-  "Final thesis defense":
-    { "export": 5, "ai-models": 4, "unbranded": 4, "gen-speed": 3, "invite-collab": 2, "brand-kit": 2, "analytics": 1, "pres-refresh": 1, "hire-team": 2 },
-  "Startup pitch for entrepreneurship class":
-    { "unbranded": 3, "ai-models": 3, "export": 3, "brand-kit": 3, "invite-collab": 3, "gen-speed": 2, "analytics": 2, "pres-refresh": 1, "hire-team": 1 },
-  "Capstone project presentation":
-    { "export": 4, "ai-models": 4, "invite-collab": 3, "unbranded": 3, "gen-speed": 3, "brand-kit": 2, "analytics": 1, "pres-refresh": 1, "hire-team": 1 },
-
-  "pitch deck":
-    { "unbranded": 2, "export": 2, "ai-models": 1, "brand-kit": 1, "analytics": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0, "hire-team": 0 },
-  "startup stuff":
-    { "ai-models": 1, "gen-speed": 1, "unbranded": 1, "export": 1, "brand-kit": 0, "analytics": 0, "invite-collab": 0, "pres-refresh": 0, "hire-team": 0 },
-  "sales presentation":
-    { "unbranded": 2, "export": 2, "analytics": 1, "ai-models": 1, "brand-kit": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0, "hire-team": 0 },
-  "deck for client meeting":
-    { "unbranded": 2, "export": 2, "brand-kit": 1, "analytics": 1, "ai-models": 1, "gen-speed": 1, "invite-collab": 1, "pres-refresh": 0, "hire-team": 0 },
-  "slides for meeting":
-    { "gen-speed": 2, "ai-models": 1, "export": 1, "invite-collab": 1, "pres-refresh": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
-  "quarterly update slides":
-    { "pres-refresh": 3, "gen-speed": 2, "invite-collab": 2, "ai-models": 1, "export": 1, "brand-kit": 1, "unbranded": 0, "analytics": 0, "hire-team": 0 },
-  "portfolio presentation":
-    { "brand-kit": 2, "unbranded": 2, "export": 2, "ai-models": 1, "analytics": 1, "gen-speed": 1, "invite-collab": 0, "pres-refresh": 0, "hire-team": 0 },
-  "make a presentation":
-    { "ai-models": 1, "gen-speed": 1, "export": 1, "unbranded": 0, "brand-kit": 0, "analytics": 0, "invite-collab": 0, "pres-refresh": 0, "hire-team": 0 },
-  "lecture slides":
-    { "export": 2, "pres-refresh": 2, "gen-speed": 1, "ai-models": 1, "unbranded": 1, "invite-collab": 0, "brand-kit": 0, "analytics": 0, "hire-team": 0 },
-  "presentation for class":
-    { "export": 2, "ai-models": 1, "gen-speed": 1, "unbranded": 1, "invite-collab": 1, "brand-kit": 0, "analytics": 0, "pres-refresh": 0, "hire-team": 0 },
-  "help me with a ppt":
-    { "ai-models": 1, "gen-speed": 1, "export": 0, "unbranded": 0, "brand-kit": 0, "analytics": 0, "invite-collab": 0, "pres-refresh": 0, "hire-team": 2 },
-
-  "investor meeting tomorrow need a deck":
-    { "gen-speed": 5, "ai-models": 5, "export": 5, "unbranded": 4, "analytics": 3, "brand-kit": 2, "invite-collab": 1, "pres-refresh": 0, "hire-team": 5 },
-  "urgent proposal for client demo Friday":
-    { "gen-speed": 5, "export": 5, "ai-models": 4, "unbranded": 4, "analytics": 3, "brand-kit": 3, "invite-collab": 2, "pres-refresh": 0, "hire-team": 4 },
-  "board deck due end of day":
-    { "gen-speed": 5, "ai-models": 5, "export": 4, "unbranded": 3, "invite-collab": 3, "brand-kit": 2, "analytics": 2, "pres-refresh": 0, "hire-team": 5 },
-  "client pitch deck needed by tonight":
-    { "gen-speed": 5, "ai-models": 4, "export": 4, "unbranded": 4, "brand-kit": 4, "analytics": 2, "invite-collab": 1, "pres-refresh": 0, "hire-team": 4 },
-  "guest lecture tomorrow on AI ethics":
-    { "gen-speed": 4, "export": 4, "ai-models": 4, "pres-refresh": 3, "unbranded": 2, "invite-collab": 1, "brand-kit": 1, "analytics": 0, "hire-team": 2 },
-  "group project due tomorrow":
-    { "gen-speed": 4, "export": 4, "ai-models": 3, "invite-collab": 4, "unbranded": 2, "brand-kit": 1, "analytics": 0, "pres-refresh": 0, "hire-team": 3 }
+  "Series A pitch for fintech startup": {
+    "unbranded": 5,
+    "analytics": 4,
+    "export": 4,
+    "brand-kit": 4,
+    "ai-models": 3,
+    "invite-collab": 3,
+    "hire-team": 1
+  },
+  "Seed round deck for healthtech": {
+    "unbranded": 5,
+    "analytics": 4,
+    "export": 4,
+    "brand-kit": 3,
+    "ai-models": 3,
+    "invite-collab": 3,
+    "hire-team": 1
+  },
+  "Product demo for enterprise AI tool": {
+    "brand-kit": 4,
+    "unbranded": 4,
+    "ai-models": 4,
+    "analytics": 3,
+    "export": 3,
+    "invite-collab": 2,
+    "hire-team": 1
+  },
+  "Enterprise SaaS proposal for Fortune 500": {
+    "analytics": 5,
+    "unbranded": 5,
+    "export": 4,
+    "brand-kit": 4,
+    "ai-models": 3,
+    "invite-collab": 3,
+    "hire-team": 1
+  },
+  "Partnership pitch to retail chain": {
+    "unbranded": 4,
+    "analytics": 4,
+    "export": 4,
+    "brand-kit": 3,
+    "ai-models": 3,
+    "invite-collab": 2,
+    "hire-team": 1
+  },
+  "ROI case study for CFO": {
+    "ai-models": 4,
+    "analytics": 4,
+    "export": 4,
+    "unbranded": 4,
+    "brand-kit": 2,
+    "invite-collab": 2,
+    "hire-team": 0
+  },
+  "Q1 business review": {
+    "invite-collab": 3,
+    "ai-models": 3,
+    "export": 2,
+    "brand-kit": 2,
+    "unbranded": 1,
+    "analytics": 1,
+    "hire-team": 0
+  },
+  "Product roadmap for H2": {
+    "invite-collab": 4,
+    "ai-models": 3,
+    "export": 2,
+    "brand-kit": 1,
+    "unbranded": 1,
+    "analytics": 1,
+    "hire-team": 0
+  },
+  "Team restructuring proposal": {
+    "ai-models": 4,
+    "invite-collab": 3,
+    "export": 3,
+    "analytics": 2,
+    "unbranded": 2,
+    "brand-kit": 1,
+    "hire-team": 0
+  },
+  "OKR review and planning": {
+    "invite-collab": 4,
+    "ai-models": 3,
+    "export": 2,
+    "analytics": 2,
+    "brand-kit": 1,
+    "unbranded": 1,
+    "hire-team": 0
+  },
+  "Design portfolio for senior role": {
+    "brand-kit": 5,
+    "unbranded": 5,
+    "export": 4,
+    "ai-models": 3,
+    "analytics": 3,
+    "invite-collab": 1,
+    "hire-team": 1
+  },
+  "Agency credentials deck": {
+    "brand-kit": 5,
+    "unbranded": 5,
+    "analytics": 4,
+    "export": 4,
+    "invite-collab": 3,
+    "ai-models": 3,
+    "hire-team": 1
+  },
+  "Brand identity presentation": {
+    "brand-kit": 5,
+    "unbranded": 4,
+    "export": 3,
+    "ai-models": 3,
+    "analytics": 2,
+    "invite-collab": 2,
+    "hire-team": 1
+  },
+  "Introduction to machine learning": {
+    "export": 4,
+    "ai-models": 4,
+    "unbranded": 2,
+    "invite-collab": 1,
+    "brand-kit": 1,
+    "analytics": 1,
+    "hire-team": 0
+  },
+  "Data visualization workshop": {
+    "ai-models": 4,
+    "export": 4,
+    "unbranded": 2,
+    "invite-collab": 2,
+    "brand-kit": 1,
+    "analytics": 1,
+    "hire-team": 0
+  },
+  "Research methodology lecture": {
+    "export": 4,
+    "ai-models": 3,
+    "unbranded": 2,
+    "invite-collab": 1,
+    "brand-kit": 1,
+    "analytics": 1,
+    "hire-team": 0
+  },
+  "Final thesis defense": {
+    "export": 5,
+    "ai-models": 4,
+    "unbranded": 4,
+    "invite-collab": 2,
+    "brand-kit": 2,
+    "analytics": 1,
+    "hire-team": 2
+  },
+  "Startup pitch for entrepreneurship class": {
+    "unbranded": 3,
+    "ai-models": 3,
+    "export": 3,
+    "brand-kit": 3,
+    "invite-collab": 3,
+    "analytics": 2,
+    "hire-team": 1
+  },
+  "Capstone project presentation": {
+    "export": 4,
+    "ai-models": 4,
+    "invite-collab": 3,
+    "unbranded": 3,
+    "brand-kit": 2,
+    "analytics": 1,
+    "hire-team": 1
+  },
+  "pitch deck": {
+    "unbranded": 2,
+    "export": 2,
+    "ai-models": 0,
+    "brand-kit": 1,
+    "analytics": 1,
+    "invite-collab": 0,
+    "hire-team": 0
+  },
+  "startup stuff": {
+    "ai-models": 0,
+    "unbranded": 1,
+    "export": 1,
+    "brand-kit": 0,
+    "analytics": 0,
+    "invite-collab": 0,
+    "hire-team": 0
+  },
+  "sales presentation": {
+    "unbranded": 2,
+    "export": 2,
+    "analytics": 1,
+    "ai-models": 0,
+    "brand-kit": 1,
+    "invite-collab": 0,
+    "hire-team": 0
+  },
+  "deck for client meeting": {
+    "unbranded": 2,
+    "export": 2,
+    "brand-kit": 1,
+    "analytics": 1,
+    "ai-models": 0,
+    "invite-collab": 1,
+    "hire-team": 0
+  },
+  "slides for meeting": {
+    "ai-models": 0,
+    "export": 1,
+    "invite-collab": 1,
+    "unbranded": 0,
+    "brand-kit": 0,
+    "analytics": 0,
+    "hire-team": 0
+  },
+  "quarterly update slides": {
+    "invite-collab": 2,
+    "ai-models": 0,
+    "export": 1,
+    "brand-kit": 1,
+    "unbranded": 0,
+    "analytics": 0,
+    "hire-team": 0
+  },
+  "portfolio presentation": {
+    "brand-kit": 2,
+    "unbranded": 2,
+    "export": 2,
+    "ai-models": 0,
+    "analytics": 1,
+    "invite-collab": 0,
+    "hire-team": 0
+  },
+  "make a presentation": {
+    "ai-models": 0,
+    "export": 1,
+    "unbranded": 0,
+    "brand-kit": 0,
+    "analytics": 0,
+    "invite-collab": 0,
+    "hire-team": 0
+  },
+  "lecture slides": {
+    "export": 2,
+    "ai-models": 0,
+    "unbranded": 1,
+    "invite-collab": 0,
+    "brand-kit": 0,
+    "analytics": 0,
+    "hire-team": 0
+  },
+  "presentation for class": {
+    "export": 2,
+    "ai-models": 0,
+    "unbranded": 1,
+    "invite-collab": 1,
+    "brand-kit": 0,
+    "analytics": 0,
+    "hire-team": 0
+  },
+  "help me with a ppt": {
+    "ai-models": 0,
+    "export": 0,
+    "unbranded": 0,
+    "brand-kit": 0,
+    "analytics": 0,
+    "invite-collab": 0,
+    "hire-team": 2
+  },
+  "investor meeting tomorrow need a deck": {
+    "ai-models": 5,
+    "export": 5,
+    "unbranded": 4,
+    "analytics": 3,
+    "brand-kit": 2,
+    "invite-collab": 1,
+    "hire-team": 5
+  },
+  "urgent proposal for client demo Friday": {
+    "export": 5,
+    "ai-models": 4,
+    "unbranded": 4,
+    "analytics": 3,
+    "brand-kit": 3,
+    "invite-collab": 2,
+    "hire-team": 4
+  },
+  "board deck due end of day": {
+    "ai-models": 5,
+    "export": 4,
+    "unbranded": 3,
+    "invite-collab": 3,
+    "brand-kit": 2,
+    "analytics": 2,
+    "hire-team": 5
+  },
+  "client pitch deck needed by tonight": {
+    "ai-models": 4,
+    "export": 4,
+    "unbranded": 4,
+    "brand-kit": 4,
+    "analytics": 2,
+    "invite-collab": 1,
+    "hire-team": 4
+  },
+  "guest lecture tomorrow on AI ethics": {
+    "export": 4,
+    "ai-models": 4,
+    "unbranded": 2,
+    "invite-collab": 1,
+    "brand-kit": 1,
+    "analytics": 0,
+    "hire-team": 2
+  },
+  "group project due tomorrow": {
+    "export": 4,
+    "ai-models": 3,
+    "invite-collab": 4,
+    "unbranded": 2,
+    "brand-kit": 1,
+    "analytics": 0,
+    "hire-team": 3
+  }
 }
