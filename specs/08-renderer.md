@@ -89,7 +89,7 @@ Displays all currently active signals with type classification badges.
 
 ### 5. `renderMatrix()`
 
-Score matrix table showing all 9 features ranked by total score.
+Score matrix table showing all 7 features ranked by total score.
 
 **Columns:**
 - Feature name

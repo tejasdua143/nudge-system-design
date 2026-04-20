@@ -28,7 +28,7 @@ The ScoringEngine calculates per-feature conversion scores from active signals. 
 
 ### calculateScores()
 
-For each feature ID across all 9 features:
+For each feature ID across all 7 features:
 
 ```
 1. Direct Score Calculation
@@ -83,7 +83,7 @@ state.featureScores = {
       ...
     ]
   },
-  // ... one entry per feature (9 features total)
+  // ... one entry per feature (7 features total)
 }
 ```
 
@@ -97,7 +97,7 @@ DIRECT_MAP = {
     featureA: 3,
     featureB: 1,
     featureC: 0,
-    // ... weights for each of the 9 features
+    // ... weights for each of the 7 features
   },
   // ...
 }
@@ -153,7 +153,7 @@ Example: If a user has `universalRaw = 10` and feature A has `direct = 8` while 
 - `DIRECT_MAP` -- ~40+ signal entries with per-feature weights
 - `UNIVERSAL_MAP` -- ~15 signal entries with single weights
 - `CONFIG.UNIVERSAL_MULTIPLIER` -- `0.4`
-- Feature ID list (9 features)
+- Feature ID list (7 features)
 
 ## Cross-References
 

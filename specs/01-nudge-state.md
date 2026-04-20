@@ -63,7 +63,7 @@ Set by the ContextProfiler after `generateUser()`.
 
 | Field              | Type   | Description                                                      |
 |--------------------|--------|------------------------------------------------------------------|
-| `mindsetVector`    | object | Per-feature weight object (0--5 per feature for all 9 features)  |
+| `mindsetVector`    | object | Per-feature weight object (0--5 per feature for all 7 features)  |
 | `audienceStakes`   | string | `'high-external'` \| `'low-external'` \| `'internal'`           |
 | `promptSynthesis`  | object | Per-feature 0--5 scores derived from topic/prompt analysis       |
 | `isProUser`        | boolean | Derived field set by `handleUpgrade()`; default `undefined`/`false` |

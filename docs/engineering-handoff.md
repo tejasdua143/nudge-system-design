@@ -86,7 +86,7 @@ User actions flow through a 7-stage pipeline before anything appears on screen.
     ┌──────┴───────┐
     ▼              ▼
 Pro variant    Service variant
-(8 Pro         (hire-team)
+(6 Pro         (hire-team)
  features)
 ```
 
@@ -137,7 +137,7 @@ If any check fails, the nudge is suppressed and the system waits for the next sc
 
 ### 6. Copy Engine
 
-Selects from 20 copy sub-variants across the 9 features.
+Selects from 20 copy sub-variants across the 7 features.
 
 Rules:
 - Titles name the pain, never the feature — *"Your {topic} deck could be better on the first try"*, not *"Upgrade AI Models"*
