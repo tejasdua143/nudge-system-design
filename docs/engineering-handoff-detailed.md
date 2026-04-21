@@ -381,7 +381,7 @@ Selects from 20 copy sub-variants across 7 features.
 
 | Sub-feature | Trigger signals | Title | CTA |
 |---|---|---|---|
-| guests | share-link-copy, prompt-team | Get feedback on your {topic} deck before it reaches {audience} | Invite Collaborators |
+| guests | share-link-copy, prompt-team | Get feedback before this reaches {audience} | Invite Collaborators |
 | workspace | prompt-team, invite-attempt | Your team should be building this {topic} deck with you | Invite Collaborators |
 | present-remotely | play-preview | Present your {topic} deck live to {audience} | Get Live Presenting |
 | version-history | undo-redo, deck-regenerate, edit-streak-3 | Keep a safety net for your {topic} deck | Get Version History |

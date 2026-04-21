@@ -101,7 +101,7 @@ These rules govern all nudge copy:
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| guests | share-link-copy, prompt-team | Get feedback on your {topic} deck before it reaches {audience} | Invite guests to view and comment, all in one place. | Invite Collaborators |
+| guests | share-link-copy, prompt-team | Get feedback before this reaches {audience} | Invite guests to view and comment, all in one place. | Invite Collaborators |
 | workspace | prompt-team, invite-attempt | Your team should be building this {topic} deck with you | Add them to a shared workspace where everyone can edit and comment together. | Invite Collaborators |
 | present-remotely | play-preview | Present your {topic} deck live to {audience} | Share a link and your audience follows along in real time as you present. | Get Live Presenting |
 | version-history | undo-redo, deck-regenerate, edit-streak-3 | Keep a safety net for your {topic} deck | Version History tracks every edit for 30 days so you can undo anything, anytime. | Get Version History |
