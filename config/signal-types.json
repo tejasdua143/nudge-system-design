@@ -1,0 +1,66 @@
+{
+  "_doc": "Signal classification: 'repeatable' = counted per occurrence, final score = base × log₂(count + 1). 'boolean' = fires once, final score = base. Aggregate threshold signals (e.g. edit-streak-3) are removed under log model — log scaling on the underlying repeatable captures escalation naturally.",
+
+  "repeatable": [
+    "text-edit",
+    "style-change",
+    "element-move",
+    "undo-redo",
+    "slide-delete",
+
+    "insert-title",
+    "insert-list",
+    "insert-media",
+    "insert-slide-prompt",
+    "insert-slide-template",
+    "slide-reorder",
+
+    "play-preview",
+    "edit-after-preview",
+    "theme-global",
+    "layout-slide",
+    "deck-regenerate",
+
+    "share-link-copy",
+    "invite-attempt",
+    "export-click",
+    "export-download",
+
+    "doc-upload",
+    "deck-switch",
+    "pricing-visit",
+    "gate-hit"
+  ],
+
+  "boolean": [
+    "prompt-brand",
+    "prompt-team",
+    "doc-upload-long",
+
+    "second-deck",
+    "session-15min",
+
+    "stakes-high-external",
+    "stakes-low-external",
+    "stakes-internal",
+
+    "bought-export",
+    "deck-veteran",
+    "deck-sharer",
+    "deck-publisher",
+
+    "acq-organic",
+    "acq-paid",
+    "acq-referral",
+
+    "credits-low",
+    "credits-zero",
+    "returning-user",
+    "zero-dismissals",
+    "company-domain",
+    "tier-1-country",
+
+    "prompt-synthesis",
+    "mindset-vector"
+  ]
+}

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge Card — Base Component</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #F5F0EB;
+    --surface: #FFFFFF;
+    --surface-2: #FAF8F5;
+    --border: #E5DDD4;
+    --border-light: #EDE8E2;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --primary: #111111;
+    --accent: #8B5CF6;
+    --accent-service: #EA580C;
+    --paper-shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+  }
+
+  h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--primary);
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .examples {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     NUDGE CARD — BASE COMPONENT
+     ════════════════════════════════════════════════════════════════ */
+
+  .nudge-ui {
+    width: 400px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--paper-shadow-lg);
+    animation: nudgeIn 0.4s ease;
+  }
+  @keyframes nudgeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Header: icon + tag ── */
+  .nudge-ui-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge-ui-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .nudge-ui-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  /* ── Body: title + description + actions ── */
+  .nudge-ui-body {
+    padding: 16px 24px 24px;
+  }
+  .nudge-ui-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .nudge-ui-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── Actions: CTA + dismiss ── */
+  .nudge-ui-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .nudge-ui-cta {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .nudge-ui-cta:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+  .nudge-ui-dismiss {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nudge-ui-dismiss:hover {
+    color: var(--text-muted);
+    border-color: var(--text-dim);
+  }
+
+  /* ── Footer: badge + feature label ── */
+  .nudge-ui-footer {
+    padding: 0 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nudge-ui-pro-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: var(--accent);
+  }
+  .nudge-ui-feature-label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     SERVICE VARIANT — orange accent
+     ════════════════════════════════════════════════════════════════ */
+
+  .nudge-ui.service {
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-tag {
+    color: var(--accent-service);
+  }
+  .nudge-ui-cta.service {
+    background: var(--accent-service);
+  }
+  .nudge-ui-pro-badge.service {
+    background: #FFF7ED;
+    border: 1px solid #FDBA74;
+    color: var(--accent-service);
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     SPEC TABLE
+     ════════════════════════════════════════════════════════════════ */
+
+  .spec-section {
+    max-width: 640px;
+    width: 100%;
+  }
+  .spec-section h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--primary);
+  }
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--paper-shadow-lg);
+  }
+  .spec-table th {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface-2);
+  }
+  .spec-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .spec-table td:first-child {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    width: 140px;
+  }
+  .spec-table td:nth-child(2) {
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+  <div style="text-align:center">
+    <h1>Nudge Card Component</h1>
+    <p class="subtitle">Base design for the presentations.ai upgrade nudge system</p>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       EXAMPLES
+       ════════════════════════════════════════════════════════════════ -->
+
+  <div class="examples">
+
+    <!-- Pro variant -->
+    <div class="nudge-ui">
+      <div class="nudge-ui-header">
+        <div class="nudge-ui-icon">🎨</div>
+        <div class="nudge-ui-tag">Milestone</div>
+      </div>
+      <div class="nudge-ui-body">
+        <div class="nudge-ui-title">There's a faster way to handle fonts</div>
+        <div class="nudge-ui-desc">Brand Kit locks in your typeface across every slide, automatically.</div>
+        <div class="nudge-ui-actions">
+          <button class="nudge-ui-cta">Get Brand Kit</button>
+          <button class="nudge-ui-dismiss">Not now</button>
+        </div>
+      </div>
+      <div class="nudge-ui-footer">
+        <span class="nudge-ui-pro-badge">PRO</span>
+        <span class="nudge-ui-feature-label">Brand Kit</span>
+      </div>
+    </div>
+
+    <!-- Service variant -->
+    <div class="nudge-ui service">
+      <div class="nudge-ui-header">
+        <div class="nudge-ui-icon">🤝</div>
+        <div class="nudge-ui-tag">Service</div>
+      </div>
+      <div class="nudge-ui-body">
+        <div class="nudge-ui-title">You don't have to build this yourself</div>
+        <div class="nudge-ui-desc">Our team will create a polished deck for your investors — you focus on the message.</div>
+        <div class="nudge-ui-actions">
+          <button class="nudge-ui-cta service">Talk to Our Team</button>
+          <button class="nudge-ui-dismiss">Not now</button>
+        </div>
+      </div>
+      <div class="nudge-ui-footer">
+        <span class="nudge-ui-pro-badge service">SERVICE</span>
+        <span class="nudge-ui-feature-label">Hire Our Team</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       ANATOMY
+       ════════════════════════════════════════════════════════════════ -->
+
+  <div class="spec-section">
+    <h2>Card Anatomy</h2>
+    <table class="spec-table">
+      <thead>
+        <tr><th>Element</th><th>Spec</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Container</td><td>400px max-width, 16px border-radius, 1px border (#E5DDD4), white background, large paper shadow</td></tr>
+        <tr><td>Icon</td><td>48x48px, 12px border-radius, #F5F3FF background, 1px #EDE9FE border, 24px emoji centered</td></tr>
+        <tr><td>Tag</td><td>Montserrat 10px/700, uppercase, 1px letter-spacing, accent color at 70% opacity. Values: "Milestone" (pro) or "Service"</td></tr>
+        <tr><td>Title</td><td>Montserrat 18px/700, line-height 1.3, primary color (#111827). Names the pain, not the feature.</td></tr>
+        <tr><td>Description</td><td>Roboto 14px/400, line-height 1.6, muted color (#6B7280). One sentence: pain → solution.</td></tr>
+        <tr><td>CTA button</td><td>Montserrat 13px/600, 10px 24px padding, 8px border-radius, primary bg (#111), white text. Always feature-specific: "Get Brand Kit", "Try Analytics", etc.</td></tr>
+        <tr><td>Dismiss</td><td>13px/500, 10px 16px padding, 8px border-radius, transparent bg, 1px border, dim text. Always "Not now".</td></tr>
+        <tr><td>Footer badge</td><td>Montserrat 9px/700, uppercase, 1px letter-spacing, 3px 8px padding, 4px border-radius. "PRO" (purple) or "SERVICE" (orange)</td></tr>
+        <tr><td>Feature label</td><td>11px, dim text. The feature's display name.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       COPY FRAMEWORK
+       ════════════════════════════════════════════════════════════════ -->
+
+  <div class="spec-section">
+    <h2>Copy Framework</h2>
+    <table class="spec-table">
+      <thead>
+        <tr><th>Element</th><th>Rule</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Title</td><td>Name the pain, not the feature. Tone: helpful confidence — "there's a better way", not commanding or scolding. The product is on the user's side.</td></tr>
+        <tr><td>Body</td><td>One sentence max. Connect the pain to the solution. Use user context (audience, topic) only when it fits naturally — never force it.</td></tr>
+        <tr><td>CTA</td><td>Always feature-specific. Name what they're getting: "Get Brand Kit", "Try Analytics", "Unlock Exports", "Remove Watermark".</td></tr>
+        <tr><td>Dismiss</td><td>Always "Not now". Neutral, no guilt.</td></tr>
+        <tr><td>Tone</td><td>The product is quietly on your side, pointing out a better way. Not commanding, not scolding — helpful confidence.</td></tr>
+        <tr><td>Never do</td><td>Don't call out specific user behaviour ("You've edited 3 times") — it feels creepy. Don't append extra sentences for different tiers — same copy for everyone.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       ALL COPY VARIANTS
+       ════════════════════════════════════════════════════════════════ -->
+
+  <div class="spec-section">
+    <h2>All Copy Variants (20)</h2>
+    <table class="spec-table">
+      <thead>
+        <tr><th>Feature</th><th>Title / Body / CTA</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🧠 AI Models</td><td>
+          <strong>There's a smarter AI for this</strong><br>
+          Better models get it right the first time — less fixing, more presenting.<br>
+          <em>CTA: Get Better AI</em>
+        </td></tr>
+        <tr><td>🧠 AI Credits</td><td>
+          <strong>You'll run out of credits mid-deck</strong><br>
+          Unlock 5,000 AI credits so you never hit the wall while building.<br>
+          <em>CTA: Get More Credits</em>
+        </td></tr>
+        <tr><td>🧠 Project Knowledge</td><td>
+          <strong>The AI doesn't know your content yet</strong><br>
+          Project Knowledge lets the AI learn your material and generate slides that actually match.<br>
+          <em>CTA: Get Project Knowledge</em>
+        </td></tr>
+        <tr><td>🎨 Brand Fonts</td><td>
+          <strong>There's a faster way to handle fonts</strong><br>
+          Brand Kit locks in your typeface across every slide, automatically.<br>
+          <em>CTA: Get Brand Kit</em>
+        </td></tr>
+        <tr><td>🎨 Brand Colors</td><td>
+          <strong>Your colors shouldn't reset every slide</strong><br>
+          Set your brand colors once and every new slide uses them by default.<br>
+          <em>CTA: Get Brand Kit</em>
+        </td></tr>
+        <tr><td>🎨 Brand Assets</td><td>
+          <strong>Your logo should already be here</strong><br>
+          Brand Kit keeps your logos, icons, and images ready to drop into any slide.<br>
+          <em>CTA: Get Brand Kit</em>
+        </td></tr>
+        <tr><td>🎨 Brand Voice</td><td>
+          <strong>The AI doesn't sound like you yet</strong><br>
+          Set your brand voice once and every generated slide matches your tone.<br>
+          <em>CTA: Get Brand Kit</em>
+        </td></tr>
+        <tr><td>✨ Unbranded Links</td><td>
+          <strong>Your audience will see our watermark</strong><br>
+          Remove it and share clean, professional links that look like yours.<br>
+          <em>CTA: Remove Watermark</em>
+        </td></tr>
+        <tr><td>✨ Unbranded Export</td><td>
+          <strong>That export will have a watermark on it</strong><br>
+          Remove it for a polished file you can email, print, or present anywhere.<br>
+          <em>CTA: Remove Watermark</em>
+        </td></tr>
+        <tr><td>📄 PPT Export</td><td>
+          <strong>You can take this deck offline</strong><br>
+          Export to PowerPoint and edit, email, or present it anywhere — no internet needed.<br>
+          <em>CTA: Unlock Exports</em>
+        </td></tr>
+        <tr><td>📄 PDF Export</td><td>
+          <strong>Sometimes you just need a PDF</strong><br>
+          Export a presentation-ready PDF — perfect for emailing to {audience}.<br>
+          <em>CTA: Unlock Exports</em>
+        </td></tr>
+        <tr><td>📄 Embeds</td><td>
+          <strong>This deck could live on your website</strong><br>
+          Embed it directly on any page — live, interactive, always up to date.<br>
+          <em>CTA: Unlock Embeds</em>
+        </td></tr>
+        <tr><td>👥 Guests</td><td>
+          <strong>Get feedback before it goes out</strong><br>
+          Invite guests to view and comment — all in one place, before it reaches {audience}.<br>
+          <em>CTA: Invite Collaborators</em>
+        </td></tr>
+        <tr><td>👥 Workspace</td><td>
+          <strong>Your team should be in here with you</strong><br>
+          Add them to a shared workspace where everyone can edit and comment together.<br>
+          <em>CTA: Invite Collaborators</em>
+        </td></tr>
+        <tr><td>👥 Present Remotely</td><td>
+          <strong>You can present this live, remotely</strong><br>
+          Share a link and your audience follows along in real time as you present.<br>
+          <em>CTA: Get Live Presenting</em>
+        </td></tr>
+        <tr><td>👥 Version History</td><td>
+          <strong>What if you need to go back?</strong><br>
+          Version History tracks every edit for 30 days — undo anything, anytime.<br>
+          <em>CTA: Get Version History</em>
+        </td></tr>
+        <tr><td>📈 Page Views</td><td>
+          <strong>You won't know if anyone opened it</strong><br>
+          Analytics shows exactly who viewed your deck and when.<br>
+          <em>CTA: Try Analytics</em>
+        </td></tr>
+        <tr><td>📈 Slide Engagement</td><td>
+          <strong>You won't know which slides landed</strong><br>
+          See exactly where {audience} spent the most time — and what they skipped.<br>
+          <em>CTA: Try Analytics</em>
+        </td></tr>
+        <tr><td>📈 Demographics</td><td>
+          <strong>You don't know who's viewing this</strong><br>
+          See where your viewers are and what devices they're using.<br>
+          <em>CTA: Try Analytics</em>
+        </td></tr>
+        <tr><td>🤝 Hire Team</td><td>
+          <strong>You don't have to build this yourself</strong><br>
+          Our team will create a polished deck for {audience} — you focus on the message.<br>
+          <em>CTA: Talk to Our Team</em>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

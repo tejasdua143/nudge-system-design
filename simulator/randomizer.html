@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge Randomizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@300;400;500;600;700&family=PT+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #F5F0EB;
+    --surface: #FFFFFF;
+    --surface-2: #FAF8F5;
+    --border: #E5DDD4;
+    --border-light: #EDE8E2;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --primary: #111111;
+    --accent: #8B5CF6;
+    --accent-service: #EA580C;
+    --green: #16A34A;
+    --yellow: #D97706;
+    --red: #DC2626;
+    --blue: #2563EB;
+    --cyan: #0891B2;
+    --paper-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --paper-shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .randomize-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--primary);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.3px;
+    box-shadow: var(--paper-shadow-lg);
+  }
+  .randomize-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .randomize-btn:active { transform: translateY(0); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: var(--paper-shadow);
+  }
+  .card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  /* User profile card */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px 16px;
+  }
+  .profile-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .profile-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .profile-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .profile-value.highlight { color: var(--accent); }
+
+  /* Prompt card */
+  .prompt-text {
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    word-break: break-word;
+  }
+  .prompt-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .prompt-meta strong {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Actions card */
+  .actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text);
+    padding: 5px 0;
+  }
+  .action-check {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Feature scores card */
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .score-table th {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    padding: 8px 8px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .score-table th:last-child { text-align: right; }
+  .score-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .fname {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .score-table .num {
+    font-family: 'PT Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    min-width: 36px;
+    color: var(--text-muted);
+  }
+  .score-table .total {
+    font-family: 'PT Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    min-width: 40px;
+  }
+  .score-table .total.below { color: var(--text-dim); }
+  .score-table .total.above { color: var(--green); }
+  .score-table .total.top { color: var(--accent); }
+  .score-table .badge-cell { text-align: right; min-width: 70px; }
+  .badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .badge.next { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
+  .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
+  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; }
+  .filtered-row { opacity: 0.35; }
+
+  /* Nudge card */
+  .nudge-card-wrap {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--paper-shadow-lg);
+    animation: nudgeIn 0.4s ease;
+  }
+  .nudge-card-wrap.service { border-color: #FDBA74; }
+  @keyframes nudgeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nudge-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .nudge-card-wrap.service .nudge-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .nudge-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+  .nudge-card-wrap.service .nudge-tag { color: var(--accent-service); }
+  .nudge-body {
+    padding: 16px 24px 24px;
+  }
+  .nudge-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .nudge-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+  .nudge-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .nudge-cta {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: default;
+    letter-spacing: 0.2px;
+  }
+  .nudge-cta.service { background: var(--accent-service); }
+  .nudge-dismiss {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: default;
+  }
+  .nudge-footer {
+    padding: 0 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nudge-pro-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: var(--accent);
+  }
+  .nudge-pro-badge.service {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+    color: var(--accent-service);
+  }
+  .nudge-feature-label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .nudge-meta {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .nudge-meta strong { color: var(--text); font-weight: 600; }
+
+  /* No nudge state */
+  .no-nudge {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-dim);
+    font-size: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    background: var(--surface-2);
+  }
+  .no-nudge-icon { font-size: 32px; margin-bottom: 12px; }
+
+  /* Initial empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Nudge Randomizer</h1>
+      <p>Generate a random scenario and see which nudge fires.</p>
+    </div>
+    <button class="randomize-btn" onclick="randomizeAll()">Randomize</button>
+    <div id="results">
+      <div class="empty-state">
+        <div class="empty-state-icon">&#x1F3B2;</div>
+        Click Randomize to generate a scenario
+      </div>
+    </div>
+  </div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// 1. CONFIG
+// ══════════════════════════════════════════════════════════════════════════════
+
+var CONFIG = {
+  THRESHOLD: 14,
+  MAX_SCORE: 30,
+  UNIVERSAL_MULTIPLIER: 0.4,
+  SESSION_CAP: 3,
+  COOLDOWN_MS: 60000,
+  INTENT_FLOOR: 3,
+  ACTIVITY_PAUSE_MS: 3000
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 2. FEATURES (7 features)
+// ══════════════════════════════════════════════════════════════════════════════
+
+var FEATURES = [
+  { id: 'ai-models', name: 'Better AI Models', icon: '\uD83E\uDDE0', type: 'pro', verb: 'Upgrade to a better AI model', does: 'uses Standard or Advanced AI models for higher quality slides and smarter content' },
+  { id: 'brand-kit', name: 'Brand Kit', icon: '\uD83C\uDFA8', type: 'pro', verb: 'Set up your Brand Kit', does: 'applies your custom brand colors and fonts across all slides' },
+  { id: 'unbranded', name: 'Remove Watermark', icon: '\u2728', type: 'pro', verb: 'Remove the watermark', does: 'removes the Presentations.AI watermark from your slides for a clean, professional finish' },
+  { id: 'export', name: 'PowerPoint/PDF Export', icon: '\uD83D\uDCC4', type: 'pro', verb: 'Export your deck', does: 'downloads your deck as a PowerPoint or PDF file' },
+  { id: 'invite-collab', name: 'Invite Collaborators', icon: '\uD83D\uDC65', type: 'pro', verb: 'Invite collaborators', does: 'lets others view, comment, and edit your deck in real time' },
+  { id: 'analytics', name: 'Viewer Analytics', icon: '\uD83D\uDCC8', type: 'pro', verb: 'Turn on analytics', does: 'tracks who opened your deck, which slides they viewed, and for how long' },
+  { id: 'hire-team', name: 'Hire Our Team', icon: '\uD83E\uDD1D', type: 'service', verb: 'Let us build it for you', does: 'our team creates a polished presentation for you' },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 3. ACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+
+var ACTIONS = [
+  { id: 'text-edit', label: 'Edit text on a slide', signals: ['text-edit'], cat: 'edit' },
+  { id: 'style-change', label: 'Change font/color/size from toolbar', signals: ['style-change'], cat: 'edit' },
+  { id: 'element-move', label: 'Drag or resize an element', signals: ['element-move'], cat: 'edit' },
+  { id: 'undo-redo', label: 'Undo / redo (Ctrl+Z/Y)', signals: ['undo-redo'], cat: 'edit' },
+  { id: 'slide-delete', label: 'Delete a slide', signals: ['slide-delete'], cat: 'edit' },
+  { id: 'insert-title', label: 'Insert a title', signals: ['insert-title'], cat: 'content' },
+  { id: 'insert-list', label: 'Insert a list', signals: ['insert-list'], cat: 'content' },
+  { id: 'insert-media', label: 'Insert media (image/video)', signals: ['insert-media'], cat: 'content' },
+  { id: 'insert-slide-prompt', label: 'Insert slide with a prompt', signals: ['insert-slide-prompt'], cat: 'content' },
+  { id: 'insert-slide-template', label: 'Insert slide from template', signals: ['insert-slide-template'], cat: 'content' },
+  { id: 'slide-duplicate', label: 'Duplicate a slide', signals: ['slide-duplicate'], cat: 'content' },
+  { id: 'slide-reorder', label: 'Drag slide to reorder', signals: ['slide-reorder'], cat: 'content' },
+  { id: 'play-preview', label: 'Play / present slideshow', signals: ['play-preview'], cat: 'preview' },
+  { id: 'edit-after-preview', label: 'Edit after playing preview', signals: ['edit-after-preview', 'text-edit'], cat: 'preview' },
+  { id: 'idle-30s', label: 'Idle 30s on a slide', signals: ['idle-30s'], cat: 'preview' },
+  { id: 'theme-global', label: 'Change deck theme (global)', signals: ['theme-global'], cat: 'preview' },
+  { id: 'layout-slide', label: 'Change single slide layout', signals: ['layout-slide'], cat: 'preview' },
+  { id: 'deck-regenerate', label: 'Regenerate entire deck', signals: ['deck-regenerate'], cat: 'preview' },
+  { id: 'share-link-copy', label: 'Copy free share link', signals: ['share-link-copy'], cat: 'share' },
+  { id: 'invite-attempt', label: 'Click invite collaborators (Pro gate)', signals: ['invite-attempt', 'gate-hit'], cat: 'share' },
+  { id: 'export-click', label: 'Open export options', signals: ['export-click'], cat: 'share' },
+  { id: 'export-download', label: 'Click download (hits paywall)', signals: ['export-download', 'gate-hit'], cat: 'share' },
+  { id: 'prompt-brand', label: 'Brand/company in prompt', signals: ['prompt-brand'], cat: 'prompt' },
+  { id: 'prompt-team', label: '"we/our/team" in prompt', signals: ['prompt-team'], cat: 'prompt' },
+  { id: 'doc-upload', label: 'Upload a document', signals: ['doc-upload'], cat: 'prompt' },
+  { id: 'doc-upload-long', label: 'Upload long doc (20+ pages)', signals: ['doc-upload', 'doc-upload-long'], cat: 'prompt' },
+  // Session thresholds. edit-streak-3 / edit-count-5 aggregates removed
+  // under log-scaling model (log₂ on text-edit + undo-redo captures escalation).
+  { id: 'session-15min', label: '15 minutes in editor', signals: ['session-15min'], cat: 'session' },
+  { id: 'session-20min', label: '20 minutes in editor', signals: ['session-20min', 'session-15min'], cat: 'session' },
+  { id: 'second-deck', label: 'Start a 2nd deck', signals: ['second-deck'], cat: 'session' },
+  { id: 'deck-switch', label: 'Switch between decks', signals: ['deck-switch'], cat: 'session' },
+  { id: 'pricing-visit', label: 'Visit pricing page', signals: ['pricing-visit'], cat: 'session' },
+  { id: 'gate-hit', label: 'Click any Pro-gated feature', signals: ['gate-hit'], cat: 'session' },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 4. Signal Maps
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Repeatable signals: log-scaled by log₂(count + 1). See signal-types.json.
+var REPEATABLE_SIGNALS = new Set([
+  'text-edit', 'style-change', 'element-move', 'undo-redo', 'slide-delete',
+  'insert-title', 'insert-list', 'insert-media', 'insert-slide-prompt',
+  'insert-slide-template', 'slide-reorder',
+  'play-preview', 'edit-after-preview', 'theme-global', 'layout-slide',
+  'deck-regenerate',
+  'share-link-copy', 'invite-attempt', 'export-click', 'export-download',
+  'doc-upload', 'deck-switch', 'pricing-visit', 'gate-hit'
+]);
+
+var DIRECT_MAP = {
+  'text-edit':             { 'ai-models': 2 },
+  'style-change':          { 'brand-kit': 3, 'ai-models': 1 },
+  'element-move':          { 'brand-kit': 2, 'ai-models': 1 },
+  'undo-redo':             { 'ai-models': 3, 'hire-team': 3 },
+  'slide-delete':          { 'ai-models': 2 },
+  'insert-title':          { 'ai-models': 2 },
+  'insert-list':           { 'ai-models': 2 },
+  'insert-media':          { 'brand-kit': 2 },
+  'insert-slide-prompt':   { 'ai-models': 3 },
+  'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
+  'slide-duplicate':       {},
+  'slide-reorder':         { 'ai-models': 1 },
+  'play-preview':          { 'unbranded': 3, 'export': 3 },
+  'edit-after-preview':    { 'ai-models': 2, 'hire-team': 1 },
+  'idle-30s':              {},
+  'theme-global':          { 'brand-kit': 4, 'unbranded': 2 },
+  'layout-slide':          { 'brand-kit': 2, 'ai-models': 1, 'hire-team': 1 },
+  'deck-regenerate':       { 'ai-models': 5, 'hire-team': 5 },
+  'share-link-copy':       { 'unbranded': 3, 'analytics': 3, 'invite-collab': 2 },
+  'invite-attempt':        { 'invite-collab': 5 },
+  'export-click':          { 'export': 3 },
+  'export-download':       { 'export': 5, 'unbranded': 2 },
+  'prompt-brand':          { 'brand-kit': 5 },
+  'prompt-team':           { 'invite-collab': 5 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 2, 'ai-models': 2, 'hire-team': 2, 'analytics': 2 },
+  'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
+  'session-15min':         {},
+  'session-20min':         { 'ai-models': 2 },
+  'second-deck':           { 'brand-kit': 3, 'unbranded': 2 },
+  'deck-switch':           { 'brand-kit': 3 },
+  'gate-hit':              {},
+  'pricing-visit':         {},
+  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
+  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
+  'stakes-internal':       { 'ai-models': 2, 'invite-collab': 2 },
+  'bought-export':         { 'export': 4 },
+  'deck-veteran':          { 'brand-kit': 3 },
+  'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
+  'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
+  'acq-paid':              {},
+  'acq-referral':          { 'invite-collab': 3 },
+  'prompt-synthesis':      {},
+  'mindset-vector':        {},
+};
+
+var UNIVERSAL_MAP = {
+  'credits-low':      3,
+  'credits-zero':     5,
+  'returning-user':   4,
+  'pricing-visit':    3,
+  'bought-export':    4,
+  'session-15min':    3,
+  'second-deck':      3,
+  'zero-dismissals':  1,
+  'gate-hit':         3,
+  'export-download':  2,
+  'company-domain':   2,
+  'tier-1-country':   2,
+  'deck-veteran':     3,
+  'acq-organic':      1,
+  'acq-paid':         0,
+  'acq-referral':     2,
+  'doc-upload':       3,
+};
+
+var MINDSET_VECTORS = {
+  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
+  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|internal':                { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
+  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|internal':              { 'invite-collab': 4, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|low-external':       { 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|internal':              { 'export': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 }
+};
+
+var MINDSET_FALLBACK = { 'ai-models': 1, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 };
+
+var PROMPT_SYNTHESIS = {
+  'Series A pitch for fintech startup':
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Seed round deck for healthtech':
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Product demo for enterprise AI tool':
+    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'hire-team': 1 },
+  'Enterprise SaaS proposal for Fortune 500':
+    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Partnership pitch to retail chain':
+    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'hire-team': 1 },
+  'ROI case study for CFO':
+    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'hire-team': 0 },
+  'Q1 business review':
+    { 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product roadmap for H2':
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+  'Team restructuring proposal':
+    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0 },
+  'OKR review and planning':
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
+  'Design portfolio for senior role':
+    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'invite-collab': 1, 'hire-team': 1 },
+  'Agency credentials deck':
+    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'ai-models': 3, 'hire-team': 1 },
+  'Brand identity presentation':
+    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Introduction to machine learning':
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Data visualization workshop':
+    { 'ai-models': 4, 'export': 4, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Research methodology lecture':
+    { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Final thesis defense':
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'hire-team': 2 },
+  'Startup pitch for entrepreneurship class':
+    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'analytics': 2, 'hire-team': 1 },
+  'Capstone project presentation':
+    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'brand-kit': 2, 'analytics': 1, 'hire-team': 1 },
+  'pitch deck':
+    { 'unbranded': 2, 'export': 2, 'ai-models': 1, 'brand-kit': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'startup stuff':
+    { 'ai-models': 1, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
+  'sales presentation':
+    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 1, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'deck for client meeting':
+    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 1, 'invite-collab': 1, 'hire-team': 0 },
+  'slides for meeting':
+    { 'ai-models': 1, 'export': 1, 'invite-collab': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'quarterly update slides':
+    { 'invite-collab': 2, 'ai-models': 1, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
+  'portfolio presentation':
+    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'make a presentation':
+    { 'ai-models': 1, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
+  'lecture slides':
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'presentation for class':
+    { 'export': 2, 'ai-models': 1, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'help me with a ppt':
+    { 'ai-models': 1, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 2 },
+  'investor meeting tomorrow need a deck':
+    { 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 5 },
+  'urgent proposal for client demo Friday':
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'hire-team': 4 },
+  'board deck due end of day':
+    { 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'hire-team': 5 },
+  'client pitch deck needed by tonight':
+    { 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'hire-team': 4 },
+  'guest lecture tomorrow on AI ethics':
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
+  'group project due tomorrow':
+    { 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'hire-team': 3 }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 5. User generation data
+// ══════════════════════════════════════════════════════════════════════════════
+
+var ROLES = [
+  { label: 'Leadership', archetype: 'Founder' },
+  { label: 'Sales', archetype: 'Sales' },
+  { label: 'Marketing', archetype: 'Sales' },
+  { label: 'Product', archetype: 'Corporate' },
+  { label: 'Design', archetype: 'Creative' },
+  { label: 'Engineering', archetype: 'Corporate' },
+  { label: 'Data Analytics', archetype: 'Corporate' },
+  { label: 'Consulting', archetype: 'Corporate' },
+  { label: 'Operations', archetype: 'Corporate' },
+  { label: 'Finance', archetype: 'Corporate' },
+  { label: 'Creator', archetype: 'Creative' },
+  { label: 'Teacher', archetype: 'Educator' },
+  { label: 'Student', archetype: 'Student' },
+];
+
+var AUDIENCES = {
+  Founder: ['Investors', 'VCs', 'Board members', 'Angel investors'],
+  Sales: ['Enterprise clients', 'Prospects', 'C-suite buyers'],
+  Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
+  Creative: ['Potential clients', 'Recruiters', 'Art directors'],
+  Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
+  Student: ['Professor', 'Panel judges', 'Classmates']
+};
+
+var TOPICS = {
+  Founder: [
+    'Series A pitch deck for our fintech startup targeting $5M raise',
+    'Seed round presentation for a healthtech company disrupting remote diagnostics',
+    'Product demo for an enterprise AI tool — showing to 3 potential clients this week',
+    'Investor update deck for Q1 with ARR growth, churn metrics, and runway',
+    'Pitch deck for a climate tech startup applying to Y Combinator',
+    'Board meeting presentation covering fundraise strategy and hiring plan',
+  ],
+  Sales: [
+    'Enterprise SaaS proposal for a Fortune 500 manufacturing company',
+    'Partnership pitch to a national retail chain — 200+ store rollout',
+    'ROI case study for the CFO showing 3-year cost savings from our platform',
+    'Competitive analysis deck for the VP of Engineering comparing us vs Salesforce',
+    'Customer success story presentation for the annual sales kickoff',
+    'Pricing and packaging proposal for a mid-market deal worth $120K ARR',
+  ],
+  Corporate: [
+    'Q1 business review for the leadership team with KPIs and revenue breakdown',
+    'Product roadmap for H2 presenting 4 major feature launches to stakeholders',
+    'Team restructuring proposal to move from 3 squads to 5 pods',
+    'OKR planning deck for the entire engineering org — 85 people',
+    'Annual strategy presentation for the board covering market expansion to APAC',
+    'Post-mortem presentation on the recent site outage with root cause analysis',
+    'Budget allocation presentation for FY27 across 4 departments',
+  ],
+  Creative: [
+    'Senior design portfolio showcasing 5 years of product design work',
+    'Agency credentials deck for a pitch to a luxury fashion brand',
+    'Brand identity presentation for a new D2C skincare line launching next quarter',
+    'Campaign results deck showing social media performance across 3 channels',
+    'Creative brief presentation for a video production project with $50K budget',
+    'UX research findings presentation from a 3-week usability study with 20 participants',
+  ],
+  Educator: [
+    'Introduction to machine learning lecture for a graduate-level CS course',
+    'Data visualization workshop for 40 marketing professionals at a corporate training',
+    'Research methodology lecture covering qualitative vs quantitative approaches',
+    'Guest lecture on AI ethics and bias for an undergraduate philosophy class',
+    'Workshop on academic writing for international PhD students',
+    'Conference presentation on new findings in cognitive behavioral therapy',
+  ],
+  Student: [
+    'Final thesis defense on the impact of social media on political polarization',
+    'Startup pitch for entrepreneurship class — a peer-to-peer tutoring marketplace',
+    'Capstone project presentation on building a recommendation engine for Spotify data',
+    'Group project presentation on renewable energy adoption in Southeast Asia',
+    'Research paper presentation on CRISPR gene editing applications in agriculture',
+    'Case competition deck analyzing Nike vs Adidas market strategy for a panel of judges',
+  ],
+};
+
+var COMPANY_DOMAINS = {
+  Founder: ['@startup.io', '@startup.io', '@gmail.com'],
+  Sales: ['@salesforce.com', '@hubspot.com', '@company.com', '@gmail.com'],
+  Corporate: ['@deloitte.com', '@jpmorgan.com', '@company.com', '@gmail.com'],
+  Creative: ['@agency.co', '@studio.design', '@gmail.com', '@gmail.com'],
+  Educator: ['@stanford.edu', '@university.edu', '@gmail.com'],
+  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com']
+};
+
+var TIER_1 = ['US', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Sweden', 'Switzerland', 'Japan', 'Singapore'];
+var TIER_2 = ['India', 'Brazil', 'Indonesia', 'Philippines', 'Mexico', 'Nigeria', 'Vietnam', 'Colombia', 'Egypt', 'Bangladesh', 'Pakistan', 'Kenya'];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 6. State
+// ══════════════════════════════════════════════════════════════════════════════
+
+var state = {
+  user: {},
+  activeSignals: new Set(),
+  activeActions: new Set(),
+  actionCounts: {},
+  signalCounts: {},
+  featureScores: {},
+  relevantFeatures: new Set(),
+  relevanceScores: {},
+  featuresShownThisSession: new Set(),
+  milestonesThisSession: 0,
+  lastMilestoneTime: 0,
+  isUserActive: false
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 7. Core functions
+// ══════════════════════════════════════════════════════════════════════════════
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function generateUser() {
+  var role = pick(ROLES);
+  var arch = role.archetype;
+  var credits = pick([100, 85, 72, 55, 42, 30, 18, 8, 0]);
+  var sessionNum = pick([1, 1, 1, 2, 2, 3]);
+  var boughtExport = pick([false, false, false, false, true]);
+  var dismissals = pick([0, 0, 0, 1, 2]);
+
+  var DECK_HISTORY = {
+    1: { completed: pick([1, 1, 1, 2]), shared: pick([0, 0, 0, 1]), published: pick([0, 0, 0]) },
+    2: { completed: pick([2, 3, 4, 5]), shared: pick([0, 1, 1, 2]), published: pick([0, 0, 1]) },
+    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) }
+  };
+  var deckHistory = DECK_HISTORY[Math.min(sessionNum, 3)];
+
+  var email = pick(COMPANY_DOMAINS[arch] || COMPANY_DOMAINS['Corporate']);
+  var isCompanyDomain = !/@gmail\.com|@outlook\.com|@yahoo\.com|@hotmail\.com/.test(email);
+
+  var allCountries = [].concat(TIER_1, TIER_2, TIER_2);
+  var country = pick(allCountries);
+  var countryTier = TIER_1.indexOf(country) !== -1 ? 1 : 2;
+
+  var acqChannel = pick(['organic', 'organic', 'organic', 'organic', 'organic',
+                         'paid', 'paid', 'paid',
+                         'referral', 'referral']);
+
+  state.user = {
+    name: pick(['Raj', 'Maria', 'Alex', 'Priya', 'James', 'Sofia', 'Chen', 'Fatima', 'David', 'Anya']),
+    role: role.label,
+    archetype: arch,
+    audience: pick(AUDIENCES[arch] || AUDIENCES['Corporate']),
+    topic: pick(TOPICS[arch] || TOPICS['Corporate']),
+    email: email,
+    isCompanyDomain: isCompanyDomain,
+    country: country,
+    countryTier: countryTier,
+    credits: credits,
+    sessionNum: sessionNum,
+    boughtExport: boughtExport,
+    dismissals: dismissals,
+    decksCompleted: deckHistory.completed,
+    decksShared: deckHistory.shared,
+    decksPublished: deckHistory.published,
+    acqChannel: acqChannel
+  };
+
+  state.activeSignals = new Set();
+  profileUser();
+  addStateSignals();
+  computeRelevantFeatures();
+  return state.user;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 8. Context profiling
+// ══════════════════════════════════════════════════════════════════════════════
+
+function profileUser() {
+  var u = state.user;
+
+  var audienceStakes = getAudienceStakes(u.audience);
+  var mindsetKey = u.role + '|' + audienceStakes;
+  var mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+  u.mindsetVector = mindsetVector;
+  u.audienceStakes = audienceStakes;
+
+  DIRECT_MAP['mindset-vector'] = mindsetVector;
+  state.activeSignals.add('mindset-vector');
+
+  var HIGH_STAKES = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers'];
+  var LOW_STAKES = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors'];
+  if (HIGH_STAKES.indexOf(u.audience) !== -1) state.activeSignals.add('stakes-high-external');
+  else if (LOW_STAKES.indexOf(u.audience) !== -1) state.activeSignals.add('stakes-low-external');
+  else state.activeSignals.add('stakes-internal');
+
+  var synthesis = PROMPT_SYNTHESIS[u.topic];
+  if (!synthesis) {
+    synthesis = synthesizeFromKeywords(u.topic);
+  }
+  u.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+}
+
+function synthesizeFromKeywords(prompt) {
+  var p = (prompt || '').toLowerCase()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([a-z])(\d)/g, '$1 $2')
+    .replace(/(\d)([a-z])/g, '$1 $2')
+    .replace(/[_\-]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+
+  var scores = {};
+  FEATURES.forEach(function(f) { scores[f.id] = 0; });
+
+  var keywords = {
+    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional', 'good', 'premium'],
+    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system', 'corporate', 'theme'],
+    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template', 'pitch', 'proposal', 'formal'],
+    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
+    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
+    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
+    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a']
+  };
+
+  var urgencyPatterns = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush',
+    'needed by', 'end of day', 'eod', 'within', 'days', 'hours', 'hours left', 'by friday',
+    'by monday', 'by tuesday', 'by wednesday', 'by thursday', 'this week', 'right now', 'immediately'];
+  var hasUrgency = urgencyPatterns.some(function(w) { return p.indexOf(w) !== -1; });
+
+  var isPitch = ['pitch', 'pitch deck', 'pitchdeck', 'deck', 'presentation', 'ppt', 'slides'].some(function(w) { return p.indexOf(w) !== -1; });
+
+  Object.keys(keywords).forEach(function(featureId) {
+    var matches = 0;
+    keywords[featureId].forEach(function(kw) {
+      if (p.indexOf(kw) !== -1) matches++;
+    });
+    scores[featureId] = Math.min(matches * 2, 5);
+  });
+
+  if (isPitch) {
+    scores['unbranded'] = Math.max(scores['unbranded'], 2);
+    scores['export'] = Math.max(scores['export'], 2);
+    scores['ai-models'] = Math.max(scores['ai-models'], 2);
+  }
+
+  if (hasUrgency) {
+    scores['export'] = Math.min(scores['export'] + 3, 5);
+    scores['hire-team'] = Math.min(scores['hire-team'] + 3, 5);
+    scores['ai-models'] = Math.min(scores['ai-models'] + 2, 5);
+  }
+
+  return scores;
+}
+
+function getAudienceStakes(audience) {
+  var HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers', 'Panel judges', 'Professor', 'Executives'];
+  var LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors', 'Workshop attendees', 'Corporate trainees'];
+  if (HIGH.indexOf(audience) !== -1) return 'high-external';
+  if (LOW.indexOf(audience) !== -1) return 'low-external';
+  return 'internal';
+}
+
+function addStateSignals() {
+  var u = state.user;
+
+  if (u.credits < 30) state.activeSignals.add('credits-low');
+  if (u.credits === 0) state.activeSignals.add('credits-zero');
+  if (u.sessionNum > 1) state.activeSignals.add('returning-user');
+  if (u.boughtExport) state.activeSignals.add('bought-export');
+  if (u.dismissals === 0) state.activeSignals.add('zero-dismissals');
+  if (u.isCompanyDomain) state.activeSignals.add('company-domain');
+  if (u.countryTier === 1) state.activeSignals.add('tier-1-country');
+
+  if (u.decksCompleted >= 5) state.activeSignals.add('deck-veteran');
+  if (u.decksShared >= 2) state.activeSignals.add('deck-sharer');
+  if (u.decksPublished >= 1) state.activeSignals.add('deck-publisher');
+
+  if (u.acqChannel === 'organic') state.activeSignals.add('acq-organic');
+  if (u.acqChannel === 'paid') state.activeSignals.add('acq-paid');
+  if (u.acqChannel === 'referral') state.activeSignals.add('acq-referral');
+}
+
+var RELEVANCE_THRESHOLD = 3;
+
+function computeRelevantFeatures() {
+  var u = state.user;
+  var relevant = new Set();
+  var relevanceScores = {};
+
+  FEATURES.forEach(function(f) {
+    var mindsetScore = (u.mindsetVector || {})[f.id] || 0;
+    var promptScore = (u.promptSynthesis || {})[f.id] || 0;
+    var relevance = mindsetScore + promptScore;
+
+    relevanceScores[f.id] = relevance;
+
+    if (relevance >= RELEVANCE_THRESHOLD) {
+      relevant.add(f.id);
+    }
+  });
+
+  relevant.add('hire-team');
+
+  state.relevantFeatures = relevant;
+  state.relevanceScores = relevanceScores;
+  return relevant;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 9. Scoring
+// ══════════════════════════════════════════════════════════════════════════════
+
+function scaleByCount(signalId, baseWeight) {
+  if (!REPEATABLE_SIGNALS.has(signalId)) return baseWeight;
+  var count = state.signalCounts[signalId] || 0;
+  if (count <= 0) return 0;
+  return baseWeight * Math.log2(count + 1);
+}
+
+function calculateScores() {
+  var scores = {};
+
+  FEATURES.forEach(function(f) {
+    var direct = 0;
+    var universal = 0;
+    var directSignals = [];
+    var universalSignals = [];
+
+    state.activeSignals.forEach(function(sig) {
+      var directBase = (DIRECT_MAP[sig] && DIRECT_MAP[sig][f.id]) || 0;
+      if (directBase) {
+        var scaled = scaleByCount(sig, directBase);
+        direct += scaled;
+        directSignals.push({
+          name: sig,
+          weight: directBase,
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(scaled * 10) / 10
+        });
+      }
+      if (UNIVERSAL_MAP[sig]) {
+        var uScaled = scaleByCount(sig, UNIVERSAL_MAP[sig]);
+        universal += uScaled;
+        universalSignals.push({
+          name: sig,
+          weight: UNIVERSAL_MAP[sig],
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(uScaled * 10) / 10
+        });
+      }
+    });
+
+    var universalContrib = universal * CONFIG.UNIVERSAL_MULTIPLIER;
+    var total = Math.max(0, direct + universalContrib);
+
+    scores[f.id] = {
+      direct: Math.round(direct * 10) / 10,
+      universalRaw: Math.round(universal * 10) / 10,
+      universalContrib: Math.round(universalContrib * 10) / 10,
+      total: Math.round(total * 10) / 10,
+      directSignals: directSignals,
+      universalSignals: universalSignals
+    };
+  });
+
+  state.featureScores = scores;
+  return scores;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 10. Guardrails (simplified for randomizer)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function checkGuardrails(featureId) {
+  var reasons = [];
+  var pass = true;
+
+  // Intent floor
+  var intentFloor = 0;
+  state.activeSignals.forEach(function(sig) {
+    if (UNIVERSAL_MAP[sig]) intentFloor += UNIVERSAL_MAP[sig];
+  });
+  if (intentFloor < CONFIG.INTENT_FLOOR) {
+    reasons.push('Global intent too low (' + intentFloor + ' < ' + CONFIG.INTENT_FLOOR + ')');
+    pass = false;
+  }
+
+  return { pass: pass, reasons: reasons };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 11. Evaluate and fire
+// ══════════════════════════════════════════════════════════════════════════════
+
+function evaluateAndFire() {
+  var scores = calculateScores();
+
+  var ranked = FEATURES
+    .map(function(f) {
+      var s = scores[f.id];
+      return {
+        id: f.id, name: f.name, icon: f.icon, type: f.type, verb: f.verb, does: f.does,
+        direct: s.direct, universalRaw: s.universalRaw, universalContrib: s.universalContrib,
+        total: s.total, directSignals: s.directSignals, universalSignals: s.universalSignals
+      };
+    })
+    .filter(function(f) { return state.relevantFeatures.has(f.id); })
+    .filter(function(f) { return f.total >= CONFIG.THRESHOLD; })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  if (ranked.length === 0) return null;
+
+  var top = ranked[0];
+  var gr = checkGuardrails(top.id);
+
+  if (gr.pass) {
+    var copy = generateCopy(top);
+    return { feature: top, copy: copy };
+  }
+
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 12. Copy engine
+// ══════════════════════════════════════════════════════════════════════════════
+
+function generateCopy(feature) {
+  var u = state.user;
+  var topic = u.topic.split(' ').length > 4 ? u.topic.split(' ').slice(0, 4).join(' ') + '...' : u.topic;
+
+  var signals = state.activeSignals;
+
+  var subFeatures = {
+    'ai-models': [
+      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+        body: 'Stop editing what the AI got wrong. With Advanced Models, your slides come out sharper and more polished \u2014 less fixing, more presenting.' },
+      { id: 'ai-credits', title: 'More AI Credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
+        body: 'You\u2019re using AI to build your deck \u2014 unlock 5,000 credits so you never hit the limit mid-flow.' },
+      { id: 'project-knowledge', title: 'Project Knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
+        body: 'Teach the AI about your project. With Project Knowledge, it remembers your content and generates slides that actually match your material.' },
+    ],
+    'brand-kit': [
+      { id: 'brand-fonts', title: 'Custom Brand Fonts', signals: ['style-change'],
+        body: 'Stop adjusting fonts manually. With Custom Brand Fonts, set your typeface once and every slide matches automatically.' },
+      { id: 'brand-colors', title: 'Custom Brand Colors', signals: ['theme-global', 'layout-slide'],
+        body: 'Your brand has specific colors. Set them once in your Brand Kit and every new slide uses them by default.' },
+      { id: 'brand-assets', title: 'Custom Brand Assets', signals: ['insert-media', 'prompt-brand'],
+        body: 'Upload your logo, icons, and images to your Brand Kit. They\u2019re always available, ready to drop into any slide.' },
+      { id: 'brand-voice', title: 'Custom Brand Voice', signals: ['text-edit', 'insert-title', 'insert-list'],
+        body: 'The AI writes in your brand\u2019s tone. Set your voice once and every generated slide sounds like you.' },
+    ],
+    'unbranded': [
+      { id: 'unbranded-links', title: 'Unbranded Public Links', signals: ['share-link-copy', 'play-preview'],
+        body: 'When you share this deck, your audience sees your content \u2014 not our watermark. Clean, professional links that look like yours.' },
+      { id: 'unbranded-export', title: 'Clean Exports', signals: ['export-click', 'export-download'],
+        body: 'Export a polished deck without the Presentations.AI watermark. Ready to email, print, or present offline.' },
+    ],
+    'export': [
+      { id: 'ppt-export', title: 'PowerPoint Export', signals: ['export-click', 'export-download'],
+        body: 'Download your deck as a .pptx file. Edit it in PowerPoint, share it over email, present it anywhere \u2014 no internet needed.' },
+      { id: 'pdf-export', title: 'PDF Export', signals: ['play-preview', 'share-link-copy'],
+        body: 'Export a presentation-ready PDF. Perfect for emailing to ' + u.audience + ' or printing for an in-person meeting.' },
+      { id: 'embed', title: 'Presentation Embeds', signals: ['share-link-copy'],
+        body: 'Embed your deck directly on a website or landing page. Your ' + topic + ' presentation, live and interactive, wherever you need it.' },
+    ],
+    'invite-collab': [
+      { id: 'guests', title: 'Invite Guests', signals: ['share-link-copy', 'prompt-team'],
+        body: 'Invite up to 10 guests to view and comment on your deck. Get feedback before it goes to ' + u.audience + '.' },
+      { id: 'workspace', title: 'Workspace Members', signals: ['prompt-team', 'invite-attempt'],
+        body: 'Add your team to a shared workspace. Everyone can edit, comment, and build decks together \u2014 no more emailing files back and forth.' },
+      { id: 'present-remotely', title: 'Present Remotely', signals: ['play-preview'],
+        body: 'Present your deck live to anyone, anywhere. Share a link and your audience follows along in real time as you present.' },
+      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+        body: 'Made changes you regret? Version History lets you go back to any previous state. 30 days of history, every edit tracked.' },
+    ],
+    'analytics': [
+      { id: 'page-views', title: 'Page Views', signals: ['share-link-copy', 'play-preview'],
+        body: 'See exactly how many people opened your ' + topic + ' deck. Know if your audience is actually viewing it.' },
+      { id: 'slide-engagement', title: 'Slide Engagement', signals: ['share-link-copy'],
+        body: 'See which slides ' + u.audience + ' spent the most time on. Know what\u2019s landing and what they\u2019re skipping.' },
+      { id: 'demographics', title: 'Viewer Demographics', signals: ['export-click', 'export-download'],
+        body: 'See where your viewers are and what devices they\u2019re using. Useful context for follow-up conversations with ' + u.audience + '.' },
+    ],
+    'hire-team': [
+      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+        body: 'Spending too long on this? Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' },
+    ],
+  };
+
+  var candidates = subFeatures[feature.id] || [];
+  var best = null;
+  var bestScore = -1;
+
+  candidates.forEach(function(sub) {
+    var matchCount = 0;
+    sub.signals.forEach(function(sig) { if (signals.has(sig)) matchCount++; });
+    if (matchCount > bestScore) { bestScore = matchCount; best = sub; }
+  });
+
+  if (!best && candidates.length > 0) best = candidates[0];
+
+  var base = best
+    ? { title: best.title, body: best.body, subFeatureId: best.id }
+    : { title: feature.verb, body: feature.does + '.', subFeatureId: null };
+
+  if (u.countryTier === 2) {
+    var valueAppend = {
+      'ai-models': ' Save hours of manual editing.',
+      'brand-kit': ' Set it once, reuse across every deck.',
+      'unbranded': ' Look established without hiring a designer.',
+      'export': ' Send it anywhere \u2014 no workarounds.',
+      'invite-collab': ' Get feedback in one place.',
+      'analytics': ' Know exactly who engaged.',
+      'hire-team': ' Save days of work for less than you think.',
+    };
+    if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
+  }
+
+  return base;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 13. Random action selection
+// ══════════════════════════════════════════════════════════════════════════════
+
+function pickRandomActions() {
+  var count = 5 + Math.floor(Math.random() * 6);
+  var shuffled = ACTIONS.slice().sort(function() { return Math.random() - 0.5; });
+  var picked = shuffled.slice(0, count);
+  picked.forEach(function(a) {
+    // Repeatable actions get a random 1-5 count. Booleans get 1.
+    var isRepeatable = a.signals.some(function(s) { return REPEATABLE_SIGNALS.has(s); });
+    var actionCount = isRepeatable ? (1 + Math.floor(Math.random() * 5)) : 1;
+    state.actionCounts[a.id] = actionCount;
+    state.activeActions.add(a.id);
+    a.signals.forEach(function(s) {
+      state.activeSignals.add(s);
+      state.signalCounts[s] = (state.signalCounts[s] || 0) + actionCount;
+    });
+    a._simCount = actionCount;
+  });
+  // Context signals (added by profileUser / addStateSignals) are boolean — count 1.
+  state.activeSignals.forEach(function(s) {
+    if (state.signalCounts[s] == null) state.signalCounts[s] = 1;
+  });
+  return picked;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 14. Randomize and render
+// ══════════════════════════════════════════════════════════════════════════════
+
+function randomizeAll() {
+  // Reset state
+  state = {
+    user: {},
+    activeSignals: new Set(),
+    activeActions: new Set(),
+    actionCounts: {},
+    signalCounts: {},
+    featureScores: {},
+    relevantFeatures: new Set(),
+    relevanceScores: {},
+    featuresShownThisSession: new Set(),
+    milestonesThisSession: 0,
+    lastMilestoneTime: 0,
+    isUserActive: false
+  };
+
+  generateUser();
+  var pickedActions = pickRandomActions();
+  calculateScores();
+  computeRelevantFeatures();
+  var milestone = evaluateAndFire();
+  renderResults(pickedActions, milestone);
+}
+
+function renderResults(pickedActions, milestone) {
+  var u = state.user;
+  var scores = state.featureScores;
+  var html = '';
+
+  // ── USER PROFILE ──
+  var tierLabel = u.countryTier === 1 ? 'Tier 1' : 'Tier 2';
+  var acqLabel = u.acqChannel === 'paid' ? 'Paid' : u.acqChannel === 'referral' ? 'Referral' : 'Organic';
+  html += '<div class="card">';
+  html += '<div class="card-title">User Profile</div>';
+  html += '<div class="profile-grid">';
+  html += '<div class="profile-item"><span class="profile-label">Name</span><span class="profile-value">' + u.name + '</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Role</span><span class="profile-value">' + u.role + '</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Country</span><span class="profile-value">' + u.country + ' (' + tierLabel + ')</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Credits</span><span class="profile-value">' + u.credits + '/100</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Session</span><span class="profile-value">' + u.sessionNum + '</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Acquisition</span><span class="profile-value">' + acqLabel + '</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Email</span><span class="profile-value' + (u.isCompanyDomain ? ' highlight' : '') + '">' + u.name.toLowerCase() + u.email + '</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Deck History</span><span class="profile-value">' + u.decksCompleted + ' made, ' + u.decksShared + ' shared</span></div>';
+  html += '<div class="profile-item"><span class="profile-label">Dismissals</span><span class="profile-value">' + u.dismissals + '</span></div>';
+  html += '</div></div>';
+
+  // ── PROMPT ──
+  var stakesLabel = u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : 'unknown';
+  html += '<div class="card">';
+  html += '<div class="card-title">Prompt</div>';
+  html += '<div class="prompt-text">"' + u.topic + '"</div>';
+  html += '<div class="prompt-meta">';
+  html += '<span>Audience: <strong>' + u.audience + '</strong></span>';
+  html += '<span>Stakes: <strong>' + stakesLabel + '</strong></span>';
+  html += '</div></div>';
+
+  // ── ACTIONS TAKEN ──
+  html += '<div class="card">';
+  html += '<div class="card-title">Actions Taken (' + pickedActions.length + ' randomly selected)</div>';
+  html += '<div class="actions-list">';
+  pickedActions.forEach(function(a) {
+    html += '<div class="action-item"><span class="action-check">\u2713</span>' + a.label + '</div>';
+  });
+  html += '</div></div>';
+
+  // ── FEATURE SCORES ──
+  var ranked = FEATURES
+    .map(function(f) {
+      var s = scores[f.id];
+      return {
+        id: f.id, name: f.name, icon: f.icon, type: f.type,
+        direct: s.direct,
+        universalContrib: s.universalContrib,
+        total: s.total,
+        relevance: (state.relevanceScores || {})[f.id] || 0,
+        isRelevant: state.relevantFeatures.has(f.id)
+      };
+    })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  // Find top relevant feature above threshold
+  var topRelevantId = null;
+  for (var i = 0; i < ranked.length; i++) {
+    if (ranked[i].isRelevant && ranked[i].total >= CONFIG.THRESHOLD) {
+      topRelevantId = ranked[i].id;
+      break;
+    }
+  }
+
+  html += '<div class="card">';
+  html += '<div class="card-title">Feature Scores</div>';
+  html += '<table class="score-table">';
+  html += '<thead><tr><th>Feature</th><th>Fit</th><th>Action</th><th>Context</th><th>Total</th><th></th></tr></thead>';
+  html += '<tbody>';
+  ranked.forEach(function(f) {
+    var totalClass = 'below';
+    if (f.id === topRelevantId) totalClass = 'top';
+    else if (f.total >= CONFIG.THRESHOLD) totalClass = 'above';
+
+    var badgeHTML = '';
+    if (!f.isRelevant) {
+      badgeHTML = '<span class="badge filtered">FILTERED</span>';
+    } else if (f.id === topRelevantId) {
+      badgeHTML = '<span class="badge next">NEXT</span>';
+    } else if (f.total >= CONFIG.THRESHOLD) {
+      badgeHTML = '<span class="badge queued">QUEUED</span>';
+    }
+
+    var rowClass = !f.isRelevant ? 'filtered-row' : '';
+
+    html += '<tr class="' + rowClass + '">';
+    html += '<td class="fname">' + f.icon + ' ' + f.name + '</td>';
+    html += '<td class="num">' + f.relevance + '</td>';
+    html += '<td class="num">' + f.direct + '</td>';
+    html += '<td class="num">' + f.universalContrib + '</td>';
+    html += '<td class="total ' + totalClass + '">' + f.total + '</td>';
+    html += '<td class="badge-cell">' + badgeHTML + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // ── NUDGE FIRED ──
+  html += '<div class="card">';
+  html += '<div class="card-title">Nudge Fired</div>';
+
+  if (milestone) {
+    var f = milestone.feature;
+    var copy = milestone.copy;
+    var isService = f.type === 'service';
+
+    html += '<div class="nudge-card-wrap' + (isService ? ' service' : '') + '">';
+    html += '<div class="nudge-header">';
+    html += '<div class="nudge-icon">' + f.icon + '</div>';
+    html += '<div class="nudge-tag">' + (isService ? 'Service' : 'Milestone') + '</div>';
+    html += '</div>';
+    html += '<div class="nudge-body">';
+    html += '<div class="nudge-title">' + copy.title + '</div>';
+    html += '<div class="nudge-desc">' + copy.body + '</div>';
+    html += '<div class="nudge-actions">';
+    html += '<button class="nudge-cta' + (isService ? ' service' : '') + '">' + (isService ? 'Talk to our team' : 'See Pro Plans') + '</button>';
+    html += '<button class="nudge-dismiss">Not now</button>';
+    html += '</div></div>';
+    html += '<div class="nudge-footer">';
+    html += '<span class="nudge-pro-badge' + (isService ? ' service' : '') + '">' + (isService ? 'SERVICE' : 'PRO') + '</span>';
+    html += '<span class="nudge-feature-label">' + f.name + '</span>';
+    html += '</div></div>';
+
+    // Explanation meta
+    // Find which active signal best triggered this sub-feature
+    var triggerSignal = 'context signals';
+    if (f.directSignals && f.directSignals.length > 0) {
+      // Find signals that are from actions (not context layers)
+      var actionSignalNames = [];
+      pickedActions.forEach(function(a) {
+        a.signals.forEach(function(s) { actionSignalNames.push(s); });
+      });
+      var matchedTrigger = f.directSignals.filter(function(ds) {
+        return actionSignalNames.indexOf(ds.name) !== -1;
+      }).sort(function(a, b) { return b.weight - a.weight; });
+      if (matchedTrigger.length > 0) {
+        triggerSignal = matchedTrigger[0].name + ' (active)';
+      }
+    }
+
+    html += '<div class="nudge-meta">';
+    html += '<strong>Sub-feature:</strong> ' + copy.title + '<br>';
+    html += '<strong>Why:</strong> ' + triggerSignal + ' matched this sub-feature\'s trigger signals<br>';
+    html += '<strong>Score:</strong> ' + f.total + ' (Direct: ' + f.direct + ' + Context: ' + f.universalContrib + ')';
+    html += '</div>';
+
+  } else {
+    html += '<div class="no-nudge">';
+    html += '<div class="no-nudge-icon">&#x1F6AB;</div>';
+    html += 'No nudge fired \u2014 scores below threshold (' + CONFIG.THRESHOLD + ')';
+    html += '</div>';
+  }
+
+  html += '</div>';
+
+  document.getElementById('results').innerHTML = html;
+}
+</script>
+</body>
+</html>

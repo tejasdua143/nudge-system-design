@@ -1,0 +1,52 @@
+{
+  "_doc": "Direct signal → feature weight mappings. Each signal key maps to an object of featureId → integer weight. Signals not listed for a feature have weight 0. Signal names match simulator (canonical). For repeatable signals, final score = base × log₂(count + 1). For boolean signals, final score = base. See signal-types.json.",
+
+  "text-edit":              { "ai-models": 1 },
+  "style-change":           { "brand-kit": 3 },
+  "element-move":           { "brand-kit": 2 },
+  "undo-redo":              { "ai-models": 3, "hire-team": 3 },
+  "slide-delete":           { "ai-models": 1 },
+
+  "insert-title":           { "ai-models": 1 },
+  "insert-list":            { "ai-models": 1 },
+  "insert-media":           { "brand-kit": 2 },
+  "insert-slide-prompt":    { "ai-models": 3 },
+  "insert-slide-template":  { "unbranded": 2, "brand-kit": 2 },
+  "slide-reorder":          { "ai-models": 1 },
+
+  "play-preview":           { "unbranded": 3, "export": 3 },
+  "edit-after-preview":     { "ai-models": 2, "hire-team": 1 },
+  "theme-global":           { "brand-kit": 4, "unbranded": 2 },
+  "layout-slide":           { "brand-kit": 2, "hire-team": 1 },
+  "deck-regenerate":        { "ai-models": 5, "hire-team": 5 },
+
+  "share-link-copy":        { "unbranded": 3, "analytics": 3, "invite-collab": 2 },
+  "invite-attempt":         { "invite-collab": 5 },
+  "export-click":           { "export": 3 },
+  "export-download":        { "export": 5, "unbranded": 2 },
+
+  "prompt-brand":           { "brand-kit": 5 },
+  "prompt-team":            { "invite-collab": 5 },
+  "doc-upload":             { "export": 4, "brand-kit": 3, "unbranded": 2, "hire-team": 2, "analytics": 2 },
+  "doc-upload-long":        { "hire-team": 4, "export": 2 },
+
+  "second-deck":            { "brand-kit": 3, "unbranded": 2 },
+  "deck-switch":            { "brand-kit": 3 },
+  "gate-hit":               {},
+  "pricing-visit":          {},
+
+  "stakes-high-external":   { "unbranded": 3, "analytics": 2, "brand-kit": 2, "hire-team": 2 },
+  "stakes-low-external":    { "unbranded": 2, "brand-kit": 1 },
+  "stakes-internal":        { "invite-collab": 2 },
+
+  "bought-export":          { "export": 4 },
+  "deck-veteran":           { "brand-kit": 3 },
+  "deck-sharer":            { "analytics": 3, "unbranded": 2, "invite-collab": 2 },
+  "deck-publisher":         { "analytics": 2, "unbranded": 3 },
+
+  "acq-paid":               {},
+  "acq-referral":           { "invite-collab": 3 },
+
+  "prompt-synthesis":       {},
+  "mindset-vector":         {}
+}

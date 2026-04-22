@@ -1,0 +1,3539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge Simulator v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@300;400;500;600;700&family=PT+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #F5F0EB;
+    --surface: #FFFFFF;
+    --surface-2: #FAF8F5;
+    --border: #E5DDD4;
+    --border-light: #EDE8E2;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --primary: #111111;
+    --accent: #8B5CF6;
+    --accent-service: #EA580C;
+    --green: #16A34A;
+    --yellow: #D97706;
+    --red: #DC2626;
+    --blue: #2563EB;
+    --cyan: #0891B2;
+    --paper-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --paper-shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  /* Header */
+  .header { max-width: 1600px; margin: 0 auto 24px; }
+  .header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 800px;
+    font-weight: 400;
+  }
+
+  /* Layout */
+  .layout {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 24px;
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--paper-shadow);
+  }
+  .panel-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* Left column */
+  .left-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* User context */
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    cursor: default;
+  }
+  .user-row.has-impact { cursor: help; }
+  .user-row.has-impact:hover { background: var(--surface-2); margin: 0 -8px; padding: 7px 8px; border-radius: 6px; }
+  .user-row:last-child { border-bottom: none; }
+  .user-label { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+  .user-value { font-size: 12px; font-weight: 600; color: var(--text); }
+  .user-value.highlight { color: var(--accent); }
+
+  /* User context tooltips */
+  .user-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 240px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .user-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 24px;
+    border: 6px solid transparent;
+    border-top-color: var(--border);
+  }
+  .user-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 25px;
+    border: 5px solid transparent;
+    border-top-color: var(--surface);
+    z-index: 1;
+  }
+  .user-row.has-impact:hover .user-tooltip {
+    display: block;
+  }
+  .user-tooltip .tooltip-signal-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .reshuffle-btn {
+    padding: 8px 16px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    width: 100%;
+    transition: opacity 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .reshuffle-btn:hover { opacity: 0.85; }
+  .randomise-all-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.4px;
+  }
+  .randomise-all-btn:hover { opacity: 0.88; transform: scale(1.02); }
+
+  /* Randomise Everything Overlay */
+  .rand-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    animation: overlayIn 0.25s ease;
+    backdrop-filter: blur(6px);
+    padding: 24px;
+  }
+  .rand-overlay.active { display: flex; }
+  .rand-card {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+    max-width: 960px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rand-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    z-index: 1;
+  }
+  .rand-header h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--primary);
+  }
+  .rand-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .rand-close:hover { background: var(--border-light); color: var(--text); }
+  .rand-body {
+    padding: 24px 32px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .rand-section {
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .rand-section.full-width {
+    grid-column: 1 / -1;
+  }
+  .rand-section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .rand-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .rand-row:last-child { border-bottom: none; }
+  .rand-row-label { color: var(--text-dim); font-size: 11px; font-weight: 500; }
+  .rand-row-value { font-weight: 600; color: var(--text); }
+  .rand-row-value.highlight { color: var(--accent); }
+  .rand-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .rand-action-chip {
+    padding: 5px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .rand-prompt-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .rand-prompt-icon {
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .rand-prompt-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    font-style: italic;
+  }
+  .rand-feature-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  .rand-feature-name {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 130px;
+  }
+  .rand-feature-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .rand-feature-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .rand-feature-score {
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: right;
+    color: var(--text);
+  }
+  .rand-feature-score.dim { color: var(--text-dim); }
+  .rand-nudge-result {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .rand-nudge-result .nudge-ui {
+    flex: 0 0 340px;
+    max-width: 340px;
+    font-size: 13px;
+  }
+  .rand-nudge-reason {
+    flex: 1;
+    min-width: 0;
+  }
+  .rand-nudge-empty {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .rand-reshuffle {
+    padding: 10px 28px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .rand-reshuffle:hover { opacity: 0.88; transform: scale(1.02); }
+  .rand-footer {
+    padding: 16px 32px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    border-top: 1px solid var(--border-light);
+  }
+  .rand-score-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .rand-score-badge.above { background: #DCFCE7; color: var(--green); }
+  .rand-score-badge.below { background: #FEF3C7; color: var(--yellow); }
+
+  /* Prompt Analysis */
+  .prompt-raw {
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+  .prompt-input {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .prompt-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+  .api-key-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .api-key-input {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: 'PT Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    outline: none;
+  }
+  .api-key-input:focus { border-color: var(--accent); }
+  .api-key-input::placeholder { color: var(--border); }
+  .api-status {
+    font-size: 10px; font-weight: 600; padding: 3px 8px;
+    border-radius: 4px; white-space: nowrap;
+  }
+  .api-status.connected { color: var(--green); background: #F0FDF4; }
+  .api-status.none { color: var(--text-dim); background: var(--surface-2); }
+  .api-status.loading { color: var(--yellow); background: #FFFBEB; animation: pulse-loading 1.5s ease-in-out infinite; }
+  @keyframes pulse-loading { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .llm-loader {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; margin-bottom: 12px;
+    background: linear-gradient(90deg, #FFFBEB, #FEF3C7, #FFFBEB);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+    border-radius: 8px; border: 1px solid #FDE68A;
+    font-size: 12px; font-weight: 600; color: var(--yellow);
+  }
+  .llm-loader .loader-dots { display: inline-flex; gap: 3px; }
+  .llm-loader .loader-dots span {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--yellow);
+    animation: dot-bounce 1.2s ease-in-out infinite;
+  }
+  .llm-loader .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .llm-loader .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-bounce { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .api-status.error { color: var(--red); background: #FEF2F2; }
+  .prompt-section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+  .prompt-section-label:first-child { margin-top: 0; }
+  .prompt-feature-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .prompt-feature-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .prompt-feature-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+  }
+  .prompt-feature-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prompt-feature-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.2s;
+  }
+  .prompt-feature-bar-fill.s0 { width: 0%; background: var(--border); }
+  .prompt-feature-bar-fill.s1 { width: 20%; background: var(--text-dim); }
+  .prompt-feature-bar-fill.s2 { width: 40%; background: var(--blue); }
+  .prompt-feature-bar-fill.s3 { width: 60%; background: var(--blue); }
+  .prompt-feature-bar-fill.s4 { width: 80%; background: var(--accent); }
+  .prompt-feature-bar-fill.s5 { width: 100%; background: var(--accent); }
+  .prompt-feature-score {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 16px;
+    text-align: right;
+  }
+  .prompt-feature-score.dim { color: var(--text-dim); }
+  .prompt-feature-score.active { color: var(--accent); }
+  .prompt-no-signal {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 8px 0;
+  }
+  .prompt-shuffle-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .prompt-shuffle-btn:hover { background: var(--border-light); color: var(--text); border-color: var(--border); }
+
+  /* Actions */
+  .action-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .action-cat-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: -4px;
+  }
+  .action-cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .action-btn {
+    position: relative;
+    padding: 7px 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    line-height: 1.3;
+  }
+  .action-btn:hover { background: #F0ECE6; color: var(--text); border-color: var(--border); }
+  .action-btn.done {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .action-count {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    background: var(--green);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'PT Mono', monospace;
+    vertical-align: baseline;
+  }
+
+  /* Action tooltips */
+  .action-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 220px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .action-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border);
+  }
+  .action-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--surface);
+    z-index: 1;
+  }
+  .action-btn:hover .action-tooltip {
+    display: block;
+  }
+  .tooltip-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 11px;
+  }
+  .tooltip-feature {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .tooltip-weight {
+    font-family: 'PT Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .tooltip-weight.high { color: var(--accent); }
+  .tooltip-weight.med { color: var(--blue); }
+  .tooltip-weight.low { color: var(--text-dim); }
+  .tooltip-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 6px 0;
+  }
+  .tooltip-uni-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .tooltip-empty {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* Active signals */
+  .signal-list { display: flex; flex-direction: column; gap: 4px; }
+  .signal-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .signal-row.active {
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+  }
+  .signal-row.inactive {
+    opacity: 0.3;
+  }
+  .signal-name { color: var(--text-muted); font-weight: 500; }
+  .signal-weight { font-weight: 700; color: var(--accent); font-size: 10px; }
+
+  /* Signal type badges (DIR / UNI / D+U) */
+  .signal-type-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+  .signal-type-badge.dir {
+    background: #EFF6FF;
+    color: var(--blue);
+    border: 1px solid #BFDBFE;
+  }
+  .signal-type-badge.uni {
+    background: #FFFBEB;
+    color: var(--yellow);
+    border: 1px solid #FDE68A;
+  }
+  .signal-type-badge.both {
+    background: #F5F3FF;
+    color: var(--accent);
+    border: 1px solid #DDD6FE;
+  }
+
+  /* Center column */
+  .center-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Guardrail bar */
+  .guardrail-bar {
+    display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+  }
+  .gr-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+  }
+  .gr-value {
+    font-family: 'PT Mono', monospace;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .gr-value.ok { color: var(--green); background: #F0FDF4; }
+  .gr-value.warn { color: var(--yellow); background: #FFFBEB; }
+  .gr-value.blocked { color: var(--red); background: #FEF2F2; }
+  .gr-toggle { cursor: pointer; border-radius: 6px; padding: 4px 8px; margin: -4px -8px; }
+  .gr-toggle:hover { background: var(--surface-2); }
+
+  /* Score matrix */
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .matrix-table th {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .matrix-table td {
+    padding: 12px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s;
+  }
+  .matrix-table tr.qualified {
+    background: #F0FDF4;
+  }
+  .matrix-table tr.top-pick {
+    background: #F5F3FF;
+  }
+  .feature-name { font-weight: 600; }
+  .score-bar-cell { width: 200px; }
+  .score-bar-wrap {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .score-bar-bg {
+    flex: 1; height: 6px; background: #EDE8E2; border-radius: 3px; overflow: hidden; position: relative;
+  }
+  .score-bar-fill {
+    height: 100%; border-radius: 3px; transition: width 0.4s ease, background 0.3s;
+    background: var(--text-dim);
+  }
+  .score-bar-fill.low { background: #D1D5DB; }
+  .score-bar-fill.mid { background: var(--yellow); }
+  .score-bar-fill.high { background: var(--green); }
+  .score-bar-fill.top { background: var(--accent); }
+  .score-num {
+    font-family: 'PT Mono', monospace;
+    font-size: 13px; font-weight: 700; min-width: 32px; text-align: right;
+  }
+  .score-num.below { color: var(--text-dim); }
+  .score-num.near { color: var(--yellow); }
+  .score-num.above { color: var(--green); }
+  .score-num.top { color: var(--accent); }
+  .threshold-line {
+    position: absolute;
+    left: 46.7%;
+    top: -2px; bottom: -2px;
+    width: 2px;
+    background: var(--red);
+    opacity: 0.5;
+  }
+  .direct-val, .universal-val {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: center;
+  }
+  .rel-val {
+    font-family: 'PT Mono', monospace;
+    font-size: 11px; min-width: 24px; text-align: center; font-weight: 700;
+  }
+  .rel-pass { color: var(--green); }
+  .rel-fail { color: var(--red); }
+  .badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 4px;
+  }
+  .badge.fire { background: #F5F3FF; color: var(--accent); border: 1px solid #DDD6FE; }
+  .badge.queued { background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A; }
+  .badge.shown { background: rgba(0,0,0,0.03); color: var(--text-dim); border: 1px solid var(--border-light); }
+  .badge.filtered { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; font-size: 9px; cursor: help; }
+  .filtered-row { opacity: 0.35; position: relative; }
+  .filtered-row:hover { opacity: 1; }
+  .filtered-row td { color: var(--text-dim) !important; }
+  .filtered-row:hover td { color: var(--text-muted) !important; }
+  .filter-tooltip-wrap { position: relative; display: inline-block; }
+  .filter-tooltip {
+    display: none;
+    position: fixed;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 200;
+    text-align: left;
+    line-height: 1.6;
+  }
+  .badge.filtered:hover .filter-tooltip { display: block; }
+  .filter-tooltip .ft-title { font-size: 13px; font-weight: 700; color: #FF6B6B; margin-bottom: 12px; }
+  .filter-tooltip .ft-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+  .filter-tooltip .ft-label { color: rgba(255,255,255,0.7); font-size: 12px; max-width: 200px; }
+  .filter-tooltip .ft-val { font-family: 'PT Mono', monospace; font-weight: 700; font-size: 13px; }
+  .filter-tooltip .ft-val.zero { color: #FF6B6B; }
+  .filter-tooltip .ft-val.pos { color: #6BFF8D; }
+  .filter-tooltip .ft-divider { border-top: 1px solid rgba(255,255,255,0.15); margin: 8px 0; }
+  .filter-tooltip .ft-total { font-weight: 700; color: #fff; }
+  .filter-tooltip .ft-reason { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; line-height: 1.6; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+  /* ── Nudge Preview ── */
+  .nudge-preview-empty {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-dim);
+    font-size: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    background: var(--surface-2);
+  }
+  .nudge-preview-container {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  /* The actual nudge card (what the user sees) */
+  .nudge-ui {
+    flex: 1;
+    max-width: 420px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--paper-shadow-lg);
+    animation: nudgeIn 0.4s ease;
+  }
+  @keyframes nudgeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nudge-ui-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge-ui-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .nudge-ui-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+  .nudge-ui-body {
+    padding: 16px 24px 24px;
+  }
+  .nudge-ui-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .nudge-ui-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+  .nudge-ui-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .nudge-ui-cta {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .nudge-ui-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* Service variant CTA — orange */
+  .nudge-ui-cta.service {
+    background: var(--accent-service);
+  }
+
+  .nudge-ui-dismiss {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nudge-ui-dismiss:hover { color: var(--text-muted); border-color: var(--text-dim); }
+  .nudge-ui-footer {
+    padding: 0 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nudge-ui-pro-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: var(--accent);
+  }
+
+  /* Service variant PRO badge — orange, reads "SERVICE" */
+  .nudge-ui-pro-badge.service {
+    background: #FFF7ED;
+    border: 1px solid #FDBA74;
+    color: var(--accent-service);
+  }
+
+  /* Service variant nudge card — orange accent border */
+  .nudge-ui.service {
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .nudge-ui.service .nudge-ui-tag {
+    color: var(--accent-service);
+  }
+
+  .nudge-ui-feature-label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Score breakdown next to nudge */
+  .nudge-breakdown {
+    flex: 1;
+    min-width: 0;
+  }
+  .breakdown-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-signal { color: var(--text-muted); }
+  .breakdown-weight { font-family: 'PT Mono', monospace; font-weight: 700; }
+  .breakdown-weight.direct { color: var(--blue); }
+  .breakdown-weight.universal { color: var(--yellow); }
+  .breakdown-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 0;
+    margin-top: 8px;
+    border-top: 2px solid var(--border);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .breakdown-total-score { font-family: 'PT Mono', monospace; color: var(--accent); font-size: 20px; }
+  .breakdown-section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    margin-bottom: 6px;
+  }
+  .breakdown-section-label:first-child { margin-top: 0; }
+
+  /* ── Nudge Modal Overlay ── */
+  .nudge-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: overlayIn 0.25s ease;
+    backdrop-filter: blur(4px);
+  }
+  .nudge-overlay.active {
+    display: flex;
+  }
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .nudge-modal {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    max-width: 820px;
+    width: 90%;
+    animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .nudge-modal .nudge-ui {
+    flex: 0 0 420px;
+    max-width: 420px;
+  }
+  .nudge-modal .nudge-breakdown {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--paper-shadow-lg);
+    flex: 1;
+    min-width: 0;
+  }
+  .nudge-modal-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+  }
+  .nudge-modal-close {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .nudge-modal-close:hover { border-color: var(--text-dim); color: var(--text); }
+  .nudge-modal-skip-cooldown {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: #F5F3FF;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .nudge-modal-skip-cooldown:hover { background: #EDE9FE; }
+
+  /* Milestone feed */
+  .milestone-item {
+    background: var(--surface);
+    border: 1px solid #DDD6FE;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+    box-shadow: var(--paper-shadow);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .milestone-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #F5F3FF;
+    border: 1px solid #EDE9FE;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .milestone-content { flex: 1; }
+  .milestone-feature {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--accent); margin-bottom: 4px;
+  }
+  .milestone-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; color: var(--primary); }
+  .milestone-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .milestone-meta {
+    font-family: 'PT Mono', monospace;
+    font-size: 10px; color: var(--text-dim); margin-top: 8px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .milestone-meta span { display: flex; align-items: center; gap: 4px; }
+  .milestone-signals {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .milestone-signal-tag {
+    font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+    background: #EFF6FF; color: var(--blue); border: 1px solid #BFDBFE;
+  }
+  .milestone-signal-tag.universal {
+    background: #FFFBEB; color: var(--yellow); border: 1px solid #FDE68A;
+  }
+
+  /* Service variant milestone feed items */
+  .milestone-item.service {
+    border-color: #FDBA74;
+  }
+  .milestone-item.service .milestone-icon {
+    background: #FFF7ED;
+    border-color: #FDBA74;
+  }
+  .milestone-item.service .milestone-feature {
+    color: var(--accent-service);
+  }
+
+  /* Empty states */
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .empty-feed {
+    text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px;
+  }
+
+  /* Cooldown state */
+  .cooldown-active .action-btn { opacity: 0.5; pointer-events: none; }
+
+  /* Toast notifications */
+  .toast-container {
+    position: fixed; top: 24px; right: 24px; z-index: 2000;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    font-size: 13px; color: var(--text);
+    max-width: 360px;
+    animation: toast-in 0.3s ease-out;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .toast.service { border-left-color: var(--accent-service); }
+  .toast.success { border-left-color: var(--green); }
+  .toast.fade-out { opacity: 0; transform: translateX(20px); }
+  .toast-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+  .toast-body { color: var(--text-muted); line-height: 1.5; }
+  @keyframes toast-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Smart Nudge Simulator</h1>
+    <p>Simulate how the nudge system decides which Pro feature to show, when, and why. Toggle user actions on the right and watch scores change in real time.</p>
+    <button class="randomise-all-btn" onclick="randomiseEverything()">Randomise Everything</button>
+  </div>
+  <div class="layout">
+    <div class="left-col">
+      <div class="panel" id="panel-user">
+        <div class="panel-title">User Profile</div>
+        <div id="user-context"></div>
+        <button class="reshuffle-btn" onclick="resetSimulator()">New Random User</button>
+      </div>
+      <div class="panel" id="panel-prompt">
+        <div class="panel-title">Prompt Intelligence</div>
+        <div id="prompt-input-area"></div>
+        <div id="prompt-analysis"></div>
+      </div>
+    </div>
+    <div class="center-col">
+      <div class="panel" id="panel-guardrails">
+        <div class="panel-title">Safety Checks</div>
+        <div class="guardrail-bar" id="guardrail-bar"></div>
+      </div>
+      <div class="panel" id="panel-matrix">
+        <div class="panel-title">Feature Scores</div>
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Fit</th>
+              <th>Action</th>
+              <th>Context</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+      <div class="panel" id="panel-nudge-preview">
+        <div class="panel-title">Live Preview</div>
+        <div id="nudge-preview"></div>
+      </div>
+      <div class="panel" id="panel-feed">
+        <div class="panel-title">Nudge History</div>
+        <div id="feed-content"></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="panel" id="panel-actions">
+        <div class="panel-title">User Actions</div>
+        <div class="action-grid" id="action-grid"></div>
+      </div>
+      <div class="panel" id="panel-signals">
+        <div class="panel-title">Active Signals</div>
+
+        <div class="signal-list" id="signal-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="nudge-overlay" id="nudge-overlay" onclick="if(event.target===this)closeNudgeModal()">
+    <div class="nudge-modal" id="nudge-modal"></div>
+  </div>
+  <div class="toast-container" id="toast-container"></div>
+  <div class="rand-overlay" id="rand-overlay" onclick="if(event.target===this)closeRandOverlay()">
+    <div class="rand-card" id="rand-card"></div>
+  </div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// 1. CONFIG — All tunable values
+// ══════════════════════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  THRESHOLD: 14,
+  MAX_SCORE: 30,
+  UNIVERSAL_MULTIPLIER: 0.4,
+  SESSION_CAP: 3,
+  COOLDOWN_MS: 60000,
+  INTENT_FLOOR: 3,
+  ACTIVITY_PAUSE_MS: 3000 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 2. FEATURES — 7 feature definitions
+// ══════════════════════════════════════════════════════════════════════════════
+
+const FEATURES = [
+  { id: 'ai-models', name: 'Better AI Models', icon: '🧠', type: 'pro', verb: 'Upgrade to a better AI model', does: 'uses Standard or Advanced AI models for higher quality slides and smarter content' },
+  { id: 'brand-kit', name: 'Brand Kit', icon: '🎨', type: 'pro', verb: 'Set up your Brand Kit', does: 'applies your custom brand colors and fonts across all slides' },
+  { id: 'unbranded', name: 'Remove Watermark', icon: '✨', type: 'pro', verb: 'Remove the watermark', does: 'removes the Presentations.AI watermark from your slides for a clean, professional finish' },
+  { id: 'export', name: 'PowerPoint/PDF Export', icon: '📄', type: 'pro', verb: 'Export your deck', does: 'downloads your deck as a PowerPoint or PDF file' },
+  { id: 'invite-collab', name: 'Invite Collaborators', icon: '👥', type: 'pro', verb: 'Invite collaborators', does: 'lets others view, comment, and edit your deck in real time' },
+  { id: 'analytics', name: 'Viewer Analytics', icon: '📈', type: 'pro', verb: 'Turn on analytics', does: 'tracks who opened your deck, which slides they viewed, and for how long' },
+  { id: 'hire-team', name: 'Hire Our Team', icon: '🤝', type: 'service', verb: 'Let us build it for you', does: 'our team creates a polished presentation for you' },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 3. ACTIONS — User action definitions (~32 actions with signals and categories)
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ACTIONS = [
+  // Slide editing — mutually exclusive actions
+  { id: 'text-edit', label: 'Edit text on a slide', signals: ['text-edit'], cat: 'edit' },
+  { id: 'style-change', label: 'Change font/color/size from toolbar', signals: ['style-change'], cat: 'edit' },
+  { id: 'element-move', label: 'Drag or resize an element', signals: ['element-move'], cat: 'edit' },
+  { id: 'undo-redo', label: 'Undo / redo (Ctrl+Z/Y)', signals: ['undo-redo'], cat: 'edit' },
+  { id: 'slide-delete', label: 'Delete a slide', signals: ['slide-delete'], cat: 'edit' },
+
+  // Adding content — from Insert menu
+  { id: 'insert-title', label: 'Insert a title', signals: ['insert-title'], cat: 'content' },
+  { id: 'insert-list', label: 'Insert a list', signals: ['insert-list'], cat: 'content' },
+  { id: 'insert-media', label: 'Insert media (image/video)', signals: ['insert-media'], cat: 'content' },
+  { id: 'insert-slide-prompt', label: 'Insert slide with a prompt', signals: ['insert-slide-prompt'], cat: 'content' },
+  { id: 'insert-slide-template', label: 'Insert slide from template', signals: ['insert-slide-template'], cat: 'content' },
+  { id: 'slide-reorder', label: 'Drag slide to reorder', signals: ['slide-reorder'], cat: 'content' },
+
+  // Previewing & customizing
+  { id: 'play-preview', label: 'Play / present slideshow', signals: ['play-preview'], cat: 'preview' },
+  { id: 'edit-after-preview', label: 'Edit after playing preview', signals: ['edit-after-preview', 'text-edit'], cat: 'preview' },
+  { id: 'theme-global', label: 'Change deck theme (global)', signals: ['theme-global'], cat: 'preview' },
+  { id: 'layout-slide', label: 'Change single slide layout', signals: ['layout-slide'], cat: 'preview' },
+  { id: 'deck-regenerate', label: 'Regenerate entire deck', signals: ['deck-regenerate'], cat: 'preview' },
+
+  // Sharing & export
+  { id: 'share-link-copy', label: 'Copy free share link', signals: ['share-link-copy'], cat: 'share' },
+  { id: 'invite-attempt', label: 'Click invite collaborators (Pro gate)', signals: ['invite-attempt', 'gate-hit'], cat: 'share' },
+  { id: 'export-click', label: 'Open export options', signals: ['export-click'], cat: 'share' },
+  { id: 'export-download', label: 'Click download (hits paywall)', signals: ['export-download', 'gate-hit'], cat: 'share' },
+
+  // Creation context
+  { id: 'prompt-brand', label: 'Brand/company in prompt', signals: ['prompt-brand'], cat: 'prompt' },
+  { id: 'prompt-team', label: '"we/our/team" in prompt', signals: ['prompt-team'], cat: 'prompt' },
+  { id: 'doc-upload', label: 'Upload a document', signals: ['doc-upload'], cat: 'prompt' },
+  { id: 'doc-upload-long', label: 'Upload long doc (20+ pages)', signals: ['doc-upload', 'doc-upload-long'], cat: 'prompt' },
+
+  // Session — time + context thresholds (boolean). Repeatable escalation on edits
+  // is now captured by log-scaling on text-edit / undo-redo counts (see REPEATABLE_SIGNALS).
+  { id: 'session-15min', label: '15+ minutes in editor', signals: ['session-15min'], cat: 'session' },
+  { id: 'second-deck', label: 'Start a 2nd deck', signals: ['second-deck'], cat: 'session' },
+  { id: 'deck-switch', label: 'Switch between decks', signals: ['deck-switch'], cat: 'session' },
+  { id: 'pricing-visit', label: 'Visit pricing page', signals: ['pricing-visit'], cat: 'session' },
+  { id: 'gate-hit', label: 'Click any Pro-gated feature', signals: ['gate-hit'], cat: 'session' },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 4. Signal Maps — DIRECT_MAP, UNIVERSAL_MAP, MINDSET_VECTORS, PROMPT_SYNTHESIS
+//    (Embedded from config/*.json — canonical source)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Direct signal map: signal -> { featureId: weight }
+const DIRECT_MAP = {
+  // ── Slide editing signals ──
+  'text-edit':             { 'ai-models': 1 },
+  'style-change':          { 'brand-kit': 3 },
+  'element-move':          { 'brand-kit': 2 },
+  'undo-redo':             { 'ai-models': 3, 'hire-team': 3 },
+  'slide-delete':          { 'ai-models': 1 },
+
+  // ── Content addition signals ──
+  'insert-title':          { 'ai-models': 1 },
+  'insert-list':           { 'ai-models': 1 },
+  'insert-media':          { 'brand-kit': 2 },
+  'insert-slide-prompt':   { 'ai-models': 3 },
+  'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
+  'slide-reorder':         { 'ai-models': 1 },
+
+  // ── Preview & customization signals ──
+  'play-preview':          { 'unbranded': 3, 'export': 3 },
+  'edit-after-preview':    { 'ai-models': 2, 'hire-team': 1 },
+  'theme-global':          { 'brand-kit': 4, 'unbranded': 2 },
+  'layout-slide':          { 'brand-kit': 2, 'hire-team': 1 },
+  'deck-regenerate':       { 'ai-models': 5, 'hire-team': 5 },
+
+  // ── Sharing & export signals ──
+  'share-link-copy':       { 'unbranded': 3, 'analytics': 3, 'invite-collab': 2 },
+  'invite-attempt':        { 'invite-collab': 5 },
+  'export-click':          { 'export': 3 },
+  'export-download':       { 'export': 5, 'unbranded': 2 },
+
+  // ── Creation context signals ──
+  'prompt-brand':          { 'brand-kit': 5 },
+  'prompt-team':           { 'invite-collab': 5 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 2, 'hire-team': 2, 'analytics': 2 },
+  'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
+
+  // ── Session signals ──
+  'session-15min':         {},
+  'second-deck':           { 'brand-kit': 3, 'unbranded': 2 },
+  'deck-switch':           { 'brand-kit': 3 },
+  'gate-hit':              {},
+  'pricing-visit':         {},
+
+  // ── Context layer signals ──
+  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
+  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
+  'stakes-internal':       { 'invite-collab': 2 },
+
+  // ── User state signals ──
+  'bought-export':         { 'export': 4 },
+  'deck-veteran':          { 'brand-kit': 3 },
+  'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
+  'deck-publisher':        { 'analytics': 2, 'unbranded': 3 },
+  'acq-paid':              {},
+  'acq-referral':          { 'invite-collab': 3 },
+
+  // ── Runtime signals (populated dynamically) ──
+  'prompt-synthesis':      {},
+  'mindset-vector':        {},
+};
+
+// Universal signals: signal -> base score (applied at CONFIG.UNIVERSAL_MULTIPLIER to all features)
+const UNIVERSAL_MAP = {
+  'credits-low':      3,
+  'credits-zero':     5,
+  'returning-user':   4,
+  'pricing-visit':    3,
+  'bought-export':    4,
+  'session-15min':    3,
+  'second-deck':      3,
+  'zero-dismissals':  1,
+  'gate-hit':         3,
+  'export-download':  2,
+  'company-domain':   2,
+  'tier-1-country':   2,
+  'deck-veteran':     3,
+  'acq-organic':      1,
+  'acq-paid':         0,
+  'acq-referral':     2,
+  'doc-upload':       3,
+};
+
+// Repeatable signals: log-scaled as base × log₂(count + 1). Other signals
+// are boolean — they fire once and contribute their base weight unchanged.
+// Mirrors config/signal-types.json.
+const REPEATABLE_SIGNALS = new Set([
+  // Edit cluster
+  'text-edit', 'style-change', 'element-move', 'undo-redo', 'slide-delete',
+  // Content cluster
+  'insert-title', 'insert-list', 'insert-media', 'insert-slide-prompt',
+  'insert-slide-template', 'slide-reorder',
+  // Preview cluster
+  'play-preview', 'edit-after-preview', 'theme-global', 'layout-slide',
+  'deck-regenerate',
+  // Sharing / export cluster
+  'share-link-copy', 'invite-attempt', 'export-click', 'export-download',
+  // Conversion-intent + navigation
+  'doc-upload', 'deck-switch', 'pricing-visit', 'gate-hit'
+]);
+
+// Mindset vectors: 'role|audienceStakes' -> per-feature weights (0-5)
+const MINDSET_VECTORS = {
+  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
+
+  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|internal':                { 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 0, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
+
+  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|internal':              { 'invite-collab': 4, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 0, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+
+  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 0, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|low-external':       { 'export': 2, 'ai-models': 0, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 0, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 0, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|internal':              { 'ai-models': 0, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
+
+  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|internal':              { 'brand-kit': 3, 'ai-models': 0, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|low-external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|internal':              { 'export': 3, 'ai-models': 0, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+
+  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|low-external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|internal':              { 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 } };
+
+var MINDSET_FALLBACK = { 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 };
+
+// Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
+const PROMPT_SYNTHESIS = {
+  // Founder topics
+  'Series A pitch for fintech startup':
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Seed round deck for healthtech':
+    { 'unbranded': 5, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Product demo for enterprise AI tool':
+    { 'brand-kit': 4, 'unbranded': 4, 'ai-models': 4, 'analytics': 3, 'export': 3, 'invite-collab': 2, 'hire-team': 1 },
+
+  // Sales topics
+  'Enterprise SaaS proposal for Fortune 500':
+    { 'analytics': 5, 'unbranded': 5, 'export': 4, 'brand-kit': 4, 'ai-models': 3, 'invite-collab': 3, 'hire-team': 1 },
+  'Partnership pitch to retail chain':
+    { 'unbranded': 4, 'analytics': 4, 'export': 4, 'brand-kit': 3, 'ai-models': 3, 'invite-collab': 2, 'hire-team': 1 },
+  'ROI case study for CFO':
+    { 'ai-models': 4, 'analytics': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 2, 'invite-collab': 2, 'hire-team': 0 },
+
+  // Corporate topics
+  'Q1 business review':
+    { 'invite-collab': 3, 'ai-models': 3, 'export': 2, 'brand-kit': 2, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product roadmap for H2':
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'brand-kit': 1, 'unbranded': 1, 'analytics': 1, 'hire-team': 0 },
+  'Team restructuring proposal':
+    { 'ai-models': 4, 'invite-collab': 3, 'export': 3, 'analytics': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0 },
+  'OKR review and planning':
+    { 'invite-collab': 4, 'ai-models': 3, 'export': 2, 'analytics': 2, 'brand-kit': 1, 'unbranded': 1, 'hire-team': 0 },
+
+  // Creative topics
+  'Design portfolio for senior role':
+    { 'brand-kit': 5, 'unbranded': 5, 'export': 4, 'ai-models': 3, 'analytics': 3, 'invite-collab': 1, 'hire-team': 1 },
+  'Agency credentials deck':
+    { 'brand-kit': 5, 'unbranded': 5, 'analytics': 4, 'export': 4, 'invite-collab': 3, 'ai-models': 3, 'hire-team': 1 },
+  'Brand identity presentation':
+    { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+
+  // Educator topics
+  'Introduction to machine learning':
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Data visualization workshop':
+    { 'ai-models': 4, 'export': 4, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Research methodology lecture':
+    { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+
+  // Student topics
+  'Final thesis defense':
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'invite-collab': 2, 'brand-kit': 2, 'analytics': 1, 'hire-team': 2 },
+  'Startup pitch for entrepreneurship class':
+    { 'unbranded': 3, 'ai-models': 3, 'export': 3, 'brand-kit': 3, 'invite-collab': 3, 'analytics': 2, 'hire-team': 1 },
+  'Capstone project presentation':
+    { 'export': 4, 'ai-models': 4, 'invite-collab': 3, 'unbranded': 3, 'brand-kit': 2, 'analytics': 1, 'hire-team': 1 },
+
+  // Weak / vague prompts
+  'pitch deck':
+    { 'unbranded': 2, 'export': 2, 'ai-models': 0, 'brand-kit': 1, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'startup stuff':
+    { 'ai-models': 0, 'unbranded': 1, 'export': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
+  'sales presentation':
+    { 'unbranded': 2, 'export': 2, 'analytics': 1, 'ai-models': 0, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'deck for client meeting':
+    { 'unbranded': 2, 'export': 2, 'brand-kit': 1, 'analytics': 1, 'ai-models': 0, 'invite-collab': 1, 'hire-team': 0 },
+  'slides for meeting':
+    { 'ai-models': 0, 'export': 1, 'invite-collab': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'quarterly update slides':
+    { 'invite-collab': 2, 'ai-models': 0, 'export': 1, 'brand-kit': 1, 'unbranded': 0, 'analytics': 0, 'hire-team': 0 },
+  'portfolio presentation':
+    { 'brand-kit': 2, 'unbranded': 2, 'export': 2, 'ai-models': 0, 'analytics': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'make a presentation':
+    { 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 },
+  'lecture slides':
+    { 'export': 2, 'ai-models': 0, 'unbranded': 1, 'invite-collab': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'presentation for class':
+    { 'export': 2, 'ai-models': 0, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'help me with a ppt':
+    { 'ai-models': 0, 'export': 0, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 2 },
+
+  // Urgent prompts
+  'investor meeting tomorrow need a deck':
+    { 'ai-models': 5, 'export': 5, 'unbranded': 4, 'analytics': 3, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 5 },
+  'urgent proposal for client demo Friday':
+    { 'export': 5, 'ai-models': 4, 'unbranded': 4, 'analytics': 3, 'brand-kit': 3, 'invite-collab': 2, 'hire-team': 4 },
+  'board deck due end of day':
+    { 'ai-models': 5, 'export': 4, 'unbranded': 3, 'invite-collab': 3, 'brand-kit': 2, 'analytics': 2, 'hire-team': 5 },
+  'client pitch deck needed by tonight':
+    { 'ai-models': 4, 'export': 4, 'unbranded': 4, 'brand-kit': 4, 'analytics': 2, 'invite-collab': 1, 'hire-team': 4 },
+  'guest lecture tomorrow on AI ethics':
+    { 'export': 4, 'ai-models': 4, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 2 },
+  'group project due tomorrow':
+    { 'export': 4, 'ai-models': 3, 'invite-collab': 4, 'unbranded': 2, 'brand-kit': 1, 'analytics': 0, 'hire-team': 3 } };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 5. ROLES, AUDIENCES, TOPICS, and user generation data
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ROLES = [
+  { label: 'Leadership', archetype: 'Founder' },
+  { label: 'Sales', archetype: 'Sales' },
+  { label: 'Marketing', archetype: 'Sales' },
+  { label: 'Product', archetype: 'Corporate' },
+  { label: 'Design', archetype: 'Creative' },
+  { label: 'Engineering', archetype: 'Corporate' },
+  { label: 'Data Analytics', archetype: 'Corporate' },
+  { label: 'Consulting', archetype: 'Corporate' },
+  { label: 'Operations', archetype: 'Corporate' },
+  { label: 'Finance', archetype: 'Corporate' },
+  { label: 'Creator', archetype: 'Creative' },
+  { label: 'Teacher', archetype: 'Educator' },
+  { label: 'Student', archetype: 'Student' },
+];
+
+const AUDIENCES = {
+  Founder: ['Investors', 'VCs', 'Board members', 'Angel investors'],
+  Sales: ['Enterprise clients', 'Prospects', 'C-suite buyers'],
+  Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
+  Creative: ['Potential clients', 'Recruiters', 'Art directors'],
+  Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
+  Student: ['Professor', 'Panel judges', 'Classmates'] };
+
+const TOPICS = {
+  Founder: [
+    'Series A pitch deck for our fintech startup targeting $5M raise',
+    'Seed round presentation for a healthtech company disrupting remote diagnostics',
+    'Product demo for an enterprise AI tool — showing to 3 potential clients this week',
+    'Investor update deck for Q1 with ARR growth, churn metrics, and runway',
+    'Pitch deck for a climate tech startup applying to Y Combinator',
+    'Board meeting presentation covering fundraise strategy and hiring plan',
+  ],
+  Sales: [
+    'Enterprise SaaS proposal for a Fortune 500 manufacturing company',
+    'Partnership pitch to a national retail chain — 200+ store rollout',
+    'ROI case study for the CFO showing 3-year cost savings from our platform',
+    'Competitive analysis deck for the VP of Engineering comparing us vs Salesforce',
+    'Customer success story presentation for the annual sales kickoff',
+    'Pricing and packaging proposal for a mid-market deal worth $120K ARR',
+  ],
+  Corporate: [
+    'Q1 business review for the leadership team with KPIs and revenue breakdown',
+    'Product roadmap for H2 presenting 4 major feature launches to stakeholders',
+    'Team restructuring proposal to move from 3 squads to 5 pods',
+    'OKR planning deck for the entire engineering org — 85 people',
+    'Annual strategy presentation for the board covering market expansion to APAC',
+    'Post-mortem presentation on the recent site outage with root cause analysis',
+    'Budget allocation presentation for FY27 across 4 departments',
+  ],
+  Creative: [
+    'Senior design portfolio showcasing 5 years of product design work',
+    'Agency credentials deck for a pitch to a luxury fashion brand',
+    'Brand identity presentation for a new D2C skincare line launching next quarter',
+    'Campaign results deck showing social media performance across 3 channels',
+    'Creative brief presentation for a video production project with $50K budget',
+    'UX research findings presentation from a 3-week usability study with 20 participants',
+  ],
+  Educator: [
+    'Introduction to machine learning lecture for a graduate-level CS course',
+    'Data visualization workshop for 40 marketing professionals at a corporate training',
+    'Research methodology lecture covering qualitative vs quantitative approaches',
+    'Guest lecture on AI ethics and bias for an undergraduate philosophy class',
+    'Workshop on academic writing for international PhD students',
+    'Conference presentation on new findings in cognitive behavioral therapy',
+  ],
+  Student: [
+    'Final thesis defense on the impact of social media on political polarization',
+    'Startup pitch for entrepreneurship class — a peer-to-peer tutoring marketplace',
+    'Capstone project presentation on building a recommendation engine for Spotify data',
+    'Group project presentation on renewable energy adoption in Southeast Asia',
+    'Research paper presentation on CRISPR gene editing applications in agriculture',
+    'Case competition deck analyzing Nike vs Adidas market strategy for a panel of judges',
+  ],
+};
+
+const COMPANY_DOMAINS = {
+  Founder: ['@startup.io', '@startup.io', '@gmail.com'],
+  Sales: ['@salesforce.com', '@hubspot.com', '@company.com', '@gmail.com'],
+  Corporate: ['@deloitte.com', '@jpmorgan.com', '@company.com', '@gmail.com'],
+  Creative: ['@agency.co', '@studio.design', '@gmail.com', '@gmail.com'],
+  Educator: ['@stanford.edu', '@university.edu', '@gmail.com'],
+  Student: ['@university.edu', '@gmail.com', '@gmail.com', '@gmail.com'] };
+
+const TIER_1 = ['US', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Sweden', 'Switzerland', 'Japan', 'Singapore'];
+const TIER_2 = ['India', 'Brazil', 'Indonesia', 'Philippines', 'Mexico', 'Nigeria', 'Vietnam', 'Colombia', 'Egypt', 'Bangladesh', 'Pakistan', 'Kenya'];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 6. NudgeState — Central state object
+// ══════════════════════════════════════════════════════════════════════════════
+
+let state = {
+  user: {},
+  activeSignals: new Set(),
+  activeActions: new Set(),
+  actionCounts: {},          // actionId -> click count (repeatables increment, booleans 0/1)
+  signalCounts: {},          // signalId -> count (sum of action counts that emit this signal)
+  signalLog: [],
+  featureScores: {},
+  milestonesThisSession: 0,
+  featuresShownThisSession: new Set(),
+  lastMilestoneTime: 0,
+  milestoneLog: [],
+  isUserActive: false,
+  relevantFeatures: new Set() };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 7. SignalCollector — generateUser()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function generateUser() {
+  const role = pick(ROLES);
+  const arch = role.archetype;
+  const credits = pick([100, 85, 72, 55, 42, 30, 18, 8, 0]);
+  const sessionNum = pick([1, 1, 1, 2, 2, 3]);
+  const boughtExport = pick([false, false, false, false, true]);
+  const dismissals = pick([0, 0, 0, 1, 2]);
+
+  // Deck history — correlate with session number
+  const DECK_HISTORY = {
+    1: { completed: pick([1, 1, 1, 2]), shared: pick([0, 0, 0, 1]), published: pick([0, 0, 0]) },
+    2: { completed: pick([2, 3, 4, 5]), shared: pick([0, 1, 1, 2]), published: pick([0, 0, 1]) },
+    3: { completed: pick([3, 5, 7, 10]), shared: pick([1, 2, 3, 4]), published: pick([0, 1, 2, 3]) } };
+  const deckHistory = DECK_HISTORY[Math.min(sessionNum, 3)];
+
+  // Company domain
+  const email = pick(COMPANY_DOMAINS[arch] || COMPANY_DOMAINS['Corporate']);
+  const isCompanyDomain = !/@gmail\.com|@outlook\.com|@yahoo\.com|@hotmail\.com/.test(email);
+
+  // Country / Tier
+  const allCountries = [...TIER_1, ...TIER_2, ...TIER_2];
+  const country = pick(allCountries);
+  const countryTier = TIER_1.includes(country) ? 1 : 2;
+
+  // Acquisition channel
+  const acqChannel = pick(['organic', 'organic', 'organic', 'organic', 'organic',
+                           'paid', 'paid', 'paid',
+                           'referral', 'referral']);
+
+  state.user = {
+    name: pick(['Raj', 'Maria', 'Alex', 'Priya', 'James', 'Sofia', 'Chen', 'Fatima', 'David', 'Anya']),
+    role: role.label,
+    archetype: arch,
+    audience: pick(AUDIENCES[arch] || AUDIENCES['Corporate']),
+    topic: pick(TOPICS[arch] || TOPICS['Corporate']),
+    email,
+    isCompanyDomain,
+    country,
+    countryTier,
+    credits,
+    sessionNum,
+    boughtExport,
+    dismissals,
+    decksCompleted: deckHistory.completed,
+    decksShared: deckHistory.shared,
+    decksPublished: deckHistory.published,
+    acqChannel };
+
+  // Reset signals for new user
+  state.activeSignals = new Set();
+
+  // 3-layer context profiling
+  profileUser();
+
+  // Credit/session/domain signals
+  addStateSignals();
+
+  // Compute which features are relevant for this user
+  computeRelevantFeatures();
+
+  return state.user;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 8. ContextProfiler — profileUser() + getAudienceStakes() + addStateSignals()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function profileUser() {
+  const u = state.user;
+
+  // ── LAYER 1: Mindset (role x audience stakes) ──
+  const audienceStakes = getAudienceStakes(u.audience);
+  const mindsetKey = u.role + '|' + audienceStakes;
+  const mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+  u.mindsetVector = mindsetVector;
+  u.audienceStakes = audienceStakes;
+
+  // Write mindset as a direct signal
+  DIRECT_MAP['mindset-vector'] = mindsetVector;
+  state.activeSignals.add('mindset-vector');
+
+  // ── LAYER 2: Audience Stakes ──
+  const HIGH_STAKES = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers'];
+  const LOW_STAKES = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors'];
+  if (HIGH_STAKES.includes(u.audience)) state.activeSignals.add('stakes-high-external');
+  else if (LOW_STAKES.includes(u.audience)) state.activeSignals.add('stakes-low-external');
+  else state.activeSignals.add('stakes-internal');
+
+  // ── LAYER 3: Prompt Synthesis ──
+  var synthesis = PROMPT_SYNTHESIS[u.topic];
+  if (!synthesis) {
+    // Keyword-based fallback for prompts not in the lookup table
+    synthesis = synthesizeFromKeywords(u.topic);
+  }
+  u.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+}
+
+// Keyword-based prompt synthesis fallback
+function synthesizeFromKeywords(prompt) {
+  // Normalize: lowercase, split joined words, add spaces around numbers
+  var p = (prompt || '').toLowerCase()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')             // camelCase → camel Case
+    .replace(/([a-z])(\d)/g, '$1 $2')                 // word2 → word 2
+    .replace(/(\d)([a-z])/g, '$1 $2')                 // 2days → 2 days
+    .replace(/[_\-]/g, ' ')                            // underscores/hyphens → spaces
+    .replace(/\s+/g, ' ').trim();
+
+  var scores = {};
+  FEATURES.forEach(function(f) { scores[f.id] = 0; });
+
+  var keywords = {
+    'ai-models':     ['quality', 'better', 'improve', 'upgrade', 'ai', 'smart', 'polished', 'professional', 'good', 'premium'],
+    'brand-kit':     ['brand', 'logo', 'colors', 'identity', 'company', 'style', 'design system', 'corporate', 'theme'],
+    'unbranded':     ['professional', 'clean', 'client', 'enterprise', 'investor', 'watermark', 'template', 'pitch', 'proposal', 'formal'],
+    'export':        ['download', 'pdf', 'powerpoint', 'pptx', 'email', 'offline', 'print', 'send', 'share', 'present'],
+    'invite-collab': ['team', 'collaborate', 'together', 'review', 'feedback', 'we ', 'our ', 'group', 'cowork'],
+    'analytics':     ['track', 'analytics', 'metrics', 'engagement', 'data', 'measure', 'roi', 'investor', 'sales', 'funnel'],
+    'hire-team':     ['help me', 'help', 'struggle', "can't", 'cant', 'complicated', 'too hard', 'do it for', 'build it for', 'need a', 'make me', 'create a'] };
+
+  // Urgency detection — broader patterns
+  var urgencyPatterns = ['tomorrow', 'tonight', 'urgent', 'asap', 'deadline', 'due', 'rush',
+    'needed by', 'end of day', 'eod', 'within', 'days', 'hours', 'hours left', 'by friday',
+    'by monday', 'by tuesday', 'by wednesday', 'by thursday', 'this week', 'right now', 'immediately'];
+  var hasUrgency = urgencyPatterns.some(function(w) { return p.indexOf(w) !== -1; });
+
+  // Pitch/presentation detection — baseline scoring
+  var isPitch = ['pitch', 'pitch deck', 'pitchdeck', 'deck', 'presentation', 'ppt', 'slides'].some(function(w) { return p.indexOf(w) !== -1; });
+
+  Object.keys(keywords).forEach(function(featureId) {
+    var matches = 0;
+    keywords[featureId].forEach(function(kw) {
+      if (p.indexOf(kw) !== -1) matches++;
+    });
+    scores[featureId] = Math.min(matches * 2, 5);
+  });
+
+  // Baseline: if it's a pitch/deck, give baseline scores to core features
+  if (isPitch) {
+    scores['unbranded'] = Math.max(scores['unbranded'], 2);
+    scores['export'] = Math.max(scores['export'], 2);
+    scores['ai-models'] = Math.max(scores['ai-models'], 2);
+  }
+
+  // Urgency boosts export, hire-team, ai-models
+  if (hasUrgency) {
+    scores['export'] = Math.min(scores['export'] + 3, 5);
+    scores['hire-team'] = Math.min(scores['hire-team'] + 3, 5);
+    scores['ai-models'] = Math.min(scores['ai-models'] + 1, 5);
+  }
+
+  return scores;
+}
+
+function getAudienceStakes(audience) {
+  const HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers', 'Panel judges', 'Professor', 'Executives'];
+  const LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors', 'Workshop attendees', 'Corporate trainees'];
+  if (HIGH.includes(audience)) return 'high-external';
+  if (LOW.includes(audience)) return 'low-external';
+  return 'internal';
+}
+
+function addStateSignals() {
+  const u = state.user;
+
+  if (u.credits < 30) state.activeSignals.add('credits-low');
+  if (u.credits === 0) state.activeSignals.add('credits-zero');
+  if (u.sessionNum > 1) state.activeSignals.add('returning-user');
+  if (u.boughtExport) state.activeSignals.add('bought-export');
+  if (u.dismissals === 0) state.activeSignals.add('zero-dismissals');
+  if (u.isCompanyDomain) state.activeSignals.add('company-domain');
+  if (u.countryTier === 1) state.activeSignals.add('tier-1-country');
+
+  // Deck history signals
+  if (u.decksCompleted >= 5) state.activeSignals.add('deck-veteran');
+  if (u.decksShared >= 2) state.activeSignals.add('deck-sharer');
+  if (u.decksPublished >= 1) state.activeSignals.add('deck-publisher');
+
+  // Acquisition channel signals
+  if (u.acqChannel === 'organic') state.activeSignals.add('acq-organic');
+  if (u.acqChannel === 'paid') state.activeSignals.add('acq-paid');
+  if (u.acqChannel === 'referral') state.activeSignals.add('acq-referral');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 8b. Relevance Filter — determines which features are relevant to this user
+// ══════════════════════════════════════════════════════════════════════════════
+
+var RELEVANCE_THRESHOLD = 3;
+
+function computeRelevantFeatures() {
+  var u = state.user;
+  var relevant = new Set();
+  var relevanceScores = {};
+
+  FEATURES.forEach(function(f) {
+    // Relevance = mindset vector (0-5) + prompt synthesis (0-5)
+    // Scale 0-10. Only these two inputs — they represent user context + prompt.
+    var mindsetScore = (u.mindsetVector || {})[f.id] || 0;
+    var promptScore = (u.promptSynthesis || {})[f.id] || 0;
+    var relevance = mindsetScore + promptScore;
+
+    relevanceScores[f.id] = relevance;
+
+    if (relevance >= RELEVANCE_THRESHOLD) {
+      relevant.add(f.id);
+    }
+  });
+
+  // hire-team is always potentially relevant (fires on struggle signals
+  // from actions, not context layers)
+  relevant.add('hire-team');
+
+  state.relevantFeatures = relevant;
+  state.relevanceScores = relevanceScores;
+  return relevant;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 9. ScoringEngine — calculateScores()
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Score a single (signal, base weight) pair. Repeatable signals are scaled
+// by log₂(count + 1); booleans contribute their base weight unchanged.
+function scaleByCount(signalId, baseWeight) {
+  if (!REPEATABLE_SIGNALS.has(signalId)) return baseWeight;
+  var count = state.signalCounts[signalId] || 0;
+  if (count <= 0) return 0;
+  return baseWeight * Math.log2(count + 1);
+}
+
+function calculateScores() {
+  const scores = {};
+
+  FEATURES.forEach(f => {
+    let direct = 0;
+    let universal = 0;
+    const directSignals = [];
+    const universalSignals = [];
+
+    state.activeSignals.forEach(sig => {
+      // Direct
+      var directBase = (DIRECT_MAP[sig] && DIRECT_MAP[sig][f.id]) || 0;
+      if (directBase) {
+        var scaled = scaleByCount(sig, directBase);
+        direct += scaled;
+        directSignals.push({
+          name: sig,
+          weight: directBase,
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(scaled * 10) / 10 });
+      }
+      // Universal
+      if (UNIVERSAL_MAP[sig]) {
+        var uScaled = scaleByCount(sig, UNIVERSAL_MAP[sig]);
+        universal += uScaled;
+        universalSignals.push({
+          name: sig,
+          weight: UNIVERSAL_MAP[sig],
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(uScaled * 10) / 10 });
+      }
+    });
+
+    const universalContrib = universal * CONFIG.UNIVERSAL_MULTIPLIER;
+    const total = Math.max(0, direct + universalContrib);
+
+    scores[f.id] = {
+      direct: Math.round(direct * 10) / 10,
+      universalRaw: Math.round(universal * 10) / 10,
+      universalContrib: Math.round(universalContrib * 10) / 10,
+      total: Math.round(total * 10) / 10,
+      directSignals,
+      universalSignals };
+  });
+
+  state.featureScores = scores;
+  return scores;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 10. MilestoneSelector — evaluateAndFire() + fireMilestone()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function evaluateAndFire() {
+  // Don't fire a new nudge while a modal is already open
+  if (document.getElementById('nudge-overlay').classList.contains('active')) return;
+
+  const scores = calculateScores();
+
+  // Rank features by score, filter: relevant + above threshold + not already shown
+  const ranked = FEATURES
+    .map(f => ({ ...f, ...scores[f.id] }))
+    .filter(f => state.relevantFeatures.has(f.id))
+    .filter(f => f.total >= CONFIG.THRESHOLD)
+    .filter(f => !state.featuresShownThisSession.has(f.id))
+    .sort((a, b) => b.total - a.total);
+
+  if (ranked.length === 0) return;
+
+  // Try to fire top scorer
+  const top = ranked[0];
+  const gr = checkGuardrails(top.id);
+
+  if (gr.pass) {
+    fireMilestone(top);
+  }
+}
+
+function fireMilestone(feature) {
+  state.milestonesThisSession++;
+  state.featuresShownThisSession.add(feature.id);
+  state.lastMilestoneTime = Date.now();
+
+  const copy = generateCopy(feature);
+
+  state.milestoneLog.unshift({
+    feature: feature,
+    copy: copy,
+    score: feature.total,
+    direct: feature.direct,
+    universal: feature.universalContrib,
+    directSignals: feature.directSignals,
+    universalSignals: feature.universalSignals,
+    time: new Date().toLocaleTimeString() });
+
+  renderNudgePreview(feature, copy);
+  renderFeed();
+  renderMatrix();
+  renderGuardrails();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 11. Guardrails — checkGuardrails()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function checkGuardrails(featureId) {
+  const reasons = [];
+  let pass = true;
+
+  // Pro user kill switch
+  if (state.user.isProUser) {
+    reasons.push('User is Pro — all nudges disabled');
+    pass = false;
+    return { pass, reasons };
+  }
+
+  // Session cap
+  if (state.milestonesThisSession >= CONFIG.SESSION_CAP) {
+    reasons.push('Session cap reached (' + state.milestonesThisSession + '/' + CONFIG.SESSION_CAP + ')');
+    pass = false;
+  }
+
+  // Cooldown
+  const now = Date.now();
+  if (now - state.lastMilestoneTime < CONFIG.COOLDOWN_MS && state.lastMilestoneTime > 0) {
+    const remaining = Math.ceil((CONFIG.COOLDOWN_MS - (now - state.lastMilestoneTime)) / 1000);
+    reasons.push('Cooldown active (' + remaining + 's)');
+    pass = false;
+  }
+
+  // Feature already shown
+  if (state.featuresShownThisSession.has(featureId)) {
+    reasons.push('Feature already shown this session');
+    pass = false;
+  }
+
+  // Intent floor — sum of universal signals
+  let intentFloor = 0;
+  state.activeSignals.forEach(sig => {
+    if (UNIVERSAL_MAP[sig]) intentFloor += UNIVERSAL_MAP[sig];
+  });
+  if (intentFloor < CONFIG.INTENT_FLOOR) {
+    reasons.push('Global intent too low (' + intentFloor + ' < ' + CONFIG.INTENT_FLOOR + ')');
+    pass = false;
+  }
+
+  // Activity pause — user must be idle for 3s before nudge fires
+  if (state.isUserActive) {
+    reasons.push('User is active (needs ' + (CONFIG.ACTIVITY_PAUSE_MS / 1000) + 's idle)');
+    pass = false;
+  }
+
+  return { pass, reasons };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 12. CopyEngine — generateCopy()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function generateCopy(feature) {
+  const u = state.user;
+  const topic = u.topic;
+
+  // Copy framework:
+  //   Title  → contextual, names the pain tied to what user is building and for whom
+  //   Body   → one sentence, pain to solution. No em dashes splitting into two thoughts.
+  //   CTA    → feature-specific: "Get Brand Kit", "Try Analytics", etc.
+  //   Never  → undermine current product, call out specific user behaviour, append tier modifiers
+
+  var signals = state.activeSignals;
+
+  var subFeatures = {
+    'ai-models': [
+      { id: 'advanced-models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+        title: 'Your ' + topic + ' deck could be better on the first try',
+        body: 'Pro AI models generate sharper copy and more polished layouts without the back-and-forth.',
+        cta: 'Upgrade to Pro' },
+      { id: 'ai-credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
+        title: 'Your ' + topic + ' deck is pushing the AI hard',
+        body: 'Pro AI models produce sharper slides from every prompt, so you spend less time fixing output.',
+        cta: 'Upgrade to Pro' },
+      { id: 'project-knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
+        title: 'Your ' + topic + ' deck deserves AI that knows your material',
+        body: 'Feed your documents to the AI and every generated slide comes out sharper and on-point.',
+        cta: 'Get Project Knowledge' },
+    ],
+    'brand-kit': [
+      { id: 'brand-fonts', signals: ['style-change'],
+        title: 'Set your fonts once for the whole deck',
+        body: 'Brand Kit locks in your typeface and applies it across every slide automatically.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-colors', signals: ['theme-global', 'layout-slide'],
+        title: 'Your ' + topic + ' deck should look like it came from your brand',
+        body: 'Brand Kit applies your exact colors across every slide so ' + u.audience + ' sees a polished, on-brand presentation.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-assets', signals: ['insert-media', 'prompt-brand'],
+        title: 'Your ' + topic + ' deck is missing your brand assets',
+        body: 'Upload your logo and images once to Brand Kit and they\u2019re always ready when you need them.',
+        cta: 'Get Brand Kit' },
+      { id: 'brand-voice', signals: ['text-edit', 'insert-title', 'insert-list'],
+        title: 'Make sure ' + u.audience + ' hears your brand\u2019s voice in every slide',
+        body: 'Set your tone once in Brand Kit and every AI-generated slide in your ' + topic + ' deck sounds like you.',
+        cta: 'Get Brand Kit' },
+    ],
+    'unbranded': [
+      { id: 'unbranded-links', signals: ['share-link-copy', 'play-preview'],
+        title: 'Before you share your ' + topic + ' deck with ' + u.audience,
+        body: 'Remove the watermark so your presentation looks fully yours when they open it.',
+        cta: 'Remove Watermark' },
+      { id: 'unbranded-export', signals: ['export-click', 'export-download'],
+        title: 'Your ' + topic + ' export will carry our watermark',
+        body: 'Remove it for a polished file you can send directly to ' + u.audience + '.',
+        cta: 'Remove Watermark' },
+    ],
+    'export': [
+      { id: 'ppt-export', signals: ['export-click', 'export-download'],
+        title: 'Take your ' + topic + ' deck offline',
+        body: 'Export to PowerPoint so you can edit, email, or present it anywhere.',
+        cta: 'Unlock Exports' },
+      { id: 'pdf-export', signals: ['play-preview', 'share-link-copy'],
+        title: 'Send ' + u.audience + ' a polished PDF of your ' + topic + ' deck',
+        body: 'Export a presentation-ready PDF that\u2019s perfect for email or print.',
+        cta: 'Unlock Exports' },
+      { id: 'embed', signals: ['share-link-copy'],
+        title: 'Share your ' + topic + ' deck beyond a file download',
+        body: 'Embed it on any webpage as an always-updated alternative to a PowerPoint or PDF export.',
+        cta: 'Unlock Embeds' },
+    ],
+    'invite-collab': [
+      { id: 'guests', signals: ['share-link-copy', 'prompt-team'],
+        title: 'Get feedback before this reaches ' + u.audience,
+        body: 'Invite guests to view and comment, all in one place.',
+        cta: 'Invite Collaborators' },
+      { id: 'workspace', signals: ['prompt-team', 'invite-attempt'],
+        title: 'Your team should be building this ' + topic + ' deck with you',
+        body: 'Add them to a shared workspace where everyone can edit and comment together.',
+        cta: 'Invite Collaborators' },
+      { id: 'present-remotely', signals: ['play-preview'],
+        title: 'Present your ' + topic + ' deck live to ' + u.audience,
+        body: 'Share a link and your audience follows along in real time as you present.',
+        cta: 'Get Live Presenting' },
+      { id: 'version-history', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+        title: 'Let collaborators edit your ' + topic + ' deck without risk',
+        body: 'Version History tracks every edit for 30 days so you can roll back any teammate\u2019s change in a click.',
+        cta: 'Get Version History' },
+    ],
+    'analytics': [
+      { id: 'page-views', signals: ['share-link-copy', 'play-preview'],
+        title: 'Know when ' + u.audience + ' opens your ' + topic + ' deck',
+        body: 'Analytics shows exactly who viewed it and when.',
+        cta: 'Try Analytics' },
+      { id: 'slide-engagement', signals: ['share-link-copy'],
+        title: 'Find out which slides ' + u.audience + ' actually cared about',
+        body: 'See exactly where they spent the most time in your ' + topic + ' deck.',
+        cta: 'Try Analytics' },
+      { id: 'demographics', signals: ['share-link-copy', 'prompt-team'],
+        title: 'See who\u2019s viewing your ' + topic + ' deck',
+        body: 'Analytics shows where your viewers are and what devices they\u2019re using.',
+        cta: 'Try Analytics' },
+    ],
+    'hire-team': [
+      { id: 'hire-team', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+        title: 'Let our team build your ' + topic + ' deck for ' + u.audience,
+        body: 'You focus on the message, we handle the design and polish.',
+        cta: 'Talk to Our Team' },
+    ],
+  };
+
+  // Pick the best sub-feature: find the one with the most matching active signals
+  var candidates = subFeatures[feature.id] || [];
+  var best = null;
+  var bestScore = -1;
+
+  candidates.forEach(function(sub) {
+    var matchCount = 0;
+    sub.signals.forEach(function(sig) { if (signals.has(sig)) matchCount++; });
+    if (matchCount > bestScore) { bestScore = matchCount; best = sub; }
+  });
+
+  // Fallback to first sub-feature if none match
+  if (!best && candidates.length > 0) best = candidates[0];
+
+  return best
+    ? { title: best.title, body: best.body, cta: best.cta }
+    : { title: feature.verb, body: feature.does + '.', cta: feature.type === 'service' ? 'Talk to Our Team' : 'Upgrade to Pro' };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 13. Coordinator — performAction() + resetSimulator()
+// ══════════════════════════════════════════════════════════════════════════════
+
+function rebuildSignalsFromActions() {
+  // Tally signal counts from action counts. For repeatable signals the count
+  // will be > 1 when the action has been performed multiple times.
+  var signalCounts = {};
+  Object.keys(state.actionCounts).forEach(function(aid) {
+    var count = state.actionCounts[aid] || 0;
+    if (count <= 0) return;
+    var action = ACTIONS.find(function(a) { return a.id === aid; });
+    if (!action) return;
+    action.signals.forEach(function(s) {
+      signalCounts[s] = (signalCounts[s] || 0) + count;
+    });
+  });
+
+  // Rebuild activeSignals: start from context signals (from user profile), add action signals
+  state.activeSignals = new Set();
+  profileUser();
+  addStateSignals();
+  computeRelevantFeatures();
+  Object.keys(signalCounts).forEach(function(s) { state.activeSignals.add(s); });
+
+  // Context / profile signals are boolean — count = 1 if active.
+  state.activeSignals.forEach(function(s) {
+    if (signalCounts[s] == null) signalCounts[s] = 1;
+  });
+
+  state.signalCounts = signalCounts;
+}
+
+var activityTimer = null;
+
+function performAction(actionId) {
+  var action = ACTIONS.find(function(a) { return a.id === actionId; });
+  if (!action) return;
+
+  var btn = document.getElementById('act-' + actionId);
+
+  // Repeatability is per-signal. An action is repeatable if any of its
+  // signals is in REPEATABLE_SIGNALS. Repeatable actions increment a
+  // counter on each click; boolean actions toggle on/off.
+  var isRepeatable = action.signals.some(function(s) { return REPEATABLE_SIGNALS.has(s); });
+
+  if (isRepeatable) {
+    state.actionCounts[actionId] = (state.actionCounts[actionId] || 0) + 1;
+    state.activeActions.add(actionId);
+    if (btn) btn.classList.add('done');
+  } else {
+    if (state.activeActions.has(actionId)) {
+      state.activeActions.delete(actionId);
+      delete state.actionCounts[actionId];
+      if (btn) btn.classList.remove('done');
+    } else {
+      state.activeActions.add(actionId);
+      state.actionCounts[actionId] = 1;
+      if (btn) btn.classList.add('done');
+    }
+  }
+
+  // Simulate activity pause: user is "active" while clicking actions
+  state.isUserActive = true;
+  if (activityTimer) clearTimeout(activityTimer);
+  activityTimer = setTimeout(function() {
+    state.isUserActive = false;
+    activityTimer = null;
+    renderGuardrails();
+    evaluateAndFire();
+  }, CONFIG.ACTIVITY_PAUSE_MS);
+
+  // Rebuild signals from scratch based on active actions
+  rebuildSignalsFromActions();
+
+  // Re-render (nudge won't fire yet — activity pause blocks it)
+  renderActions();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+}
+
+function resetSimulator() {
+  // Clear any pending timers from previous simulation
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
+  if (promptDebounceTimer) { clearTimeout(promptDebounceTimer); promptDebounceTimer = null; }
+  closeNudgeModal();
+
+  state = {
+    user: {},
+    activeSignals: new Set(),
+    activeActions: new Set(),
+    actionCounts: {},
+    signalCounts: {},
+    signalLog: [],
+    featureScores: {},
+    milestonesThisSession: 0,
+    featuresShownThisSession: new Set(),
+    lastMilestoneTime: 0,
+    milestoneLog: [],
+    isUserActive: false,
+    relevantFeatures: new Set(),
+    _llmLoading: false,
+    _llmError: null,
+    _llmSource: null };
+
+  generateUser();
+  renderUserContext();
+  renderPromptInput();
+  renderPromptAnalysis();
+  renderActions();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  renderFeed();
+  renderNudgePreview();
+}
+
+function randomiseEverything() {
+  // 1. Reset with a new random user
+  resetSimulator();
+
+  // 2. Shuffle the prompt
+  shufflePrompt();
+
+  // 3. Randomly toggle 2–5 actions
+  var shuffled = ACTIONS.slice().sort(function() { return Math.random() - 0.5; });
+  var count = 2 + Math.floor(Math.random() * 4); // 2 to 5
+  var pickedActions = [];
+  for (var i = 0; i < count && i < shuffled.length; i++) {
+    performAction(shuffled[i].id);
+    pickedActions.push(shuffled[i]);
+  }
+
+  // 4. Cancel pending activity timer — we control fire timing here so only the
+  //    randomised-scenario overlay shows (not the standalone nudge modal first)
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  state.isUserActive = false;
+  renderGuardrails();
+
+  state._suppressModal = true;
+  evaluateAndFire();
+  state._suppressModal = false;
+  closeNudgeModal();
+  showRandOverlay(pickedActions);
+}
+
+function showRandOverlay(pickedActions) {
+  var u = state.user;
+  var scores = calculateScores();
+
+  // Determine which nudge would fire
+  var ranked = FEATURES
+    .map(function(f) { return Object.assign({}, f, scores[f.id]); })
+    .filter(function(f) { return state.relevantFeatures.has(f.id); })
+    .filter(function(f) { return f.total >= CONFIG.THRESHOLD; })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  var firedFeature = null;
+  var firedCopy = null;
+  if (state.milestoneLog.length > 0) {
+    firedFeature = state.milestoneLog[0].feature;
+    firedCopy = state.milestoneLog[0].copy;
+  }
+
+  var html = '';
+
+  // Header
+  html += '<div class="rand-header">';
+  html += '<h2>Randomised Scenario</h2>';
+  html += '<button class="rand-close" onclick="closeRandOverlay()">&times;</button>';
+  html += '</div>';
+
+  html += '<div class="rand-body">';
+
+  // ── Section 1: Nudge Result (moved to top) ──
+  html += '<div class="rand-section full-width">';
+  html += '<div class="rand-section-title">Nudge Result</div>';
+  if (firedFeature && firedCopy) {
+    html += '<div class="rand-nudge-result">';
+    html += buildNudgeCardHTML(firedFeature, firedCopy);
+    html += '<div class="rand-nudge-reason">';
+    var mTop = state.milestoneLog[0];
+    html += '<div class="rand-row"><span class="rand-row-label">Feature</span><span class="rand-row-value">' + firedFeature.icon + ' ' + firedFeature.name + '</span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Score</span><span class="rand-row-value">' + mTop.score + ' <span class="rand-score-badge above">above ' + CONFIG.THRESHOLD + ' threshold</span></span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Direct</span><span class="rand-row-value">+' + mTop.direct + '</span></div>';
+    html += '<div class="rand-row"><span class="rand-row-label">Universal (\u00d70.4)</span><span class="rand-row-value">+' + mTop.universal + '</span></div>';
+    if (mTop.directSignals.length > 0) {
+      html += '<div style="margin-top:10px"><span class="rand-row-label">Signals that fired it</span></div>';
+      mTop.directSignals.forEach(function(s) {
+        html += '<div class="rand-row"><span class="rand-row-label" style="padding-left:8px">' + s.name.replace(/-/g, ' ') + '</span><span class="rand-row-value highlight">+' + s.weight + '</span></div>';
+      });
+    }
+    html += '</div>';
+    html += '</div>';
+  } else {
+    var reasonTop = '';
+    var topCandidateTop = ranked.length > 0 ? ranked[0] : null;
+    if (topCandidateTop) {
+      reasonTop = 'Closest: ' + topCandidateTop.icon + ' ' + topCandidateTop.name + ' scored ' + topCandidateTop.total + ' (needs ' + CONFIG.THRESHOLD + ')';
+    } else {
+      reasonTop = 'No features reached the scoring threshold of ' + CONFIG.THRESHOLD;
+    }
+    html += '<div class="rand-nudge-empty">';
+    html += 'No nudge triggered this time.<br>';
+    html += '<span style="font-size:12px;margin-top:6px;display:inline-block">' + reasonTop + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ── Section 2: User Context ──
+  html += '<div class="rand-section">';
+  html += '<div class="rand-section-title">User Profile</div>';
+  html += randRow('Name', u.name);
+  html += randRow('Role', u.role);
+  html += randRow('Audience', u.audience);
+  html += randRow('Stakes', (u.audienceStakes || '').replace(/-/g, ' '), u.audienceStakes === 'high-external');
+  html += randRow('Email', u.email);
+  html += randRow('Country', u.country + (u.countryTier === 2 ? ' (Tier 2)' : ''));
+  html += randRow('Credits', u.credits + ' / 100', u.credits < 30);
+  html += randRow('Session #', u.sessionNum);
+  html += randRow('Acquisition', u.acqChannel);
+  html += randRow('Decks Completed', u.decksCompleted);
+  html += randRow('Decks Shared', u.decksShared);
+  html += '</div>';
+
+  // ── Section 2: Prompt Analysis ──
+  html += '<div class="rand-section">';
+  html += '<div class="rand-section-title">Prompt Analysis</div>';
+  html += '<div class="rand-prompt-bar">';
+  html += '<span class="rand-prompt-icon">&#x1F4AC;</span>';
+  html += '<span class="rand-prompt-text">"' + u.topic + '"</span>';
+  html += '</div>';
+  var synthesis = u.promptSynthesis || {};
+  var entries = FEATURES.map(function(f) {
+    return { id: f.id, name: f.name, icon: f.icon, score: synthesis[f.id] || 0 };
+  }).sort(function(a, b) { return b.score - a.score; });
+  entries.forEach(function(e) {
+    html += '<div class="rand-feature-row">';
+    html += '<span class="rand-feature-name">' + e.icon + ' ' + e.name + '</span>';
+    html += '<div class="rand-feature-bar"><div class="rand-feature-bar-fill" style="width:' + (e.score * 20) + '%"></div></div>';
+    html += '<span class="rand-feature-score ' + (e.score > 0 ? '' : 'dim') + '">' + e.score + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // ── Section 3: Actions Taken ──
+  html += '<div class="rand-section full-width">';
+  html += '<div class="rand-section-title">Actions Performed (' + pickedActions.length + ')</div>';
+  html += '<div class="rand-actions-grid">';
+  pickedActions.forEach(function(a) {
+    html += '<div class="rand-action-chip">' + a.label + '</div>';
+  });
+  html += '</div>';
+  html += '</div>';
+
+  html += '</div>'; // end .rand-body
+
+  // Footer
+  html += '<div class="rand-footer">';
+  html += '<button class="rand-reshuffle" onclick="closeRandOverlay();randomiseEverything()">Randomise Again</button>';
+  html += '</div>';
+
+  document.getElementById('rand-card').innerHTML = html;
+  document.getElementById('rand-overlay').classList.add('active');
+}
+
+function randRow(label, value, highlight) {
+  return '<div class="rand-row"><span class="rand-row-label">' + label + '</span><span class="rand-row-value' + (highlight ? ' highlight' : '') + '">' + (value || '\u2014') + '</span></div>';
+}
+
+function closeRandOverlay() {
+  document.getElementById('rand-overlay').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 14. Render Functions
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── renderUserContext ──
+function getUserContextImpact(label) {
+  var u = state.user;
+  // Return { signalName, directWeights: { featureId: weight }, universalWeight } or null
+  switch (label) {
+    case 'Role':
+    case 'Mindset Key': {
+      var key = u.role + '|' + (u.audienceStakes || 'internal');
+      var vec = MINDSET_VECTORS[key] || MINDSET_FALLBACK;
+      return { signalName: 'mindset-vector', note: key, directWeights: vec, universalWeight: 0 };
+    }
+    case 'Audience':
+    case 'Audience Stakes': {
+      var sig = 'stakes-' + (u.audienceStakes || 'internal');
+      var weights = DIRECT_MAP[sig] || {};
+      return { signalName: sig, directWeights: weights, universalWeight: 0 };
+    }
+    case 'Topic': {
+      var synthesis = PROMPT_SYNTHESIS[u.topic];
+      if (!synthesis) return null;
+      return { signalName: 'prompt-synthesis', note: 'LLM output', directWeights: synthesis, universalWeight: 0 };
+    }
+    case 'Email': {
+      if (!u.isCompanyDomain) return null;
+      return { signalName: 'company-domain', directWeights: {}, universalWeight: UNIVERSAL_MAP['company-domain'] || 0 };
+    }
+    case 'Country': {
+      if (u.countryTier !== 1) return null;
+      return { signalName: 'tier-1-country', directWeights: {}, universalWeight: UNIVERSAL_MAP['tier-1-country'] || 0 };
+    }
+    case 'Credits': {
+      var signals = [];
+      if (u.credits < 30) signals.push({ sig: 'credits-low', uni: UNIVERSAL_MAP['credits-low'] || 0 });
+      if (u.credits === 0) signals.push({ sig: 'credits-zero', uni: UNIVERSAL_MAP['credits-zero'] || 0 });
+      if (signals.length === 0) return null;
+      var totalUni = signals.reduce(function(s, x) { return s + x.uni; }, 0);
+      return { signalName: signals.map(function(x) { return x.sig; }).join(' + '), directWeights: {}, universalWeight: totalUni };
+    }
+    case 'Session': {
+      if (u.sessionNum <= 1) return null;
+      return { signalName: 'returning-user', directWeights: {}, universalWeight: UNIVERSAL_MAP['returning-user'] || 0 };
+    }
+    case 'Bought export': {
+      if (!u.boughtExport) return null;
+      return { signalName: 'bought-export', directWeights: DIRECT_MAP['bought-export'] || {}, universalWeight: UNIVERSAL_MAP['bought-export'] || 0 };
+    }
+    case 'Past dismissals': {
+      if (u.dismissals !== 0) return null;
+      return { signalName: 'zero-dismissals', directWeights: {}, universalWeight: UNIVERSAL_MAP['zero-dismissals'] || 0 };
+    }
+    case 'Acquisition': {
+      if (u.acqChannel === 'organic') return { signalName: 'acq-organic', directWeights: {}, universalWeight: UNIVERSAL_MAP['acq-organic'] || 0 };
+      var sig2 = 'acq-' + u.acqChannel;
+      return { signalName: sig2, directWeights: DIRECT_MAP[sig2] || {}, universalWeight: UNIVERSAL_MAP[sig2] || 0 };
+    }
+    case 'Deck history': {
+      var dw = {}; var du = 0; var names = [];
+      if (u.decksCompleted >= 5) {
+        names.push('deck-veteran');
+        du += UNIVERSAL_MAP['deck-veteran'] || 0;
+        Object.entries(DIRECT_MAP['deck-veteran'] || {}).forEach(function(e) { dw[e[0]] = (dw[e[0]] || 0) + e[1]; });
+      }
+      if (u.decksShared >= 2) {
+        names.push('deck-sharer');
+        Object.entries(DIRECT_MAP['deck-sharer'] || {}).forEach(function(e) { dw[e[0]] = (dw[e[0]] || 0) + e[1]; });
+      }
+      if (u.decksPublished >= 1) {
+        names.push('deck-publisher');
+        Object.entries(DIRECT_MAP['deck-publisher'] || {}).forEach(function(e) { dw[e[0]] = (dw[e[0]] || 0) + e[1]; });
+      }
+      if (names.length === 0) return null;
+      return { signalName: names.join(' + '), directWeights: dw, universalWeight: du };
+    }
+    default: return null;
+  }
+}
+
+function buildUserTooltipHTML(impact) {
+  var html = '<div class="user-tooltip">';
+  html += '<div class="tooltip-signal-name">' + impact.signalName + '</div>';
+
+  var entries = Object.entries(impact.directWeights).filter(function(e) { return e[1] > 0; }).sort(function(a, b) { return b[1] - a[1]; });
+
+  if (entries.length > 0) {
+    html += '<div class="tooltip-title">Feature Impact</div>';
+    entries.forEach(function(e) {
+      var f = FEATURES.find(function(feat) { return feat.id === e[0]; });
+      var cls = e[1] >= 5 ? 'high' : e[1] >= 3 ? 'med' : 'low';
+      html += '<div class="tooltip-row"><span class="tooltip-feature">' + (f ? f.icon + ' ' + f.name : e[0]) + '</span><span class="tooltip-weight ' + cls + '">+' + e[1] + '</span></div>';
+    });
+  }
+
+  if (impact.universalWeight > 0) {
+    if (entries.length > 0) html += '<div class="tooltip-divider"></div>';
+    html += '<div class="tooltip-uni-label">Universal (\u00d70.4 all features)</div>';
+    html += '<div class="tooltip-row"><span class="tooltip-feature" style="color:var(--text-muted)">' + impact.signalName + '</span><span class="tooltip-weight low">+' + impact.universalWeight + '</span></div>';
+  }
+
+  if (entries.length === 0 && impact.universalWeight === 0) {
+    html += '<div class="tooltip-empty">No scoring impact</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderUserContext() {
+  var u = state.user;
+  var rows = [
+    ['Name', u.name],
+    ['Email', u.name.toLowerCase() + u.email, u.isCompanyDomain],
+    ['Country', u.country + ' (Tier ' + u.countryTier + ')', u.countryTier === 1],
+    ['Role', u.role],
+    ['Credits', u.credits + ' / 100'],
+    ['Session', u.sessionNum === 1 ? '1st visit' : 'Session ' + u.sessionNum],
+    ['Deck history', u.decksCompleted + ' made \u00b7 ' + u.decksShared + ' shared \u00b7 ' + u.decksPublished + ' published', u.decksCompleted >= 5],
+    ['Acquisition', u.acqChannel === 'paid' ? 'Paid ad' : u.acqChannel === 'referral' ? 'Referral' : 'Organic', u.acqChannel !== 'organic'],
+    ['Bought export', u.boughtExport ? 'Yes ($4.99)' : 'No'],
+    ['Past dismissals', u.dismissals],
+  ];
+
+  document.getElementById('user-context').innerHTML = rows.map(function(r) {
+    var impact = getUserContextImpact(r[0]);
+    var hasImpact = impact !== null;
+    var tooltipHTML = hasImpact ? buildUserTooltipHTML(impact) : '';
+    return '<div class="user-row' + (hasImpact ? ' has-impact' : '') + '"><span class="user-label">' + r[0] + '</span><span class="user-value' + (r[2] ? ' highlight' : '') + '">' + r[1] + '</span>' + tooltipHTML + '</div>';
+  }).join('');
+}
+
+// Render the prompt input area — only called on init/reset, NOT during typing
+function renderPromptInput() {
+  var u = state.user;
+  var el = document.getElementById('prompt-input-area');
+  var html = '';
+
+  // Ollama status
+  var ollamaStatus = 'none';
+  var ollamaLabel = 'Ollama not checked';
+  if (state._ollamaAvailable === true) { ollamaStatus = 'connected'; ollamaLabel = 'Local AI connected'; }
+  else if (state._ollamaAvailable === false) { ollamaStatus = 'error'; ollamaLabel = 'Local AI not available'; }
+
+  html += '<div class="api-key-row">';
+  html += '<span class="api-status ' + ollamaStatus + '" style="flex:1;text-align:left">' + ollamaLabel + '</span>';
+  html += '</div>';
+
+  html += '<div class="prompt-section-label">What the user wants to create</div>';
+  html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">';
+  html += '<input type="text" class="prompt-input" id="prompt-input" value="' + u.topic.replace(/"/g, '&quot;') + '" oninput="debouncePrompt(this.value)" placeholder="Type any prompt and scores update live..." />';
+  html += '<button class="prompt-shuffle-btn" onclick="shufflePrompt()" title="Random prompt">&#x21BB;</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+// Render the analysis results — called on every update, does NOT touch the input
+function renderPromptAnalysis() {
+  var u = state.user;
+  var el = document.getElementById('prompt-analysis');
+
+  var html = '';
+
+  // Loading indicator
+  if (state._llmLoading) {
+    html += '<div class="llm-loader">';
+    html += '<div class="loader-dots"><span></span><span></span><span></span></div>';
+    html += ' Analyzing prompt with local AI...';
+    html += '</div>';
+  }
+
+  // Audience and stakes — only show LLM-inferred values, not random ones
+  var hasLLMAnalysis = state._llmSource === u.topic;
+  var audience = hasLLMAnalysis ? (u.audience || '\u2014') : null;
+  var stakes = hasLLMAnalysis ? (u.audienceStakes ? u.audienceStakes.replace(/-/g, ' ') : '\u2014') : null;
+
+  html += '<div class="prompt-section-label">What we infer</div>';
+  if (audience) {
+    var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
+    html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
+    html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Audience</span><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">' + audience + '</div></div>';
+    html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;font-style:italic">' + (state._llmLoading ? 'Analyzing prompt...' : (state._ollamaAvailable ? 'Enter a prompt above to see inferred audience and stakes' : 'Connect Ollama locally for AI-powered inference')) + '</div>';
+  }
+
+  // Signal extraction
+  var synthesis = u.promptSynthesis || {};
+
+  // Signal extraction
+  var sourceLabel = '';
+  if (PROMPT_SYNTHESIS[u.topic] !== undefined) sourceLabel = '';
+  if (state._llmSource === u.topic) sourceLabel = '(AI-analyzed)';
+  if (state._llmLoading) sourceLabel = '';
+  html += '<div class="prompt-section-label">Feature relevance ' + sourceLabel + '</div>';
+
+  // Sort features by synthesis score descending
+  var entries = FEATURES.map(function(f) {
+    return { id: f.id, name: f.name, icon: f.icon, score: synthesis[f.id] || 0 };
+  }).sort(function(a, b) { return b.score - a.score; });
+
+  entries.forEach(function(e) {
+    var scoreClass = e.score > 0 ? 'active' : 'dim';
+    html += '<div class="prompt-feature-row">';
+    html += '<span class="prompt-feature-name">' + e.icon + ' ' + e.name + '</span>';
+    html += '<div class="prompt-feature-bar-wrap">';
+    html += '<div class="prompt-feature-bar"><div class="prompt-feature-bar-fill s' + e.score + '"></div></div>';
+    html += '<span class="prompt-feature-score ' + scoreClass + '">' + e.score + '</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  // Contribution note
+  html += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5;margin-top:12px">These scores reflect how relevant each Pro feature is to this user\u2019s prompt. Higher scores increase the chance that feature gets nudged.</div>';
+
+  el.innerHTML = html;
+}
+
+var promptDebounceTimer = null;
+function debouncePrompt(text) {
+  if (promptDebounceTimer) clearTimeout(promptDebounceTimer);
+  var delay = state._ollamaAvailable ? 800 : 300;
+  promptDebounceTimer = setTimeout(function() { applyCustomPrompt(text); }, delay);
+}
+
+function applyCustomPrompt(text) {
+  var prompt = (text || '').trim();
+  if (!prompt) return;
+
+  state.user.topic = prompt;
+
+  // Apply keyword fallback immediately for instant feedback
+  var lookup = PROMPT_SYNTHESIS[prompt];
+  applyPromptSynthesis(lookup || synthesizeFromKeywords(prompt));
+  // Then try local LLM in background (overwrites with better analysis)
+  synthesizeWithLLM(prompt);
+}
+
+function applyPromptSynthesis(synthesis) {
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+
+  rebuildSignalsFromActions();
+  renderUserContext();
+  renderPromptAnalysis();  // Only updates analysis results, NOT the input
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  evaluateAndFire();
+  if (apiInput && document.activeElement && document.activeElement.id === 'api-key-input') {
+    apiInput.focus();
+  }
+}
+
+// ── Live Claude API prompt synthesis ──
+var llmRequestId = 0;
+
+async function checkOllama() {
+  try {
+    var res = await fetch('http://localhost:11434/api/tags');
+    state._ollamaAvailable = res.ok;
+  } catch (e) {
+    state._ollamaAvailable = false;
+  }
+}
+
+function synthesizeWithLLM(prompt) {
+  if (state._ollamaAvailable !== true) return;
+
+  var requestId = ++llmRequestId;
+  state._llmLoading = true;
+  state._llmError = null;
+  renderPromptAnalysis();
+
+  var hasDoc = state.activeSignals.has('doc-upload');
+  var hasLongDoc = state.activeSignals.has('doc-upload-long');
+  var docContext = '';
+  if (hasLongDoc) docContext = '\nThe user uploaded a LONG document (20+ pages). They have existing content — boost export, brand-kit, unbranded, hire-team. Reduce ai-models.';
+  else if (hasDoc) docContext = '\nThe user uploaded a document/file. They have existing content — boost export, brand-kit, unbranded. Reduce ai-models.';
+
+  var role = state.user.role || 'unknown';
+
+  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Remove watermark — clean professional finish (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
+
+  fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gemma2',
+      prompt: ollamaPrompt,
+      stream: false }) })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Ollama error ' + res.status);
+    return res.json();
+  })
+  .then(function(data) {
+    if (requestId !== llmRequestId) return;
+    state._llmLoading = false;
+
+    var text = (data.response || '').trim();
+    // Extract JSON from response (handle markdown code blocks)
+    var jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    // Find the first { and last }
+    var start = jsonStr.indexOf('{');
+    var end = jsonStr.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON in response');
+    jsonStr = jsonStr.substring(start, end + 1);
+
+    var result = JSON.parse(jsonStr);
+
+    // Extract audience and stakes from LLM response
+    if (result.audience) {
+      state.user.audience = result.audience;
+      // Update audience stakes from LLM
+      var newStakes = result.audience_stakes;
+      if (['high-external', 'low-external', 'internal'].indexOf(newStakes) !== -1) {
+        // Remove old stakes signal
+        state.activeSignals.delete('stakes-high-external');
+        state.activeSignals.delete('stakes-low-external');
+        state.activeSignals.delete('stakes-internal');
+        // Add new one
+        state.activeSignals.add('stakes-' + newStakes);
+        state.user.audienceStakes = newStakes;
+        // Update mindset vector with new stakes
+        var mindsetKey = state.user.role + '|' + newStakes;
+        var mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+        state.user.mindsetVector = mindsetVector;
+        DIRECT_MAP['mindset-vector'] = mindsetVector;
+      }
+    }
+
+    // Extract feature scores
+    var scores = result.scores || result;
+    var synthesis = {};
+    FEATURES.forEach(function(f) {
+      var s = parseInt(scores[f.id]) || 0;
+      synthesis[f.id] = Math.max(0, Math.min(5, s));
+    });
+
+    state._llmSource = prompt;
+    computeRelevantFeatures();
+    applyPromptSynthesis(synthesis);
+    renderUserContext();
+  })
+  .catch(function(err) {
+    if (requestId !== llmRequestId) return;
+    state._llmLoading = false;
+    state._llmError = err.message.length > 30 ? err.message.slice(0, 30) + '...' : err.message;
+    renderPromptAnalysis();
+  });
+}
+
+function shufflePrompt() {
+  // Collect all available prompts from PROMPT_SYNTHESIS
+  var allPrompts = Object.keys(PROMPT_SYNTHESIS);
+  // Filter out current topic
+  var others = allPrompts.filter(function(p) { return p !== state.user.topic; });
+  if (others.length === 0) return;
+  // Pick a random one
+  var newTopic = others[Math.floor(Math.random() * others.length)];
+
+  // Update user topic
+  state.user.topic = newTopic;
+
+  // Re-run prompt synthesis (Layer 3) — lookup or keyword fallback
+  var synthesis = PROMPT_SYNTHESIS[newTopic] || synthesizeFromKeywords(newTopic);
+  state.user.promptSynthesis = synthesis;
+  DIRECT_MAP['prompt-synthesis'] = synthesis;
+  state.activeSignals.add('prompt-synthesis');
+
+  // Rebuild all signals (keeps action toggles intact)
+  rebuildSignalsFromActions();
+
+  // Re-render everything affected
+  renderUserContext();
+  renderPromptInput();  // Update input value with new topic
+  renderPromptAnalysis();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+  evaluateAndFire();
+}
+
+// ── Action tooltip helpers ──
+function getActionImpact(action) {
+  var featureMap = {};
+  var universals = [];
+
+  action.signals.forEach(function(sig) {
+    if (DIRECT_MAP[sig]) {
+      Object.entries(DIRECT_MAP[sig]).forEach(function(entry) {
+        featureMap[entry[0]] = (featureMap[entry[0]] || 0) + entry[1];
+      });
+    }
+    if (UNIVERSAL_MAP[sig]) {
+      universals.push({ signal: sig, weight: UNIVERSAL_MAP[sig] });
+    }
+  });
+
+  var directImpacts = Object.entries(featureMap)
+    .map(function(entry) {
+      var f = FEATURES.find(function(feat) { return feat.id === entry[0]; });
+      return { name: f ? f.name : entry[0], icon: f ? f.icon : '', weight: entry[1] };
+    })
+    .sort(function(a, b) { return b.weight - a.weight; });
+
+  return { directImpacts: directImpacts, universals: universals };
+}
+
+function buildTooltipHTML(action) {
+  var impact = getActionImpact(action);
+  var html = '<div class="action-tooltip">';
+  html += '<div class="tooltip-title">Score Impact</div>';
+
+  if (impact.directImpacts.length === 0 && impact.universals.length === 0) {
+    html += '<div class="tooltip-empty">No scoring impact</div>';
+    html += '</div>';
+    return html;
+  }
+
+  impact.directImpacts.forEach(function(d) {
+    var cls = d.weight >= 5 ? 'high' : d.weight >= 3 ? 'med' : 'low';
+    html += '<div class="tooltip-row">' +
+      '<span class="tooltip-feature">' + d.icon + ' ' + d.name + '</span>' +
+      '<span class="tooltip-weight ' + cls + '">+' + d.weight + '</span>' +
+    '</div>';
+  });
+
+  if (impact.universals.length > 0) {
+    html += '<div class="tooltip-divider"></div>';
+    html += '<div class="tooltip-uni-label">Universal (\u00d70.4 all features)</div>';
+    impact.universals.forEach(function(u) {
+      html += '<div class="tooltip-row">' +
+        '<span class="tooltip-feature" style="color:var(--text-muted)">' + u.signal.replace(/-/g, ' ') + '</span>' +
+        '<span class="tooltip-weight low">+' + u.weight + '</span>' +
+      '</div>';
+    });
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ── renderActions ──
+function renderActions() {
+  var grid = document.getElementById('action-grid');
+  var catLabels = {
+    edit: 'Slide Editing',
+    content: 'Adding Content',
+    preview: 'Previewing',
+    share: 'Sharing',
+    prompt: 'Creation',
+    session: 'Session' };
+  var cats = ['edit', 'content', 'preview', 'share', 'prompt', 'session'];
+
+  grid.innerHTML = cats.map(function(cat) {
+    var actions = ACTIONS.filter(function(a) { return a.cat === cat; });
+    return '<div class="action-cat-label">' + catLabels[cat] + '</div>' +
+      '<div class="action-cat-grid">' +
+      actions.map(function(a) {
+        var count = state.actionCounts[a.id] || 0;
+        var isRepeatable = a.signals.some(function(s) { return REPEATABLE_SIGNALS.has(s); });
+        var doneClass = count > 0 ? ' done' : '';
+        var countBadge = (isRepeatable && count > 0)
+          ? ' <span class="action-count">×' + count + '</span>'
+          : '';
+        return '<button class="action-btn' + doneClass + '" id="act-' + a.id + '" onclick="performAction(\'' + a.id + '\')">' + a.label + countBadge + buildTooltipHTML(a) + '</button>';
+      }).join('') +
+      '</div>';
+  }).join('');
+}
+
+// ── renderSignals ──
+function renderSignals() {
+  var allSignals = [
+    // Slide editing
+    { id: 'text-edit', label: 'Text edited', type: 'direct' },
+    { id: 'style-change', label: 'Style changed (font/color)', type: 'direct' },
+    { id: 'element-move', label: 'Element moved/resized', type: 'direct' },
+    { id: 'undo-redo', label: 'Undo/redo used', type: 'direct' },
+    { id: 'slide-delete', label: 'Slide deleted', type: 'direct' },
+    // Content
+    { id: 'insert-title', label: 'Inserted a title', type: 'direct' },
+    { id: 'insert-list', label: 'Inserted a list', type: 'direct' },
+    { id: 'insert-media', label: 'Inserted media', type: 'direct' },
+    { id: 'insert-slide-prompt', label: 'Added slide with prompt', type: 'direct' },
+    { id: 'insert-slide-template', label: 'Added slide from template', type: 'direct' },
+    { id: 'slide-reorder', label: 'Slides reordered', type: 'direct' },
+    // Preview & customization
+    { id: 'play-preview', label: 'Played slideshow', type: 'direct' },
+    { id: 'edit-after-preview', label: 'Edited after preview', type: 'direct' },
+    { id: 'theme-global', label: 'Deck theme changed', type: 'direct' },
+    { id: 'layout-slide', label: 'Slide layout changed', type: 'direct' },
+    { id: 'deck-regenerate', label: 'Deck regenerated', type: 'direct' },
+    // Sharing & export
+    { id: 'share-link-copy', label: 'Share link copied', type: 'direct' },
+    { id: 'invite-attempt', label: 'Invite clicked (Pro gate)', type: 'direct' },
+    { id: 'export-click', label: 'Export options opened', type: 'direct' },
+    { id: 'export-download', label: 'Download clicked (paywall)', type: 'both' },
+    // Creation
+    { id: 'prompt-brand', label: 'Brand mentioned in prompt', type: 'direct' },
+    { id: 'prompt-team', label: 'Team language in prompt', type: 'direct' },
+    { id: 'doc-upload', label: 'Document uploaded', type: 'both' },
+    { id: 'doc-upload-long', label: 'Long document (20+ pages)', type: 'direct' },
+    // Session thresholds
+    { id: 'edit-streak-3', label: 'Same slide edited 3x', type: 'direct' },
+    { id: 'edit-count-5', label: '5+ edits total', type: 'direct' },
+    { id: 'second-deck', label: 'Started 2nd deck', type: 'both' },
+    { id: 'deck-switch', label: 'Switched decks', type: 'direct' },
+    { id: 'session-15min', label: '15+ min in editor', type: 'universal' },
+    { id: 'gate-hit', label: 'Pro feature clicked', type: 'universal' },
+    { id: 'pricing-visit', label: 'Visited pricing', type: 'universal' },
+    // Context layers
+    { id: 'mindset-vector', label: 'Role-based profile', type: 'direct' },
+    { id: 'stakes-high-external', label: 'High-stakes audience', type: 'direct' },
+    { id: 'stakes-low-external', label: 'External audience', type: 'direct' },
+    { id: 'stakes-internal', label: 'Internal audience', type: 'direct' },
+    { id: 'prompt-synthesis', label: 'Prompt analysis', type: 'direct' },
+    // User state
+    { id: 'credits-low', label: 'Low credits', type: 'universal' },
+    { id: 'credits-zero', label: 'No credits left', type: 'universal' },
+    { id: 'returning-user', label: 'Returning user', type: 'universal' },
+    { id: 'bought-export', label: 'Bought single export', type: 'both' },
+    { id: 'zero-dismissals', label: 'Never dismissed a nudge', type: 'universal' },
+    { id: 'company-domain', label: 'Company email', type: 'universal' },
+    { id: 'tier-1-country', label: 'Tier 1 country', type: 'universal' },
+    { id: 'deck-veteran', label: '5+ decks made', type: 'both' },
+    { id: 'deck-sharer', label: 'Shares decks often', type: 'direct' },
+    { id: 'deck-publisher', label: 'Published a deck', type: 'direct' },
+    { id: 'acq-organic', label: 'Organic traffic', type: 'universal' },
+    { id: 'acq-paid', label: 'Paid traffic', type: 'both' },
+    { id: 'acq-referral', label: 'Referral traffic', type: 'both' },
+  ];
+
+  var list = document.getElementById('signal-list');
+  var activeList = allSignals.filter(function(s) { return state.activeSignals.has(s.id); });
+
+  if (activeList.length === 0) {
+    list.innerHTML = '<div class="signal-row" style="opacity:0.4;font-size:11px;color:var(--text-dim)">No signals yet — toggle actions above</div>';
+    return;
+  }
+
+  list.innerHTML = activeList.map(function(s) {
+    var badgeClass = s.type === 'universal' ? 'uni' : s.type === 'both' ? 'both' : 'dir';
+    var typeLabel = s.type === 'universal' ? 'UNI' : s.type === 'both' ? 'D+U' : 'DIR';
+    return '<div class="signal-row active"><span class="signal-name">' + s.label + '</span><span class="signal-type-badge ' + badgeClass + '">' + typeLabel + '</span></div>';
+  }).join('');
+}
+
+// ── Filter tooltip builder ──
+function buildFilterTooltip(feature) {
+  var u = state.user;
+  var mindsetScore = (u.mindsetVector || {})[feature.id] || 0;
+  var promptScore = (u.promptSynthesis || {})[feature.id] || 0;
+  var total = mindsetScore + promptScore;
+
+  var mindsetKey = u.role + ' | ' + (u.audienceStakes || 'internal');
+  var promptLabel = u.topic.length > 35 ? u.topic.substring(0, 35) + '...' : u.topic;
+
+  var reason = '';
+  if (mindsetScore === 0 && promptScore === 0) {
+    reason = 'This feature isn\u2019t relevant to this user\u2019s role or what they\u2019re creating.';
+  } else if (mindsetScore === 0) {
+    reason = 'A ' + u.role + ' presenting to ' + (u.audienceStakes || 'internal').replace(/-/g, ' ') + ' audiences typically doesn\u2019t need this feature.';
+  } else if (promptScore === 0) {
+    reason = 'Nothing in the prompt suggests this feature would be useful.';
+  } else {
+    reason = 'Weak signal from both role and prompt \u2014 not enough to be worth nudging.';
+  }
+
+  var html = '<span class="badge filtered" onmouseenter="positionFilterTooltip(event)" onmouseleave="hideFilterTooltip()">FILTERED';
+  html += '<div class="filter-tooltip" id="ft-' + feature.id + '">';
+  html += '<div class="ft-title">' + feature.icon + ' ' + feature.name + ' \u2014 Not relevant</div>';
+  html += '<div class="ft-row"><span class="ft-label">Role fit (' + mindsetKey + ')</span><span class="ft-val ' + (mindsetScore > 0 ? 'pos' : 'zero') + '">' + mindsetScore + '/5</span></div>';
+  html += '<div class="ft-row"><span class="ft-label">Prompt fit</span><span class="ft-val ' + (promptScore > 0 ? 'pos' : 'zero') + '">' + promptScore + '/5</span></div>';
+  html += '<div class="ft-divider"></div>';
+  html += '<div class="ft-row"><span class="ft-label ft-total">Combined fit</span><span class="ft-val zero">' + total + ' (needs ' + RELEVANCE_THRESHOLD + '+)</span></div>';
+  html += '<div class="ft-reason">' + reason + '</div>';
+  html += '</div></span>';
+  return html;
+}
+
+function positionFilterTooltip(event) {
+  var badge = event.currentTarget;
+  var tooltip = badge.querySelector('.filter-tooltip');
+  if (!tooltip) return;
+  var rect = badge.getBoundingClientRect();
+  tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+  tooltip.style.left = Math.max(10, rect.right - 320) + 'px';
+  // If clipping top, show below instead
+  if (rect.top - tooltip.offsetHeight - 10 < 10) {
+    tooltip.style.top = (rect.bottom + 10) + 'px';
+  }
+}
+
+function hideFilterTooltip() {
+  // Tooltips hide via CSS :hover, but this is a fallback
+}
+
+// ── renderMatrix ──
+function renderMatrix() {
+  var scores = calculateScores();
+  var ranked = FEATURES
+    .map(function(f) { return Object.assign({}, f, scores[f.id]); })
+    .sort(function(a, b) { return b.total - a.total; });
+
+  var topId = ranked.length > 0 && ranked[0].total >= CONFIG.THRESHOLD && !state.featuresShownThisSession.has(ranked[0].id) ? ranked[0].id : null;
+
+  // Separate relevant and filtered features — relevant first, then filtered (dimmed)
+  var relevant = ranked.filter(function(f) { return state.relevantFeatures.has(f.id); });
+  var filtered = ranked.filter(function(f) { return !state.relevantFeatures.has(f.id); });
+
+  // Only consider relevant features for NEXT badge
+  var relevantTopId = relevant.length > 0 && relevant[0].total >= CONFIG.THRESHOLD && !state.featuresShownThisSession.has(relevant[0].id) ? relevant[0].id : null;
+
+  var body = document.getElementById('matrix-body');
+  body.innerHTML = relevant.concat(filtered).map(function(f) {
+    var isRelevant = state.relevantFeatures.has(f.id);
+    var pct = Math.min((f.total / CONFIG.MAX_SCORE) * 100, 100);
+    var threshPct = (CONFIG.THRESHOLD / CONFIG.MAX_SCORE) * 100;
+    var isAbove = f.total >= CONFIG.THRESHOLD;
+    var isTop = f.id === relevantTopId;
+    var isShown = state.featuresShownThisSession.has(f.id);
+
+    var barClass = 'low';
+    var numClass = 'below';
+    if (f.total >= CONFIG.THRESHOLD) { barClass = 'high'; numClass = 'above'; }
+    else if (f.total >= CONFIG.THRESHOLD * 0.7) { barClass = 'mid'; numClass = 'near'; }
+    if (isTop) { barClass = 'top'; numClass = 'top'; }
+
+    var badge = '';
+    if (!isRelevant) badge = buildFilterTooltip(f);
+    else if (isShown) badge = '<span class="badge shown">SHOWN</span>';
+    else if (isTop && isAbove) badge = '<span class="badge fire">NEXT</span>';
+    else if (isAbove) badge = '<span class="badge queued">QUEUED</span>';
+
+    var rowClass = !isRelevant ? 'filtered-row' : isTop && isAbove ? 'top-pick' : isAbove && !isShown ? 'qualified' : '';
+
+    var relScore = (state.relevanceScores || {})[f.id] || 0;
+    var relClass = relScore >= RELEVANCE_THRESHOLD ? 'rel-pass' : 'rel-fail';
+
+    return '<tr class="' + rowClass + '">' +
+      '<td class="feature-name">' + f.icon + ' ' + f.name + '</td>' +
+      '<td class="rel-val ' + relClass + '">' + relScore + '</td>' +
+      '<td class="direct-val">' + f.direct + '</td>' +
+      '<td class="universal-val">' + f.universalContrib + '</td>' +
+      '<td class="score-bar-cell"><div class="score-bar-wrap">' +
+        '<div class="score-bar-bg">' +
+          '<div class="score-bar-fill ' + barClass + '" style="width:' + pct + '%"></div>' +
+          '<div class="threshold-line" style="left:' + threshPct + '%"></div>' +
+        '</div>' +
+        '<span class="score-num ' + numClass + '">' + f.total + '</span>' +
+      '</div></td>' +
+      '<td>' + badge + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ── renderGuardrails ──
+function renderGuardrails() {
+  var now = Date.now();
+  var cooldownLeft = state.lastMilestoneTime > 0 ? Math.max(0, Math.ceil((CONFIG.COOLDOWN_MS - (now - state.lastMilestoneTime)) / 1000)) : 0;
+
+  var intentFloor = 0;
+  state.activeSignals.forEach(function(sig) { if (UNIVERSAL_MAP[sig]) intentFloor += UNIVERSAL_MAP[sig]; });
+
+  var bar = document.getElementById('guardrail-bar');
+  bar.innerHTML = [
+    { label: 'Pro', value: state.user.isProUser ? 'Yes' : 'Free', status: state.user.isProUser ? 'blocked' : 'ok' },
+    { label: 'Nudges shown', value: state.milestonesThisSession + '/' + CONFIG.SESSION_CAP, status: state.milestonesThisSession >= CONFIG.SESSION_CAP ? 'blocked' : state.milestonesThisSession >= 2 ? 'warn' : 'ok' },
+    { label: 'Cooldown', value: cooldownLeft > 0 ? cooldownLeft + 's' : 'Ready', status: cooldownLeft > 0 ? 'warn' : 'ok' },
+    { label: 'In scope', value: (state.relevantFeatures ? state.relevantFeatures.size : 0) + '/7', status: 'ok' },
+    { label: 'Seen', value: state.featuresShownThisSession.size + '/' + (state.relevantFeatures ? state.relevantFeatures.size : 7), status: 'ok' },
+    { label: 'Engagement', value: intentFloor >= CONFIG.INTENT_FLOOR ? 'Enough (' + intentFloor + ')' : 'Low (' + intentFloor + ')', status: intentFloor >= CONFIG.INTENT_FLOOR ? 'ok' : 'blocked' },
+    { label: 'User', value: state.isUserActive ? 'Active' : 'Idle', status: state.isUserActive ? 'blocked' : 'ok', toggle: true },
+  ].map(function(g) {
+    if (g.toggle) {
+      return '<div class="gr-item gr-toggle" onclick="toggleUserActive()"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
+    }
+    return '<div class="gr-item"><span>' + g.label + '</span><span class="gr-value ' + g.status + '">' + g.value + '</span></div>';
+  }).join('');
+}
+
+// ── renderFeed ──
+function renderFeed() {
+  var content = document.getElementById('feed-content');
+
+  if (state.milestoneLog.length === 0) {
+    content.innerHTML = '<div class="empty-feed">No nudges fired yet. Toggle actions to build up feature scores.</div>';
+    return;
+  }
+
+  content.innerHTML = state.milestoneLog.map(function(m) {
+    var directTags = m.directSignals.map(function(s) {
+      return '<span class="milestone-signal-tag">' + s.name + ' (+' + s.weight + ')</span>';
+    }).join('');
+    var uniTags = m.universalSignals.map(function(s) {
+      return '<span class="milestone-signal-tag universal">' + s.name + ' (+' + s.weight + ' x0.4)</span>';
+    }).join('');
+
+    var itemClass = m.feature.type === 'service' ? 'milestone-item service' : 'milestone-item';
+    return '<div class="' + itemClass + '">' +
+      '<div class="milestone-icon">' + m.feature.icon + '</div>' +
+      '<div class="milestone-content">' +
+        '<div class="milestone-feature">' + m.feature.name + '</div>' +
+        '<div class="milestone-title">' + m.copy.title + '</div>' +
+        '<div class="milestone-body">' + m.copy.body + '</div>' +
+        '<div class="milestone-meta">' +
+          '<span>Score: <strong>' + m.score + '</strong></span>' +
+          '<span>Direct: <strong>' + m.direct + '</strong></span>' +
+          '<span>Universal: <strong>' + m.universal + '</strong></span>' +
+          '<span>' + m.time + '</span>' +
+        '</div>' +
+        '<div class="milestone-signals">' + directTags + uniTags + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Nudge card + breakdown helpers ──
+function buildNudgeCardHTML(feature, copy) {
+  var isService = feature.type === 'service';
+  var tagLabel = isService ? 'Service' : 'Milestone';
+  var ctaLabel = (copy && copy.cta) ? copy.cta : (isService ? 'Talk to Our Team' : 'Upgrade to Pro');
+  var badgeLabel = isService ? 'SERVICE' : 'PRO';
+  var cssClass = isService ? 'nudge-ui service' : 'nudge-ui';
+  var ctaClass = isService ? 'nudge-ui-cta service' : 'nudge-ui-cta';
+  var badgeClass = isService ? 'nudge-ui-pro-badge service' : 'nudge-ui-pro-badge';
+
+  return '<div class="' + cssClass + '">' +
+    '<div class="nudge-ui-header">' +
+      '<div class="nudge-ui-icon">' + feature.icon + '</div>' +
+      '<div class="nudge-ui-tag">' + tagLabel + '</div>' +
+    '</div>' +
+    '<div class="nudge-ui-body">' +
+      '<div class="nudge-ui-title">' + copy.title + '</div>' +
+      '<div class="nudge-ui-desc">' + copy.body + '</div>' +
+      '<div class="nudge-ui-actions">' +
+        '<button class="' + ctaClass + '" onclick="handleUpgrade(\'' + feature.id + '\')">' + ctaLabel + '</button>' +
+        '<button class="nudge-ui-dismiss" onclick="handleDismiss(\'' + feature.id + '\')">Not now</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="nudge-ui-footer">' +
+      '<span class="' + badgeClass + '">' + badgeLabel + '</span>' +
+      '<span class="nudge-ui-feature-label">' + feature.name + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+function buildBreakdownHTML(milestone) {
+  var html = '';
+  html += '<div class="breakdown-section-label">Direct signals</div>';
+  if (milestone.directSignals.length > 0) {
+    html += milestone.directSignals.map(function(s) {
+      var isRep = REPEATABLE_SIGNALS.has(s.name);
+      var scaled = (s.scaled != null) ? s.scaled : s.weight;
+      var cnt = s.count || 1;
+      var detail = isRep
+        ? '+' + s.weight + ' \u00d7log\u2082(' + (cnt + 1) + ') = ' + scaled
+        : '+' + s.weight;
+      var nameLabel = s.name.replace(/-/g, ' ') + (isRep ? ' \u00d7' + cnt : '');
+      return '<div class="breakdown-row"><span class="breakdown-signal">' + nameLabel + '</span><span class="breakdown-weight direct">' + detail + '</span></div>';
+    }).join('');
+  } else {
+    html += '<div class="breakdown-row"><span class="breakdown-signal" style="opacity:0.4">None</span><span class="breakdown-weight">0</span></div>';
+  }
+  html += '<div class="breakdown-section-label">Universal signals (\u00d70.4)</div>';
+  if (milestone.universalSignals.length > 0) {
+    html += milestone.universalSignals.map(function(s) {
+      var isRep = REPEATABLE_SIGNALS.has(s.name);
+      var scaled = (s.scaled != null) ? s.scaled : s.weight;
+      var cnt = s.count || 1;
+      var contrib = (scaled * CONFIG.UNIVERSAL_MULTIPLIER).toFixed(1);
+      var detail = isRep
+        ? '+' + s.weight + ' \u00d7log\u2082(' + (cnt + 1) + ') \u2192 ' + contrib
+        : '+' + s.weight + ' \u2192 ' + contrib;
+      var nameLabel = s.name.replace(/-/g, ' ') + (isRep ? ' \u00d7' + cnt : '');
+      return '<div class="breakdown-row"><span class="breakdown-signal">' + nameLabel + '</span><span class="breakdown-weight universal">' + detail + '</span></div>';
+    }).join('');
+  } else {
+    html += '<div class="breakdown-row"><span class="breakdown-signal" style="opacity:0.4">None</span><span class="breakdown-weight">0</span></div>';
+  }
+  html += '<div class="breakdown-total-row"><span>Total Score</span><span class="breakdown-total-score">' + milestone.score + '</span></div>';
+  return html;
+}
+
+function buildContextHTML(u) {
+  return '<div class="breakdown-section-label" style="margin-top:18px">User context</div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">User</span><span style="font-size:12px;color:var(--text)">' + u.name + ' \u2014 ' + u.role + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Audience</span><span style="font-size:12px;color:var(--text)">' + u.audience + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Topic</span><span style="font-size:12px;color:var(--text)">' + u.topic + '</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Credits</span><span style="font-size:12px;color:var(--text)">' + u.credits + ' / 100</span></div>' +
+    '<div class="breakdown-row"><span class="breakdown-signal">Session</span><span style="font-size:12px;color:var(--text)">' + u.sessionNum + '</span></div>';
+}
+
+var autoDismissTimer = null;
+
+// ── renderNudgePreview ──
+function renderNudgePreview(feature, copy) {
+  var previewEl = document.getElementById('nudge-preview');
+
+  // Called with no args on reset — show empty state
+  if (!feature || !copy) {
+    previewEl.innerHTML = '<div class="nudge-preview-empty">No nudge triggered yet. Toggle actions on the right to build up scores and trigger a nudge.</div>';
+    return;
+  }
+
+  var u = state.user;
+  var m = state.milestoneLog[0];
+  var breakdownHTML = buildBreakdownHTML(m);
+
+  // Update inline preview (below the matrix)
+  previewEl.innerHTML =
+    '<div class="nudge-preview-container">' +
+      buildNudgeCardHTML(feature, copy) +
+      '<div class="nudge-breakdown">' +
+        '<div class="breakdown-title">Why this nudge fired</div>' +
+        breakdownHTML +
+        buildContextHTML(u) +
+      '</div>' +
+    '</div>';
+
+  // Show modal overlay
+  var modal = document.getElementById('nudge-modal');
+  modal.innerHTML =
+    buildNudgeCardHTML(feature, copy) +
+    '<div class="nudge-breakdown">' +
+      '<div class="breakdown-title">Why this nudge fired</div>' +
+      breakdownHTML +
+      buildContextHTML(u) +
+      '<div class="nudge-modal-controls">' +
+        '<button class="nudge-modal-close" onclick="closeNudgeModal()">Dismiss</button>' +
+        '<button class="nudge-modal-skip-cooldown" onclick="skipCooldown()">Skip Cooldown</button>' +
+      '</div>' +
+    '</div>';
+
+  if (state._suppressModal) return;
+
+  document.getElementById('nudge-overlay').classList.add('active');
+
+  // Auto-dismiss after 10 seconds (simulates "user ignores" from spec)
+  if (autoDismissTimer) clearTimeout(autoDismissTimer);
+  autoDismissTimer = setTimeout(function() {
+    if (document.getElementById('nudge-overlay').classList.contains('active')) {
+      closeNudgeModal();
+      showToast('Auto-dismissed', 'Nudge auto-dismissed after 10s (user ignored). Feature suppressed for session.', '');
+    }
+  }, 10000);
+}
+
+// ── closeNudgeModal ──
+function closeNudgeModal() {
+  var overlay = document.getElementById('nudge-overlay');
+  if (overlay) overlay.classList.remove('active');
+  if (autoDismissTimer) { clearTimeout(autoDismissTimer); autoDismissTimer = null; }
+}
+
+// ── skipCooldown ──
+function skipCooldown() {
+  state.lastMilestoneTime = 0;
+  closeNudgeModal();
+  renderGuardrails();
+}
+
+// ── handleDismiss — user clicked "Not now" on a nudge ──
+function handleDismiss(featureId) {
+  state.user.dismissals = (state.user.dismissals || 0) + 1;
+  // Remove zero-dismissals signal since they've now dismissed at least once
+  state.activeSignals.delete('zero-dismissals');
+  closeNudgeModal();
+  renderUserContext();
+  renderSignals();
+  renderMatrix();
+  renderGuardrails();
+}
+
+// ── showToast — inline notification replacing alert() ──
+function showToast(title, body, type) {
+  var container = document.getElementById('toast-container');
+  var toast = document.createElement('div');
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.innerHTML = '<div class="toast-title">' + title + '</div><div class="toast-body">' + body + '</div>';
+  container.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('fade-out');
+    setTimeout(function() { toast.remove(); }, 300);
+  }, 4000);
+}
+
+// ── handleUpgrade — user clicked "Upgrade to Pro" or "Talk to our team" ──
+function handleUpgrade(featureId) {
+  var feature = FEATURES.find(function(f) { return f.id === featureId; });
+  if (feature && feature.type === 'service') {
+    closeNudgeModal();
+    showToast('Service Booking', 'Routed to service booking flow. Our team will build this presentation for ' + state.user.audience + '.', 'service');
+  } else {
+    state.user.isProUser = true;
+    closeNudgeModal();
+    showToast('Upgraded to Pro', 'All nudges disabled for this session. User is now a Pro subscriber.', 'success');
+    renderGuardrails();
+  }
+}
+
+// ── toggleUserActive ──
+function toggleUserActive() {
+  state.isUserActive = !state.isUserActive;
+  // Clear auto-activity timer if manually toggling
+  if (activityTimer) { clearTimeout(activityTimer); activityTimer = null; }
+  renderGuardrails();
+  if (!state.isUserActive) {
+    evaluateAndFire();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 15. Config Loader — fetch from ../config/ with inline fallback
+// ══════════════════════════════════════════════════════════════════════════════
+
+var configLoaded = false;
+
+async function loadConfigsFromFiles() {
+  // Only works when served via HTTP (not file:// protocol)
+  if (window.location.protocol === 'file:') return false;
+
+  try {
+    var files = {
+      direct: '../config/direct-signal-map.json',
+      universal: '../config/universal-signal-map.json',
+      mindset: '../config/mindset-vectors.json',
+      prompt: '../config/prompt-synthesis-examples.json',
+      guardrails: '../config/guardrails.json' };
+
+    var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
+    if (responses.some(function(r) { return !r.ok; })) return false;
+
+    var data = await Promise.all(responses.map(function(r) { return r.json(); }));
+
+    // Direct signal map
+    var directData = data[0];
+    delete directData._doc;
+    Object.keys(directData).forEach(function(key) { DIRECT_MAP[key] = directData[key]; });
+
+    // Universal signal map
+    var universalData = data[1];
+    delete universalData._doc;
+    Object.keys(universalData).forEach(function(key) { UNIVERSAL_MAP[key] = universalData[key]; });
+
+    // Mindset vectors
+    var mindsetData = data[2];
+    delete mindsetData._doc;
+    if (mindsetData._fallback) {
+      MINDSET_FALLBACK = mindsetData._fallback;
+      delete mindsetData._fallback;
+    }
+    Object.keys(mindsetData).forEach(function(key) { MINDSET_VECTORS[key] = mindsetData[key]; });
+
+    // Prompt synthesis
+    var promptData = data[3];
+    delete promptData._doc;
+    Object.keys(promptData).forEach(function(key) { PROMPT_SYNTHESIS[key] = promptData[key]; });
+
+    // Guardrails
+    var grData = data[4];
+    CONFIG.THRESHOLD = grData.threshold != null ? grData.threshold : CONFIG.THRESHOLD;
+    CONFIG.MAX_SCORE = grData.maxScore != null ? grData.maxScore : CONFIG.MAX_SCORE;
+    CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier != null ? grData.universalMultiplier : CONFIG.UNIVERSAL_MULTIPLIER;
+    CONFIG.SESSION_CAP = grData.sessionCap != null ? grData.sessionCap : CONFIG.SESSION_CAP;
+    CONFIG.COOLDOWN_MS = grData.cooldownMs != null ? grData.cooldownMs : CONFIG.COOLDOWN_MS;
+    CONFIG.INTENT_FLOOR = grData.intentFloor != null ? grData.intentFloor : CONFIG.INTENT_FLOOR;
+    CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs != null ? grData.activityPauseMs : CONFIG.ACTIVITY_PAUSE_MS;
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 16. Init
+// ══════════════════════════════════════════════════════════════════════════════
+
+(async function init() {
+  configLoaded = await loadConfigsFromFiles();
+  await checkOllama();
+  resetSimulator();
+})();
+</script>
+</body>
+</html>

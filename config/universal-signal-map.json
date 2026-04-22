@@ -1,0 +1,21 @@
+{
+  "_doc": "Universal signals boost ALL features at 0.4× multiplier. For repeatable universal signals (pricing-visit, gate-hit, export-download, doc-upload), final contribution = base × log₂(count + 1) × 0.4. Boolean universals contribute base × 0.4. See signal-types.json.",
+
+  "credits-low":      3,
+  "credits-zero":     5,
+  "returning-user":   4,
+  "pricing-visit":    3,
+  "bought-export":    4,
+  "session-15min":    3,
+  "second-deck":      3,
+  "zero-dismissals":  1,
+  "gate-hit":         3,
+  "export-download":  2,
+  "company-domain":   2,
+  "tier-1-country":   2,
+  "deck-veteran":     3,
+  "acq-organic":      1,
+  "acq-paid":         0,
+  "acq-referral":     2,
+  "doc-upload":       3
+}
