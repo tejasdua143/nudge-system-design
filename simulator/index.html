@@ -1968,30 +1968,30 @@ function synthesizeFromKeywords(prompt) {
   return scores;
 }
 
+// Populated from config/context-layers.json by loadConfigsFromFiles() when
+// simulator is served via HTTP. Null = use INLINE_AUDIENCE_STAKES fallback.
+var AUDIENCE_STAKES_CONFIG = null;
+
+// Inline fallback — used on file:// protocol or if fetch fails.
+const INLINE_AUDIENCE_STAKES = {
+  critical: ['→ Investors', '→ VCs', '→ Board members', '→ Angel investors',
+             '→ Enterprise clients', '→ C-suite buyers'],
+  external: ['→ Prospects', '→ Potential clients', '→ Recruiters', '→ Art directors'],
+  internal: ['→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders',
+             '→ Students', '→ Corporate trainees', '→ Workshop attendees',
+             '→ Professor', '→ Panel judges', '→ Classmates']
+};
+
 // Classify audience string → stakes bucket. Returns 'critical' | 'external' |
 // 'internal' | 'unknown'. Mirrors config/context-layers.json audienceStakes.
 // Blank / null / unmatched strings return 'unknown'.
 function getAudienceStakes(audience) {
   if (!audience || typeof audience !== 'string') return 'unknown';
-  // Legacy strings (pre-arrow-prefix) still classify correctly.
   const a = AUDIENCE_ALIASES[audience] || audience;
-
-  const CRITICAL = [
-    '→ Investors', '→ VCs', '→ Board members', '→ Angel investors',
-    '→ Enterprise clients', '→ C-suite buyers'
-  ];
-  const EXTERNAL = [
-    '→ Prospects', '→ Potential clients', '→ Recruiters', '→ Art directors'
-  ];
-  const INTERNAL = [
-    '→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders',
-    '→ Students', '→ Corporate trainees', '→ Workshop attendees',
-    '→ Professor', '→ Panel judges', '→ Classmates'
-  ];
-
-  if (CRITICAL.includes(a)) return 'critical';
-  if (EXTERNAL.includes(a)) return 'external';
-  if (INTERNAL.includes(a)) return 'internal';
+  const buckets = AUDIENCE_STAKES_CONFIG || INLINE_AUDIENCE_STAKES;
+  if (buckets.critical && buckets.critical.indexOf(a) !== -1) return 'critical';
+  if (buckets.external && buckets.external.indexOf(a) !== -1) return 'external';
+  if (buckets.internal && buckets.internal.indexOf(a) !== -1) return 'internal';
   return 'unknown';
 }
 
@@ -3567,11 +3567,14 @@ async function loadConfigsFromFiles() {
 
   try {
     var files = {
-      direct: '../config/direct-signal-map.json',
-      universal: '../config/universal-signal-map.json',
-      mindset: '../config/mindset-vectors.json',
-      prompt: '../config/prompt-synthesis-examples.json',
-      guardrails: '../config/guardrails.json' };
+      direct:        '../config/direct-signal-map.json',
+      universal:     '../config/universal-signal-map.json',
+      mindset:       '../config/mindset-vectors.json',
+      overrides:     '../config/mindset-overrides.json',
+      prompt:        '../config/prompt-synthesis-examples.json',
+      guardrails:    '../config/guardrails.json',
+      signalTypes:   '../config/signal-types.json',
+      contextLayers: '../config/context-layers.json' };
 
     var responses = await Promise.all(Object.values(files).map(function(url) { return fetch(url); }));
     if (responses.some(function(r) { return !r.ok; })) return false;
@@ -3588,7 +3591,7 @@ async function loadConfigsFromFiles() {
     delete universalData._doc;
     Object.keys(universalData).forEach(function(key) { UNIVERSAL_MAP[key] = universalData[key]; });
 
-    // Mindset vectors
+    // Mindset vectors (base)
     var mindsetData = data[2];
     delete mindsetData._doc;
     if (mindsetData._fallback) {
@@ -3597,13 +3600,22 @@ async function loadConfigsFromFiles() {
     }
     Object.keys(mindsetData).forEach(function(key) { MINDSET_VECTORS[key] = mindsetData[key]; });
 
+    // Mindset overrides (sparse role|→audience deltas). Canonical source
+    // wins — wipe inline mirror, then reload every key from JSON.
+    var overridesData = data[3];
+    Object.keys(MINDSET_OVERRIDES).forEach(function(k) { delete MINDSET_OVERRIDES[k]; });
+    Object.keys(overridesData).forEach(function(key) {
+      if (key.indexOf('_') === 0) return;                          // skip _doc / _lookup
+      MINDSET_OVERRIDES[key] = overridesData[key];
+    });
+
     // Prompt synthesis
-    var promptData = data[3];
+    var promptData = data[4];
     delete promptData._doc;
     Object.keys(promptData).forEach(function(key) { PROMPT_SYNTHESIS[key] = promptData[key]; });
 
     // Guardrails
-    var grData = data[4];
+    var grData = data[5];
     CONFIG.THRESHOLD = grData.threshold != null ? grData.threshold : CONFIG.THRESHOLD;
     CONFIG.MAX_SCORE = grData.maxScore != null ? grData.maxScore : CONFIG.MAX_SCORE;
     CONFIG.UNIVERSAL_MULTIPLIER = grData.universalMultiplier != null ? grData.universalMultiplier : CONFIG.UNIVERSAL_MULTIPLIER;
@@ -3611,6 +3623,19 @@ async function loadConfigsFromFiles() {
     CONFIG.COOLDOWN_MS = grData.cooldownMs != null ? grData.cooldownMs : CONFIG.COOLDOWN_MS;
     CONFIG.INTENT_FLOOR = grData.intentFloor != null ? grData.intentFloor : CONFIG.INTENT_FLOOR;
     CONFIG.ACTIVITY_PAUSE_MS = grData.activityPauseMs != null ? grData.activityPauseMs : CONFIG.ACTIVITY_PAUSE_MS;
+
+    // Signal types — rebuild REPEATABLE_SIGNALS set from config (canonical source).
+    var stData = data[6];
+    if (Array.isArray(stData.repeatable)) {
+      REPEATABLE_SIGNALS.clear();
+      stData.repeatable.forEach(function(s) { REPEATABLE_SIGNALS.add(s); });
+    }
+
+    // Context layers — rebuild audience classification from config.
+    var clData = data[7];
+    if (clData && clData.audienceStakes) {
+      AUDIENCE_STAKES_CONFIG = clData.audienceStakes;
+    }
 
     return true;
   } catch (e) {
