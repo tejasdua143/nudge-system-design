@@ -1152,7 +1152,7 @@ function generateCopy(feature) {
 
   var subFeatures = {
     'ai-models': [
-      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
         body: 'Stop editing what the AI got wrong. With Advanced Models, your slides come out sharper and more polished \u2014 less fixing, more presenting.' },
       { id: 'ai-credits', title: 'More AI Credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
         body: 'You\u2019re using AI to build your deck \u2014 unlock 5,000 credits so you never hit the limit mid-flow.' },
@@ -1190,7 +1190,7 @@ function generateCopy(feature) {
         body: 'Add your team to a shared workspace. Everyone can edit, comment, and build decks together \u2014 no more emailing files back and forth.' },
       { id: 'present-remotely', title: 'Present Remotely', signals: ['play-preview'],
         body: 'Present your deck live to anyone, anywhere. Share a link and your audience follows along in real time as you present.' },
-      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate'],
         body: 'Made changes you regret? Version History lets you go back to any previous state. 30 days of history, every edit tracked.' },
     ],
     'analytics': [
@@ -1202,7 +1202,7 @@ function generateCopy(feature) {
         body: 'See where your viewers are and what devices they\u2019re using. Useful context for follow-up conversations with ' + u.audience + '.' },
     ],
     'hire-team': [
-      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['undo-redo', 'deck-regenerate', 'doc-upload-long'],
         body: 'Spending too long on this? Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' },
     ],
   };
