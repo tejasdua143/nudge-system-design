@@ -56,7 +56,7 @@ User actions flow through a 7-stage pipeline before anything appears on screen.
            │
            ▼
 ┌─────────────────────┐
-│   Scoring Engine    │   Direct + (Universal × 0.4) ≥ 14
+│   Scoring Engine    │   Σ (base × log₂(count+1)) per feature; direct + 0.4×universal ≥ 14
 └──────────┬──────────┘
            │
            ▼
@@ -203,36 +203,87 @@ Analyzes the user's raw prompt/topic to produce per-feature relevance scores (0�
 
 ### 3. Scoring Engine
 
-Combines all active signals into a single numeric score per feature.
+Combines all active signals into a single numeric score per feature. Signals come in two types (see `config/signal-types.json`):
+
+- **Repeatable** — user action that can occur many times per session. Contribution = `base × log₂(count + 1)`.
+- **Boolean** — user attribute, one-time action, or profile derivation. Contribution = `base`.
 
 **Formula:**
 
 ```
-Total Score = Direct Score + (Universal Score × 0.4)
+Direct Score    = Σ (direct_base × log₂(count+1))  for repeatables
+                + Σ  direct_base                    for booleans
+Universal Score = Σ (universal_base × log₂(count+1)) for repeatables
+                + Σ  universal_base                   for booleans
+Total Score     = Direct Score + (Universal Score × 0.4)
 ```
 
 **Full algorithm:**
 
 ```
 For each feature:
-  1. directScore = sum of DIRECT_MAP[signal][featureId] for all active signals
-  2. universalRaw = sum of UNIVERSAL_MAP[signal] for all active signals
-  3. universalContrib = round(universalRaw × 0.4, 1)
-  4. total = round(directScore + universalContrib, 1)
+  For each active signal s:
+    directBase = DIRECT_MAP[s]?.[feature] or 0
+    if directBase:
+      scaled = (s in REPEATABLE_SIGNALS)
+        ? directBase × log₂(signalCounts[s] + 1)
+        : directBase
+      directScore += scaled
+  For each active signal s:
+    uBase = UNIVERSAL_MAP[s] or 0
+    if uBase:
+      uScaled = (s in REPEATABLE_SIGNALS)
+        ? uBase × log₂(signalCounts[s] + 1)
+        : uBase
+      universalRaw += uScaled
+  universalContrib = round(universalRaw × 0.4, 1)
+  total            = round(directScore + universalContrib, 1)
 ```
+
+**Log-scaling curve** (base 2):
+
+| Count | Factor | Use case |
+|---|---|---|
+| 1 | 1.00 | First occurrence — full weight |
+| 3 | 2.00 | User is iterating |
+| 5 | 2.58 | Clear repetition / intent |
+| 10 | 3.46 | Heavy usage |
+| 20 | 4.39 | Session saturation |
+
+No explicit cap — the curve saturates naturally.
 
 **Output per feature:**
 
 ```js
 {
-  direct: number,           // sum of direct weights
-  universalRaw: number,     // same for every feature
+  direct: number,           // sum of scaled direct weights
+  universalRaw: number,     // sum of scaled universal weights (same for every feature)
   universalContrib: number, // universalRaw × 0.4
   total: number,            // direct + universalContrib
-  directSignals: [...],     // contributing direct signals
-  universalSignals: [...]   // contributing universal signals
+  directSignals: [          // per-signal breakdown
+    { name, weight, count, scaled },
+    ...
+  ],
+  universalSignals: [
+    { name, weight, count, scaled },
+    ...
+  ]
 }
 ```
+
+**Repeatable signals (24)** — eligible for log-scaling:
+
+| Cluster | Signals |
+|---|---|
+| Edit | text-edit, style-change, element-move, undo-redo, slide-delete |
+| Content | insert-title, insert-list, insert-media, insert-slide-prompt, insert-slide-template, slide-reorder |
+| Preview | play-preview, edit-after-preview, theme-global, layout-slide, deck-regenerate |
+| Share / export | share-link-copy, invite-attempt, export-click, export-download |
+| Conversion-intent | doc-upload, deck-switch, pricing-visit, gate-hit |
+
+Everything else is **boolean** — user attrs, profile derivations, one-time actions, prompt extractions.
+
+**Why log-scaling replaces aggregate thresholds:** earlier iterations used `edit-streak-3`, `edit-count-5`, `slides-15plus`, `re-edit-3x`. These introduced cliff behavior (score unchanged at count 4, jumps at 5) and required separate signal definitions per milestone. Log-scaling on the underlying repeatable captures the same "escalating frustration" curve naturally, without separate signals.
 
 **Key design insight — why 0.4 multiplier:**
 Universal signals apply equally to every feature. Without the multiplier they'd wash out the differentiation created by direct signals. The 0.4 ensures direct signals drive feature ranking while universal signals lift the overall baseline.
@@ -243,17 +294,13 @@ Example: `universalRaw = 10`, Feature A has `direct = 8`, Feature B has `direct 
 
 The 4.0 universal contribution is identical — ranking is entirely determined by direct scores.
 
-**Signals that appear in both maps** (contribute to both direct and universal):
+**Signals that appear in both maps** (contribute to both direct and universal): `pricing-visit`, `gate-hit`, `export-download`, `doc-upload`, `bought-export`, `deck-veteran`, `acq-paid`, `acq-referral`, `session-15min`, `second-deck`. Repeatable duals (first four) get log-scaled independently in each pool.
 
-`export-attempt`, `multi-deck`, `bought-export`, `deck-veteran`, `acq-paid`, `acq-referral`
-
-These carry extra weight — they affect a specific feature's ranking via direct map AND lift all features via universal map.
-
-**Dynamic signals** (highest-impact, updated per user by Context Profiler):
+**Dynamic signals** (highest-impact, updated per user by Context Profiler, boolean):
 - `DIRECT_MAP['mindset-vector']` — up to 5 points per feature, varies by role × audience
 - `DIRECT_MAP['prompt-synthesis']` — up to 5 points per feature, varies by topic
 
-**Threshold:** Feature is eligible to fire when `total ≥ 14`. Maximum possible score: `30`.
+**Threshold:** Feature is eligible to fire when `total ≥ 14`.
 
 ---
 
@@ -349,7 +396,7 @@ Selects from 20 copy sub-variants across 7 features.
 
 | Sub-feature | Trigger signals | Title | CTA |
 |---|---|---|---|
-| advanced-models | text-edit, edit-streak-3, edit-count-5, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Upgrade to Pro |
+| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Upgrade to Pro |
 | ai-credits | insert-slide-prompt, deck-regenerate | Don't lose momentum on your {topic} deck | Upgrade to Pro |
 | project-knowledge | doc-upload, doc-upload-long, prompt-brand | Make your {topic} slides even more accurate | Get Project Knowledge |
 
@@ -384,7 +431,7 @@ Selects from 20 copy sub-variants across 7 features.
 | guests | share-link-copy, prompt-team | Get feedback before this reaches {audience} | Invite Collaborators |
 | workspace | prompt-team, invite-attempt | Your team should be building this {topic} deck with you | Invite Collaborators |
 | present-remotely | play-preview | Present your {topic} deck live to {audience} | Get Live Presenting |
-| version-history | undo-redo, deck-regenerate, edit-streak-3 | Keep a safety net for your {topic} deck | Get Version History |
+| version-history | undo-redo, deck-regenerate | Keep a safety net for your {topic} deck | Get Version History |
 
 #### analytics (3)
 
@@ -398,7 +445,7 @@ Selects from 20 copy sub-variants across 7 features.
 
 | Sub-feature | Trigger signals | Title | CTA |
 |---|---|---|---|
-| hire-team | edit-streak-3, undo-redo, deck-regenerate, edit-count-5, doc-upload-long | Let our team build your {topic} deck for {audience} | Talk to Our Team |
+| hire-team | undo-redo, deck-regenerate, doc-upload-long | Let our team build your {topic} deck for {audience} | Talk to Our Team |
 
 ---
 

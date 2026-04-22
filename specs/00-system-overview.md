@@ -39,9 +39,9 @@ Six Pro features + one service upsell.
 Not a Pro plan feature — a paid service where our team builds the presentation for the user. Surfaces when the system detects the user is struggling rather than flowing.
 
 **Key signals:**
-- Too many edits (edit-streak-3, edit-count-5, undo-redo)
+- Repeated edits and undo-redo cycles (log-scaled — high counts fire stronger)
+- Repeated deck-regenerate attempts
 - Document uploads (especially long documents)
-- Deck regeneration attempts
 - High-stakes audience (investors, enterprise clients, board, C-suite)
 
 **The nudge framing is different:** instead of "unlock this feature," it's "let us handle it." The CTA routes to a service booking flow, not the Pro pricing page.
@@ -152,19 +152,41 @@ Only **mindset** and **prompt synthesis** determine relevance — not action sig
 
 ## Scoring Math
 
+Signals come in two types (see `config/signal-types.json`):
+
+- **Repeatable** — user action that can fire many times per session. Contribution = `base × log₂(count + 1)`.
+- **Boolean** — user attribute, one-time action, or profile derivation. Contribution = `base`.
+
 For each of the 7 features:
 
 ```
-Direct Score    = SUM of all matching signal weights for that feature
-Universal Score = SUM of all universal signal weights × 0.4
-Total Score     = Direct + Universal
+For each active signal s:
+  base = DIRECT_MAP[s][feature]  // 0 if not listed
+  if s is repeatable: contrib = base × log₂(count[s] + 1)
+  else:               contrib = base
+  directScore += contrib
 
+For each active signal s:
+  uBase = UNIVERSAL_MAP[s]       // 0 if not listed
+  if s is repeatable: uContrib = uBase × log₂(count[s] + 1)
+  else:               uContrib = uBase
+  universalScore += uContrib
+
+Total = directScore + (universalScore × 0.4)
 Feature fires when: relevant AND Total ≥ THRESHOLD (14)
 ```
 
+Log-scaling curve (base 2):
+- count 1 → ×1.00  (first occurrence carries full weight)
+- count 3 → ×2.00
+- count 5 → ×2.58
+- count 10 → ×3.46
+
 **Direct signals** are feature-specific — `share-link-copy` adds weight to `unbranded` and `analytics` but nothing to `ai-models`.
 
-**Universal signals** boost all features equally — `returning-user` adds +4 to the universal pool, which contributes `4 × 0.4 = 1.6` to every feature. The 0.4 multiplier prevents universal signals from dominating feature-specific behavior.
+**Universal signals** boost all features equally — `returning-user` (boolean, +4) contributes `4 × 0.4 = 1.6` to every feature. Repeatable universals (e.g. `pricing-visit`, `gate-hit`) are log-scaled first. The 0.4 multiplier prevents universal signals from dominating feature-specific behavior.
+
+**Why log-scaling:** the earlier threshold aggregates (`edit-streak-3`, `edit-count-5`, `slides-15plus`) introduced cliff behavior and config bloat. Log on the underlying repeatable captures the same escalation curve naturally, without separate signal definitions per milestone.
 
 ---
 

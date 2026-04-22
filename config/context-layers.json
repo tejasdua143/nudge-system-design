@@ -11,6 +11,6 @@
     "_doc": "Per-stakes direct signal weights. Also present in direct-signal-map.json for the scoring engine.",
     "stakes-high-external": { "unbranded": 3, "analytics": 2, "brand-kit": 2, "hire-team": 2 },
     "stakes-low-external": { "unbranded": 2, "brand-kit": 1 },
-    "stakes-internal": { "ai-models": 2, "invite-collab": 2 }
+    "stakes-internal": { "invite-collab": 2 }
   }
 }

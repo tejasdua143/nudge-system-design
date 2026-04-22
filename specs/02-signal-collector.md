@@ -4,6 +4,12 @@
 
 The SignalCollector translates product events into named signals that the rest of the nudge system can reason about. In the simulator, it generates randomized but realistic user profiles and writes the initial set of context signals to NudgeState. In production, it would listen for real product events and map them to signal names.
 
+Signals are classified two ways (see `config/signal-types.json`):
+- **Repeatable** -- user can perform the event multiple times per session. Each occurrence increments a counter. The ScoringEngine log-scales by `log₂(count + 1)`.
+- **Boolean** -- fires once per session (user attribute, threshold, prompt extraction). Count is always 1.
+
+Aggregate threshold signals such as `edit-streak-3`, `edit-count-5`, `slides-15plus` were removed under log-scaling; escalation is now captured by log on the underlying repeatable (`text-edit`, `undo-redo`, etc.).
+
 ## Interface
 
 ### Inputs
@@ -14,15 +20,19 @@ None -- `generateUser()` is the entry point and requires no arguments. It intern
 
 Writes to NudgeState:
 - `state.user` -- Complete user profile object
-- `state.activeSignals` -- Initial set of context-derived signal names
+- `state.activeSignals` -- Set of signal names currently active (union of context + action signals)
+- `state.actionCounts` -- Map of actionId -> click count (increments for repeatable actions; 0 or 1 for booleans)
+- `state.signalCounts` -- Map of signal name -> count (derived from actionCounts; booleans default to 1 when active)
 - `state.signalLog` -- Appended signal history entries
 
 ### Functions
 
-| Function         | Description                                                              |
-|------------------|--------------------------------------------------------------------------|
-| `generateUser()` | Generates a full random user profile, then calls `profileUser()` and `addStateSignals()` |
-| `pick(arr)`      | Returns a random element from the given array                            |
+| Function                         | Description                                                                              |
+|----------------------------------|------------------------------------------------------------------------------------------|
+| `generateUser()`                 | Generates a full random user profile, then calls `profileUser()` and `addStateSignals()` |
+| `pick(arr)`                      | Returns a random element from the given array                                            |
+| `performAction(actionId)`        | Records a user action. Repeatable actions increment `actionCounts[id]`; boolean actions toggle on/off. Triggers `rebuildSignalsFromActions()`. |
+| `rebuildSignalsFromActions()`    | Rebuilds `activeSignals` + `signalCounts` from `actionCounts` + profile-derived context signals. Booleans receive count = 1; repeatable signal counts sum across all actions that emit them. |
 
 ## Algorithm
 
@@ -97,6 +107,36 @@ Colombia, Egypt, Bangladesh, Pakistan, Kenya
 'organic' | 'paid' | 'referral'
 ```
 
+## Action / Signal Classification
+
+30 simulator actions emit 40+ signals. Each signal is tagged repeatable or boolean in `config/signal-types.json`. An action is **repeatable** if any of the signals it emits is repeatable.
+
+### Repeatable actions (24)
+
+| Cluster            | Actions                                                                                  |
+|--------------------|------------------------------------------------------------------------------------------|
+| Edit               | text-edit, style-change, element-move, undo-redo, slide-delete                           |
+| Content            | insert-title, insert-list, insert-media, insert-slide-prompt, insert-slide-template, slide-reorder |
+| Preview            | play-preview, edit-after-preview, theme-global, layout-slide, deck-regenerate             |
+| Share / export     | share-link-copy, invite-attempt, export-click, export-download                            |
+| Conversion-intent  | doc-upload, deck-switch, pricing-visit, gate-hit                                          |
+
+### Boolean actions (6)
+
+`prompt-brand`, `prompt-team`, `doc-upload-long`, `session-15min`, `second-deck`, `bought-export`.
+
+### Context / profile signals (boolean)
+
+Derived from the user profile, never from an action click: `stakes-high-external`, `stakes-low-external`, `stakes-internal`, `deck-veteran`, `deck-sharer`, `deck-publisher`, `acq-organic`, `acq-paid`, `acq-referral`, `credits-low`, `credits-zero`, `returning-user`, `zero-dismissals`, `company-domain`, `tier-1-country`, `mindset-vector`, `prompt-synthesis`.
+
+### Counter semantics
+
+- Repeatable action click -> `actionCounts[id]++`. Each signal it emits gains `+1` count in `signalCounts`.
+- Boolean action click -> toggles presence. Count stays at 1 when active.
+- One action can emit multiple signals (e.g. `invite-attempt` emits `invite-attempt` + `gate-hit`); each signal's count increments equally.
+- Context signals added post-profile get count = 1 if not already counted.
+- Reset clears both `actionCounts` and `signalCounts`.
+
 ## Config Dependencies
 
 - Role list (13 entries)
@@ -105,9 +145,10 @@ Colombia, Egypt, Bangladesh, Pakistan, Kenya
 - Topic pools (per archetype, used for prompt synthesis downstream)
 - Country lists and tier assignment
 - Weighting for country tier distribution (2:1 Tier 2 bias)
+- `config/signal-types.json` -- repeatable/boolean tagging
 
 ## Cross-References
 
-- **NudgeState** (spec 01) -- SignalCollector owns `user`, `activeSignals`, and `signalLog`.
-- **ContextProfiler** (spec 03) -- Called by `generateUser()` via `profileUser()` and `addStateSignals()`. The ContextProfiler enriches the user profile and writes context signals.
-- **ScoringEngine** (spec 04) -- Consumes the signals written by SignalCollector and ContextProfiler.
+- **NudgeState** (spec 01) -- SignalCollector owns `user`, `activeSignals`, `actionCounts`, `signalCounts`, and `signalLog`.
+- **ContextProfiler** (spec 03) -- Called by `generateUser()` via `profileUser()` and `addStateSignals()`. The ContextProfiler enriches the user profile and writes boolean context signals.
+- **ScoringEngine** (spec 04) -- Consumes `activeSignals` + `signalCounts`. Applies `log₂(count + 1)` to repeatable signals before summing weights.

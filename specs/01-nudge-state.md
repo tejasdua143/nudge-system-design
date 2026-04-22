@@ -19,9 +19,13 @@ Each engine exclusively owns its slice (see Ownership Rules below). No engine wr
 ```js
 let state = {
   user: {},                           // User profile (see User Object below)
-  activeSignals: new Set(),           // All currently active signal names
-  activeActions: new Set(),           // Toggle-tracked action IDs (actions are toggleable)
-  signalLog: [],                      // Append-only signal history (not currently used in UI)
+  activeSignals: new Set(),           // All currently active signal names (action + context)
+  activeActions: new Set(),           // Action IDs with count > 0 (mirrors actionCounts keys)
+  actionCounts: {},                   // actionId -> click count. Repeatable actions increment,
+                                      // booleans toggle between 0 (absent) and 1.
+  signalCounts: {},                   // signalId -> count. Populated from actionCounts via
+                                      // rebuildSignalsFromActions(). Booleans always 1 when active.
+  signalLog: [],                      // Append-only signal history
   featureScores: {},                  // Per-feature scoring breakdown from ScoringEngine
   milestonesThisSession: 0,          // Count of milestones fired this session
   featuresShownThisSession: new Set(), // Feature IDs already shown as milestones

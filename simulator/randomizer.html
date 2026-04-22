@@ -456,8 +456,8 @@ var ACTIONS = [
   { id: 'prompt-team', label: '"we/our/team" in prompt', signals: ['prompt-team'], cat: 'prompt' },
   { id: 'doc-upload', label: 'Upload a document', signals: ['doc-upload'], cat: 'prompt' },
   { id: 'doc-upload-long', label: 'Upload long doc (20+ pages)', signals: ['doc-upload', 'doc-upload-long'], cat: 'prompt' },
-  { id: 'edit-streak-3', label: 'Same slide edited 3+ times', signals: ['edit-streak-3'], cat: 'session' },
-  { id: 'edit-count-5', label: '5+ total edits across slides', signals: ['edit-count-5'], cat: 'session' },
+  // Session thresholds. edit-streak-3 / edit-count-5 aggregates removed
+  // under log-scaling model (log₂ on text-edit + undo-redo captures escalation).
   { id: 'session-15min', label: '15 minutes in editor', signals: ['session-15min'], cat: 'session' },
   { id: 'session-20min', label: '20 minutes in editor', signals: ['session-20min', 'session-15min'], cat: 'session' },
   { id: 'second-deck', label: 'Start a 2nd deck', signals: ['second-deck'], cat: 'session' },
@@ -469,6 +469,17 @@ var ACTIONS = [
 // ══════════════════════════════════════════════════════════════════════════════
 // 4. Signal Maps
 // ══════════════════════════════════════════════════════════════════════════════
+
+// Repeatable signals: log-scaled by log₂(count + 1). See signal-types.json.
+var REPEATABLE_SIGNALS = new Set([
+  'text-edit', 'style-change', 'element-move', 'undo-redo', 'slide-delete',
+  'insert-title', 'insert-list', 'insert-media', 'insert-slide-prompt',
+  'insert-slide-template', 'slide-reorder',
+  'play-preview', 'edit-after-preview', 'theme-global', 'layout-slide',
+  'deck-regenerate',
+  'share-link-copy', 'invite-attempt', 'export-click', 'export-download',
+  'doc-upload', 'deck-switch', 'pricing-visit', 'gate-hit'
+]);
 
 var DIRECT_MAP = {
   'text-edit':             { 'ai-models': 2 },
@@ -483,22 +494,20 @@ var DIRECT_MAP = {
   'insert-slide-template': { 'unbranded': 2, 'brand-kit': 2 },
   'slide-duplicate':       {},
   'slide-reorder':         { 'ai-models': 1 },
-  'play-preview':          { 'unbranded': 4, 'export': 3 },
+  'play-preview':          { 'unbranded': 3, 'export': 3 },
   'edit-after-preview':    { 'ai-models': 2, 'hire-team': 1 },
   'idle-30s':              {},
-  'theme-global':          { 'brand-kit': 4, 'unbranded': 3 },
+  'theme-global':          { 'brand-kit': 4, 'unbranded': 2 },
   'layout-slide':          { 'brand-kit': 2, 'ai-models': 1, 'hire-team': 1 },
   'deck-regenerate':       { 'ai-models': 5, 'hire-team': 5 },
-  'share-link-copy':       { 'unbranded': 4, 'analytics': 3, 'invite-collab': 2 },
+  'share-link-copy':       { 'unbranded': 3, 'analytics': 3, 'invite-collab': 2 },
   'invite-attempt':        { 'invite-collab': 5 },
   'export-click':          { 'export': 3 },
   'export-download':       { 'export': 5, 'unbranded': 2 },
   'prompt-brand':          { 'brand-kit': 5 },
   'prompt-team':           { 'invite-collab': 5 },
-  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 3, 'ai-models': 2, 'hire-team': 2, 'analytics': 2 },
+  'doc-upload':            { 'export': 4, 'brand-kit': 3, 'unbranded': 2, 'ai-models': 2, 'hire-team': 2, 'analytics': 2 },
   'doc-upload-long':       { 'hire-team': 4, 'export': 2 },
-  'edit-streak-3':         { 'ai-models': 4, 'hire-team': 3 },
-  'edit-count-5':          { 'ai-models': 3, 'hire-team': 2 },
   'session-15min':         {},
   'session-20min':         { 'ai-models': 2 },
   'second-deck':           { 'brand-kit': 3, 'unbranded': 2 },
@@ -758,6 +767,8 @@ var state = {
   user: {},
   activeSignals: new Set(),
   activeActions: new Set(),
+  actionCounts: {},
+  signalCounts: {},
   featureScores: {},
   relevantFeatures: new Set(),
   relevanceScores: {},
@@ -966,6 +977,13 @@ function computeRelevantFeatures() {
 // 9. Scoring
 // ══════════════════════════════════════════════════════════════════════════════
 
+function scaleByCount(signalId, baseWeight) {
+  if (!REPEATABLE_SIGNALS.has(signalId)) return baseWeight;
+  var count = state.signalCounts[signalId] || 0;
+  if (count <= 0) return 0;
+  return baseWeight * Math.log2(count + 1);
+}
+
 function calculateScores() {
   var scores = {};
 
@@ -976,13 +994,26 @@ function calculateScores() {
     var universalSignals = [];
 
     state.activeSignals.forEach(function(sig) {
-      if (DIRECT_MAP[sig] && DIRECT_MAP[sig][f.id]) {
-        direct += DIRECT_MAP[sig][f.id];
-        directSignals.push({ name: sig, weight: DIRECT_MAP[sig][f.id] });
+      var directBase = (DIRECT_MAP[sig] && DIRECT_MAP[sig][f.id]) || 0;
+      if (directBase) {
+        var scaled = scaleByCount(sig, directBase);
+        direct += scaled;
+        directSignals.push({
+          name: sig,
+          weight: directBase,
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(scaled * 10) / 10
+        });
       }
       if (UNIVERSAL_MAP[sig]) {
-        universal += UNIVERSAL_MAP[sig];
-        universalSignals.push({ name: sig, weight: UNIVERSAL_MAP[sig] });
+        var uScaled = scaleByCount(sig, UNIVERSAL_MAP[sig]);
+        universal += uScaled;
+        universalSignals.push({
+          name: sig,
+          weight: UNIVERSAL_MAP[sig],
+          count: state.signalCounts[sig] || 1,
+          scaled: Math.round(uScaled * 10) / 10
+        });
       }
     });
 
@@ -990,8 +1021,8 @@ function calculateScores() {
     var total = Math.max(0, direct + universalContrib);
 
     scores[f.id] = {
-      direct: direct,
-      universalRaw: universal,
+      direct: Math.round(direct * 10) / 10,
+      universalRaw: Math.round(universal * 10) / 10,
       universalContrib: Math.round(universalContrib * 10) / 10,
       total: Math.round(total * 10) / 10,
       directSignals: directSignals,
@@ -1165,8 +1196,20 @@ function pickRandomActions() {
   var shuffled = ACTIONS.slice().sort(function() { return Math.random() - 0.5; });
   var picked = shuffled.slice(0, count);
   picked.forEach(function(a) {
-    a.signals.forEach(function(s) { state.activeSignals.add(s); });
+    // Repeatable actions get a random 1-5 count. Booleans get 1.
+    var isRepeatable = a.signals.some(function(s) { return REPEATABLE_SIGNALS.has(s); });
+    var actionCount = isRepeatable ? (1 + Math.floor(Math.random() * 5)) : 1;
+    state.actionCounts[a.id] = actionCount;
     state.activeActions.add(a.id);
+    a.signals.forEach(function(s) {
+      state.activeSignals.add(s);
+      state.signalCounts[s] = (state.signalCounts[s] || 0) + actionCount;
+    });
+    a._simCount = actionCount;
+  });
+  // Context signals (added by profileUser / addStateSignals) are boolean — count 1.
+  state.activeSignals.forEach(function(s) {
+    if (state.signalCounts[s] == null) state.signalCounts[s] = 1;
   });
   return picked;
 }
@@ -1181,6 +1224,8 @@ function randomizeAll() {
     user: {},
     activeSignals: new Set(),
     activeActions: new Set(),
+    actionCounts: {},
+    signalCounts: {},
     featureScores: {},
     relevantFeatures: new Set(),
     relevanceScores: {},
