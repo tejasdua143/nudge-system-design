@@ -514,9 +514,12 @@ var DIRECT_MAP = {
   'deck-switch':           { 'brand-kit': 3 },
   'gate-hit':              {},
   'pricing-visit':         {},
-  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
-  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
-  'stakes-internal':       { 'ai-models': 2, 'invite-collab': 2 },
+  // Stakes tags — classification only, no direct weight. Lift lives in
+  // the mindset vector (base + sparse overrides).
+  'stakes-critical':       {},
+  'stakes-external':       {},
+  'stakes-internal':       {},
+  'stakes-unknown':        {},
   'bought-export':         { 'export': 4 },
   'deck-veteran':          { 'brand-kit': 3 },
   'deck-sharer':           { 'analytics': 3, 'unbranded': 2, 'invite-collab': 2 },
@@ -548,44 +551,44 @@ var UNIVERSAL_MAP = {
 };
 
 var MINDSET_VECTORS = {
-  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
-  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|critical':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
   'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
-  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
-  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|critical':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
   'Sales|internal':                { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
-  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|critical':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 2, 'hire-team': 1, 'invite-collab': 0 },
   'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
-  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
-  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|critical':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Product|internal':              { 'invite-collab': 4, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
-  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|critical':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
   'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 2, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
-  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
-  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|critical':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
-  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|critical':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|external':   { 'analytics': 3, 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
-  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
-  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|critical':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 2, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 2, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
   'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
-  'Operations|low-external':       { 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|critical':      { 'export': 3, 'unbranded': 2, 'ai-models': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|external':       { 'export': 2, 'ai-models': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'Operations|internal':           { 'invite-collab': 3, 'ai-models': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
-  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|critical':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 2, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'Finance|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
-  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
-  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|critical':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
   'Creator|internal':              { 'brand-kit': 3, 'ai-models': 2, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
-  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|critical':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
   'Teacher|internal':              { 'export': 3, 'ai-models': 2, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
-  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
-  'Student|low-external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|critical':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|external':          { 'export': 3, 'ai-models': 2, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
   'Student|internal':              { 'ai-models': 2, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 }
 };
 
@@ -686,13 +689,18 @@ var ROLES = [
   { label: 'Student', archetype: 'Student' },
 ];
 
+// Audience strings prefixed with '→' = presenting TO this audience.
 var AUDIENCES = {
-  Founder: ['Investors', 'VCs', 'Board members', 'Angel investors'],
-  Sales: ['Enterprise clients', 'Prospects', 'C-suite buyers'],
-  Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
-  Creative: ['Potential clients', 'Recruiters', 'Art directors'],
-  Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
-  Student: ['Professor', 'Panel judges', 'Classmates']
+  Founder:   ['→ Investors', '→ VCs', '→ Board members', '→ Angel investors'],
+  Sales:     ['→ Enterprise clients', '→ Prospects', '→ C-suite buyers'],
+  Corporate: ['→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders'],
+  Creative:  ['→ Potential clients', '→ Recruiters', '→ Art directors'],
+  Educator:  ['→ Students', '→ Corporate trainees', '→ Workshop attendees'],
+  Student:   ['→ Professor', '→ Panel judges', '→ Classmates']
+};
+var AUDIENCE_ALIASES = {
+  'Leadership team':       '→ Exec team',
+  'Cross-functional team': '→ XFN stakeholders'
 };
 
 var TOPICS = {
@@ -844,20 +852,24 @@ function generateUser() {
 function profileUser() {
   var u = state.user;
 
+  // Legacy audience strings → new names.
+  if (u.audience && AUDIENCE_ALIASES[u.audience]) u.audience = AUDIENCE_ALIASES[u.audience];
   var audienceStakes = getAudienceStakes(u.audience);
-  var mindsetKey = u.role + '|' + audienceStakes;
-  var mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+  var effectiveStakes = (audienceStakes === 'unknown') ? 'internal' : audienceStakes;
+  var baseKey = u.role + '|' + effectiveStakes;
+  var baseVec = MINDSET_VECTORS[baseKey] || MINDSET_FALLBACK;
+  var overrideKey = u.role + '|' + (u.audience || '');
+  var mindsetVector = applyMindsetOverride(baseVec, overrideKey);
   u.mindsetVector = mindsetVector;
   u.audienceStakes = audienceStakes;
+  u.mindsetKey = baseKey;
+  u.mindsetOverrideApplied = !!MINDSET_OVERRIDES[overrideKey];
 
   DIRECT_MAP['mindset-vector'] = mindsetVector;
   state.activeSignals.add('mindset-vector');
 
-  var HIGH_STAKES = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers'];
-  var LOW_STAKES = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors'];
-  if (HIGH_STAKES.indexOf(u.audience) !== -1) state.activeSignals.add('stakes-high-external');
-  else if (LOW_STAKES.indexOf(u.audience) !== -1) state.activeSignals.add('stakes-low-external');
-  else state.activeSignals.add('stakes-internal');
+  // Emit stakes tag (classification only — no direct weight).
+  state.activeSignals.add('stakes-' + audienceStakes);
 
   var synthesis = PROMPT_SYNTHESIS[u.topic];
   if (!synthesis) {
@@ -919,12 +931,52 @@ function synthesizeFromKeywords(prompt) {
   return scores;
 }
 
+// Classify audience → stakes bucket. Returns 'critical' | 'external' | 'internal' | 'unknown'.
+// Mirrors config/context-layers.json. Blank / unmatched strings return 'unknown'.
 function getAudienceStakes(audience) {
-  var HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers', 'Panel judges', 'Professor', 'Executives'];
-  var LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors', 'Workshop attendees', 'Corporate trainees'];
-  if (HIGH.indexOf(audience) !== -1) return 'high-external';
-  if (LOW.indexOf(audience) !== -1) return 'low-external';
-  return 'internal';
+  if (!audience || typeof audience !== 'string') return 'unknown';
+  var a = AUDIENCE_ALIASES[audience] || audience;
+  var CRITICAL = ['→ Investors', '→ VCs', '→ Board members', '→ Angel investors',
+                  '→ Enterprise clients', '→ C-suite buyers'];
+  var EXTERNAL = ['→ Prospects', '→ Potential clients', '→ Recruiters', '→ Art directors'];
+  var INTERNAL = ['→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders',
+                  '→ Students', '→ Corporate trainees', '→ Workshop attendees',
+                  '→ Professor', '→ Panel judges', '→ Classmates'];
+  if (CRITICAL.indexOf(a) !== -1) return 'critical';
+  if (EXTERNAL.indexOf(a) !== -1) return 'external';
+  if (INTERNAL.indexOf(a) !== -1) return 'internal';
+  return 'unknown';
+}
+
+// Sparse role × audience overrides on top of the base role × stakes vector.
+var MINDSET_OVERRIDES = {
+  'Leadership|→ Investors':          { 'unbranded': 2, 'analytics': 2 },
+  'Leadership|→ Board members':      { 'analytics': 2, 'export': 2 },
+  'Sales|→ Investors':               { 'unbranded': 3, 'analytics': 2, 'brand-kit': 1 },
+  'Sales|→ Enterprise clients':      { 'unbranded': 2, 'analytics': 1 },
+  'Marketing|→ C-suite buyers':      { 'analytics': 2, 'brand-kit': 2 },
+  'Design|→ Art directors':          { 'brand-kit': 1, 'unbranded': 1 },
+  'Creator|→ Recruiters':            { 'brand-kit': 2, 'unbranded': 2 },
+  'Engineering|→ Investors':         { 'hire-team': 2, 'unbranded': 1 },
+  'Engineering|→ Exec team':         { 'invite-collab': 1, 'export': 1 },
+  'Data Analytics|→ Board members':  { 'analytics': 3, 'export': 2 },
+  'Finance|→ Board members':         { 'analytics': 2, 'export': 3 },
+  'Finance|→ Investors':             { 'analytics': 2, 'export': 2, 'unbranded': 1 },
+  'Consulting|→ C-suite buyers':     { 'hire-team': 2, 'brand-kit': 1 },
+  'Consulting|→ Enterprise clients': { 'unbranded': 2, 'brand-kit': 1 },
+  'Teacher|→ Students':              { 'invite-collab': -2, 'export': 1 },
+  'Student|→ Professor':             { 'export': 3, 'unbranded': 1 },
+  'Student|→ Panel judges':          { 'export': 2, 'unbranded': 2, 'hire-team': 1 }
+};
+
+function applyMindsetOverride(baseVector, overrideKey) {
+  var override = MINDSET_OVERRIDES[overrideKey];
+  if (!override) return baseVector;
+  var out = Object.assign({}, baseVector);
+  Object.keys(override).forEach(function(f) {
+    out[f] = (out[f] || 0) + override[f];
+  });
+  return out;
 }
 
 function addStateSignals() {

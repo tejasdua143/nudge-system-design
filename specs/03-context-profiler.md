@@ -2,181 +2,174 @@
 
 ## Purpose
 
-The ContextProfiler runs 3-layer profiling on each generated user to produce rich, per-feature signal weights. It bridges the gap between raw user attributes (role, audience, topic) and the numeric signal weights that the ScoringEngine consumes. Each layer adds a different dimension of context.
+The ContextProfiler runs 3-layer profiling on each generated user to produce per-feature signal weights. It bridges raw user attributes (role, audience, topic) to the numeric weights the ScoringEngine consumes.
+
+Three layers, composed additively:
+- **L1 Mindset** — role × stakes-bucket → base vector, with sparse (role, audience) overrides for sharp pairings.
+- **L2 Audience Stakes** — classifies audience into one of 4 buckets: `critical / external / internal / unknown`. **Classification tag only — no direct weight.** All stakes lift now lives in the mindset vector.
+- **L3 Prompt Synthesis** — 0-5 per-feature scores from the user's prompt via LLM, lookup, or keyword fallback.
 
 ## Interface
 
 ### Inputs
-
-- `state.user` — Must be populated by SignalCollector before profiling runs.
+- `state.user` — Populated by SignalCollector before profiling runs.
 
 ### Outputs
-
-Writes to:
-- `state.user.mindsetVector` — Per-feature weight object from Layer 1
-- `state.user.audienceStakes` — Audience classification from Layer 2
-- `state.user.promptSynthesis` — Per-feature score object from Layer 3
-- `state.activeSignals` — Adds context signals (`mindset-vector`, audience stakes signal, `prompt-synthesis`, and state signals)
-- `DIRECT_MAP['mindset-vector']` — Dynamically written per-feature weights
-- `DIRECT_MAP['prompt-synthesis']` — Dynamically written per-feature weights
+- `state.user.mindsetVector` — Per-feature weights from L1 (base + override)
+- `state.user.mindsetKey` — The base lookup key used (for debugging)
+- `state.user.mindsetOverrideApplied` — Boolean, true if a sparse override was applied
+- `state.user.audienceStakes` — One of `critical`, `external`, `internal`, `unknown`
+- `state.user.promptSynthesis` — Per-feature 0-5 object from L3
+- `state.activeSignals` — Adds `mindset-vector`, `stakes-<bucket>`, `prompt-synthesis`, plus state signals
+- `DIRECT_MAP['mindset-vector']` — Dynamically written per-user
+- `DIRECT_MAP['prompt-synthesis']` — Dynamically written per-user
 
 ### Functions
 
-| Function              | Description                                                    |
-|-----------------------|----------------------------------------------------------------|
-| `profileUser()`       | Runs all 3 profiling layers in sequence                        |
-| `getAudienceStakes(audience)` | Classifies an audience string into a stakes category  |
-| `addStateSignals()`   | Writes credit/session/domain/behavior signals to activeSignals |
+| Function | Description |
+|---|---|
+| `profileUser()` | Runs L1 + L2 + L3 in sequence |
+| `getAudienceStakes(audience)` | Returns bucket name or `'unknown'` |
+| `applyMindsetOverride(baseVector, overrideKey)` | Adds sparse (role, audience) deltas to base vector, returns new vector |
+| `addStateSignals()` | Writes credit/session/behavior signals (called by SignalCollector) |
 
-## Algorithm
+## Algorithm — profileUser()
 
-### profileUser()
+```
+1. Alias legacy audience strings (e.g. "Leadership team" → "→ Exec team")
+2. audienceStakes = getAudienceStakes(user.audience)                  // L2
+3. state.activeSignals.add('stakes-' + audienceStakes)                // tag only
+4. effectiveStakes = (audienceStakes === 'unknown') ? 'internal' : audienceStakes
+5. baseKey       = role + '|' + effectiveStakes                       // e.g. "Sales|critical"
+6. baseVector    = MINDSET_VECTORS[baseKey] || MINDSET_FALLBACK       // L1 base
+7. overrideKey   = role + '|' + user.audience                         // e.g. "Sales|→ Investors"
+8. mindsetVector = applyMindsetOverride(baseVector, overrideKey)      // L1 override (sparse)
+9. DIRECT_MAP['mindset-vector'] = mindsetVector
+10. state.activeSignals.add('mindset-vector')
+11. L3 — LLM / lookup / keyword fallback → promptSynthesis
+12. DIRECT_MAP['prompt-synthesis'] = promptSynthesis
+13. state.activeSignals.add('prompt-synthesis')
+```
 
-Executes Layers 1, 2, and 3 in order. Does **not** call `addStateSignals()` — that function is called separately by `generateUser()` in the SignalCollector (spec 02).
+## Layer 1: Mindset (base + sparse override)
 
----
+### Base table (`MINDSET_VECTORS`, 39 entries + fallback)
 
-### Layer 1: Mindset Vector
+Key format: `"role|stakesBucket"` where bucket ∈ `{critical, external, internal}`.
+Values: per-feature weights 0-5.
+`MINDSET_FALLBACK` used when no match (e.g. stakes=unknown and role missing from table).
 
-Maps the user's role and audience stakes to a per-feature weight vector.
+### Sparse overrides (`MINDSET_OVERRIDES`, ~17 entries)
 
-**Steps:**
-1. Compute audience stakes via `getAudienceStakes(user.audience)`.
-2. Build lookup key: `role + '|' + audienceStakes` (e.g., `"Sales|high-external"`).
-3. Look up `MINDSET_VECTORS[key]`.
-4. If no match, fall back to `MINDSET_FALLBACK`.
-5. Write the vector to `DIRECT_MAP['mindset-vector']` (dynamically overwrites the entry).
-6. Add `'mindset-vector'` to `state.activeSignals`.
-7. Store the vector on `state.user.mindsetVector`.
+Key format: `"role|→ audience"` (audience prefixed with `→` to avoid role-name collision).
+Values: per-feature **deltas** (can be negative).
 
-**Vector shape:** An object keyed by feature ID, each value 0-5. Covers all 7 features.
+Override is applied *on top* of the base vector — weights sum. Empty / missing key = no override, base vector used unchanged. Mirrors `config/mindset-overrides.json`.
 
-**Scale:**
-- **13 roles × 3 audience stakes = 39 unique vectors** in the `MINDSET_VECTORS` lookup table.
-- **1 fallback vector** (`MINDSET_FALLBACK`) for any unmatched combination.
-- Total: **40 vectors**.
+**Why sparse overrides:** most (role, audience) pairs fit their role × stakes base. Only ~17 combinations warrant sharp treatment (e.g. Sales pitching Investors ≠ Sales pitching Prospects, even though both are external-type).
 
----
+### Lookup scale
 
-### Layer 2: Audience Stakes Classification
+- Base: 13 roles × 3 buckets = **39 cells**
+- Override: **~17 sparse cells**
+- Fallback: **1 vector**
+- **Total: ~57 cells** (vs. full 13×25 matrix = 325 cells)
 
-Classifies the user's audience into one of three categories based on the perceived external pressure and consequence of the presentation.
+## Layer 2: Audience Stakes Classification
 
-**Classification rules:**
+### Buckets
 
-| Category              | Signal Name            | Audiences                                                        |
-|-----------------------|------------------------|------------------------------------------------------------------|
-| **High external**     | `stakes-high-external` | Investors, VCs, Board members, Angel investors, Enterprise clients, C-suite buyers, Panel judges, Professor, Executives |
-| **Low external**      | `stakes-low-external`  | Prospects, Potential clients, Recruiters, Art directors, Workshop attendees, Corporate trainees |
-| **Internal**          | `stakes-internal`      | Everything else (Leadership team, Stakeholders, Cross-functional team, Students, Classmates) |
+| Bucket | Audience examples | Meaning |
+|---|---|---|
+| `critical` | → Investors, → VCs, → Board members, → Angel investors, → Enterprise clients, → C-suite buyers | High-consequence external presentation |
+| `external` | → Prospects, → Potential clients, → Recruiters, → Art directors | Lower-stakes external, still professional |
+| `internal` | → Exec team, → Executives, → Stakeholders, → XFN stakeholders, → Students, → Corporate trainees, → Workshop attendees, → Professor, → Panel judges, → Classmates | Internal, academic, or low-consequence |
+| `unknown` | Blank / null / unmatched string | Audience not given or unclear |
 
-**Design rationale:** Panel judges, Professor, and Executives are classified as high-external because the presentation stakes for these audiences are equivalent to external stakeholders — a student presenting to panel judges or a professor faces the same pressure as someone pitching investors.
+### Naming conventions
 
-**Steps:**
-1. Match `user.audience` against the high-external list. If found, return `'high-external'`.
-2. Match against the low-external list. If found, return `'low-external'`.
-3. Default to `'internal'`.
-4. Store on `state.user.audienceStakes`.
-5. Add the corresponding signal name (`stakes-high-external`, `stakes-low-external`, or `stakes-internal`) to `state.activeSignals`.
+- **Audience strings prefixed with `→`** — reads as "presenting TO this audience". Disambiguates from role names (role `Leadership` vs audience `→ Exec team`).
+- **Legacy alias table** — old configs using `"Leadership team"` / `"Cross-functional team"` auto-aliased to `→ Exec team` / `→ XFN stakeholders`.
 
-These signal names are keys in `DIRECT_MAP` and carry per-feature weights that the ScoringEngine reads.
+### Weights
 
----
+**None.** Stakes tags carry no direct weight in `DIRECT_MAP`. They exist as:
+1. Classification labels for logs + debugging
+2. Inputs to the L1 base key (via `effectiveStakes`)
 
-### Layer 3: Prompt Synthesis
+All actual stakes-based feature lift lives in the mindset vector (base table + sparse overrides).
 
-Analyzes the user's raw prompt/topic to produce per-feature relevance scores.
+### Unknown audience handling
 
-**Three sources (in priority order):**
+```
+audience missing / blank / unmatched
+  ↓
+stakes = 'unknown' → emit stakes-unknown tag (logs only)
+  ↓
+effectiveStakes = 'internal' (safest default for L1 base key)
+  ↓
+Override lookup: 'role|' + (audience || '') — will miss, so no override applied
+  ↓
+Base vector from "role|internal" still applies
+  ↓
+System still scores users — just less confidently. Relies more on L3 prompt + actions.
+```
 
-1. **Local LLM (Ollama/Gemma 2)** — When Ollama is running locally, the simulator sends the prompt to the LLM for real-time analysis. The LLM returns per-feature scores (0-5) plus inferred audience and stakes. This overwrites the lookup/keyword results with higher-quality analysis.
+No crash, no silent misclassification. An unknown audience produces a weaker, role-only profile; the Relevance Filter + action log decide whether to fire.
 
-2. **Lookup table (`PROMPT_SYNTHESIS`)** — 30+ pre-computed prompt-to-score mappings covering investor pitches, enterprise proposals, internal reviews, creative portfolios, education, and student presentations.
+## Layer 3: Prompt Synthesis
 
-3. **Keyword fallback (`synthesizeFromKeywords`)** — When the prompt isn't in the lookup table and no LLM is available, regex-based keyword matching generates approximate 0-5 scores.
+### Three sources (priority order)
+1. **Local LLM (Ollama/Gemma)** — real-time per-feature 0-5 scores + inferred audience/stakes.
+2. **Lookup table (`PROMPT_SYNTHESIS`)** — 30+ pre-computed topic → scores.
+3. **Keyword fallback (`synthesizeFromKeywords`)** — regex-based inference.
 
-**Steps (for lookup/keyword path):**
-1. Look up `PROMPT_SYNTHESIS[user.topic]`.
-2. If found, use the result. If not, call `synthesizeFromKeywords(user.topic)`.
-3. Write the score object to `DIRECT_MAP['prompt-synthesis']`.
-4. Add `'prompt-synthesis'` to `state.activeSignals`.
-5. Store on `state.user.promptSynthesis`.
+### Steps
+```
+synthesis = PROMPT_SYNTHESIS[user.topic]
+         || synthesizeFromKeywords(user.topic)
+DIRECT_MAP['prompt-synthesis'] = synthesis
+state.activeSignals.add('prompt-synthesis')
+```
 
-**Steps (for LLM path):**
-1. Check if Ollama is available at `localhost:11434`.
-2. Send the prompt to Gemma 2 with a structured system prompt requesting per-feature scores.
-3. Parse the JSON response.
-4. Overwrite `DIRECT_MAP['prompt-synthesis']` and `state.user.promptSynthesis` with LLM results.
-5. Also update `user.audience` and `user.audienceStakes` if the LLM infers them.
+LLM path overwrites earlier result and may also update `user.audience` / `user.audienceStakes` (then L1 re-runs). LLM is expected to return `audience_stakes ∈ {critical, external, internal, unknown}`.
 
-**Keyword-to-feature mapping examples:**
+### Keyword-to-feature examples
 - "brand", "colors", "fonts" → `brand-kit`
 - "team", "collaborate" → `invite-collab`
 - "investor", "pitch", "funding" → `unbranded`, `analytics`, `export`
-- "help", "struggle", "can you just" → `hire-team`
-- "download", "pdf", "powerpoint" → `export`
+- "help", "struggle", "can't" → `hire-team`
+- "download", "pdf" → `export`
 
----
+## addStateSignals()
 
-### addStateSignals()
+Reads user attributes, writes boolean state signals.
 
-Reads raw user attributes and writes boolean-style signals to `state.activeSignals`.
-
-| Signal Name        | Condition                     |
-|--------------------|-------------------------------|
-| `credits-low`      | `user.credits < 30`           |
-| `credits-zero`     | `user.credits === 0`          |
-| `returning-user`   | `user.sessionNum > 1`         |
-| `bought-export`    | `user.boughtExport === true`  |
-| `zero-dismissals`  | `user.dismissals === 0`       |
-| `company-domain`   | `user.isCompanyDomain === true`|
-| `tier-1-country`   | `user.countryTier === 1`      |
-| `deck-veteran`     | `user.decksCompleted >= 5`    |
-| `deck-sharer`      | `user.decksShared >= 2`       |
-| `deck-publisher`   | `user.decksPublished >= 1`    |
-| `acq-organic`      | `user.acqChannel === 'organic'` |
-| `acq-paid`         | `user.acqChannel === 'paid'`  |
-| `acq-referral`     | `user.acqChannel === 'referral'` |
-
-Each signal is only added when its condition is `true`. Signals that don't meet their condition are not added (absence = false).
-
-## Data Structures
-
-### MINDSET_VECTORS
-
-A lookup table of 39 entries + 1 fallback.
-
-- **Key format:** `"role|audienceStakes"` (e.g., `"Marketing|high-external"`)
-- **Value:** Object keyed by feature ID, each value 0-5.
-- **Fallback key:** `MINDSET_FALLBACK` — used when no exact role+stakes match exists.
-
-### PROMPT_SYNTHESIS
-
-A lookup table of 30+ entries.
-
-- **Key:** Topic string (exact match from the user's topic pool).
-- **Value:** Object keyed by feature ID, each value 0-5.
-
-### DIRECT_MAP (dynamic entries)
-
-Two entries are dynamically written by the ContextProfiler:
-
-- `DIRECT_MAP['mindset-vector']` — Overwritten per user with their mindset vector (per-feature 0-5 weights).
-- `DIRECT_MAP['prompt-synthesis']` — Overwritten per user with their prompt synthesis scores (per-feature 0-5 weights).
-
-These are special because their values change per user, unlike static signal entries in `DIRECT_MAP` which have fixed weights.
+| Signal | Condition |
+|---|---|
+| `credits-low` | `user.credits < 30` |
+| `credits-zero` | `user.credits === 0` |
+| `returning-user` | `user.sessionNum > 1` |
+| `bought-export` | `user.boughtExport === true` |
+| `zero-dismissals` | `user.dismissals === 0` |
+| `company-domain` | `user.isCompanyDomain === true` |
+| `tier-1-country` | `user.countryTier === 1` |
+| `deck-veteran` | `user.decksCompleted >= 5` |
+| `deck-sharer` | `user.decksShared >= 2` |
+| `deck-publisher` | `user.decksPublished >= 1` |
+| `acq-organic` / `acq-paid` / `acq-referral` | Matches `user.acqChannel` |
 
 ## Config Dependencies
 
-- `MINDSET_VECTORS` — 40 entries (39 role-stakes combinations + 1 fallback)
-- `MINDSET_FALLBACK` — Default vector
-- `PROMPT_SYNTHESIS` — 30+ topic-to-score mappings
-- `DIRECT_MAP` — Audience stakes signals plus dynamically written `mindset-vector` and `prompt-synthesis`
-- Audience classification lists (high-external, low-external audiences)
+- `config/mindset-vectors.json` — 39 base cells + fallback
+- `config/mindset-overrides.json` — **new.** ~17 sparse (role, audience) deltas
+- `config/context-layers.json` — audience-to-bucket lists (no weights)
+- `config/signal-types.json` — stakes tags listed under boolean
+- `config/prompt-synthesis-examples.json` — L3 lookup + LLM few-shot
 
 ## Cross-References
 
-- **NudgeState** (spec 01) — Reads `state.user`, writes derived fields to `state.user`, writes to `state.activeSignals`.
-- **SignalCollector** (spec 02) — Calls `profileUser()` and `addStateSignals()` as the final step of `generateUser()`.
-- **Relevance Filter** (spec 05) — Uses `mindsetVector` and `promptSynthesis` to determine which features are relevant before scoring.
-- **ScoringEngine** (spec 04) — Reads the signals and dynamic DIRECT_MAP entries written by the ContextProfiler.
+- **NudgeState** (spec 01) — Reads `state.user`, writes `mindsetVector`, `audienceStakes`, `promptSynthesis`, activeSignals.
+- **SignalCollector** (spec 02) — Calls `profileUser()` and `addStateSignals()`.
+- **Relevance Filter** (spec 05) — Uses `mindsetVector` + `promptSynthesis` (relevance ≥ 3).
+- **ScoringEngine** (spec 04) — Reads `mindset-vector` + `prompt-synthesis` as boolean direct signals. Stakes tags have no weight.

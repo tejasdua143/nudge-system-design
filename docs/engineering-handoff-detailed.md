@@ -146,38 +146,57 @@ Signals are only added when the condition is `true` — absence equals false.
 
 Runs 3-layer profiling on the user to produce rich, per-feature signal weights. Bridges the gap between raw user attributes and the numeric weights that the Scoring Engine consumes.
 
-#### Layer 1 — Mindset Vector
+#### Layer 1 — Mindset Vector (base + sparse override)
 
-Maps role + audience stakes to a per-feature weight vector (0–5 per feature).
+Maps role × stakes bucket to a per-feature weight vector, with sparse `(role, → audience)` overrides for sharp pairings.
 
-1. Classify audience stakes (see Layer 2)
-2. Build lookup key: `role + '|' + audienceStakes` (e.g. `"Sales|high-external"`)
-3. Look up `mindset-vectors.json` — 39 combinations + 1 fallback = **40 vectors total**
-4. Write vector to `DIRECT_MAP['mindset-vector']` (dynamic, overwrites per user)
-5. Add `mindset-vector` to `state.activeSignals`
+1. Classify stakes (Layer 2) → bucket ∈ {`critical`, `external`, `internal`, `unknown`}
+2. Compute `effectiveStakes` = bucket, or `'internal'` when bucket is `unknown`
+3. `baseKey = role + '|' + effectiveStakes` (e.g. `"Sales|critical"`)
+4. `baseVector = mindsetVectors[baseKey] || MINDSET_FALLBACK`
+5. `overrideKey = role + '|' + audience` (e.g. `"Sales|→ Investors"`)
+6. Add override deltas if present: `mindsetVectors[baseKey] + mindsetOverrides[overrideKey]`
+7. Write final vector to `DIRECT_MAP['mindset-vector']`, add to `state.activeSignals`
 
-**Example mindset vectors:**
+**Scale:** 39 base cells + 1 fallback + ~17 sparse overrides = **~57 cells total**.
+
+**Why sparse overrides:** most `(role, audience)` pairs fit their role × stakes base. Only certain combinations warrant sharp treatment (e.g. Sales→Investors ≠ Sales→Prospects, even though both are external-type). Overrides sit in `config/mindset-overrides.json`.
+
+**Example base vectors:**
 
 | Role + Stakes | Top-weighted features |
 |---|---|
-| Sales \| high-external | unbranded (4), analytics (4), export (3), brand-kit (3) |
+| Sales \| critical | unbranded (4), analytics (4), export (3), brand-kit (3) |
 | Leadership \| internal | invite-collab (3), ai-models (0) |
-| Design \| low-external | brand-kit (4), unbranded (3) |
-| Student \| high-external | export (4), unbranded (3), ai-models (3) |
+| Design \| external | brand-kit (4), unbranded (4), export (3) |
+| Student \| critical | export (4), unbranded (3), ai-models (3) |
 
-#### Layer 2 — Audience Stakes Classification
+**Example overrides (deltas on top of base):**
 
-Classifies audience into one of three categories based on perceived external pressure.
+| Role \| → Audience | Delta |
+|---|---|
+| Sales \| → Investors | unbranded +3, analytics +2, brand-kit +1 |
+| Student \| → Professor | export +3, unbranded +1 |
+| Teacher \| → Students | invite-collab -2, export +1 |
 
-| Category | Signal name | Audiences |
+#### Layer 2 — Audience Stakes Classification (tag only, no weight)
+
+Classifies audience into one of four buckets. **No direct weight** — buckets are classification tags plus input to the L1 base key. All stakes-based feature lift lives in the mindset vector (base + overrides). Audience strings are prefixed with `→` to disambiguate from role names.
+
+| Bucket | Tag | Audiences |
 |---|---|---|
-| **High external** | `stakes-high-external` | Investors, VCs, Board members, Angel investors, Enterprise clients, C-suite buyers, Panel judges, Professor, Executives |
-| **Low external** | `stakes-low-external` | Prospects, Potential clients, Recruiters, Art directors, Workshop attendees, Corporate trainees |
-| **Internal** | `stakes-internal` | Leadership team, Stakeholders, Cross-functional team, Students, Classmates |
+| `critical` | `stakes-critical` | → Investors, → VCs, → Board members, → Angel investors, → Enterprise clients, → C-suite buyers |
+| `external` | `stakes-external` | → Prospects, → Potential clients, → Recruiters, → Art directors |
+| `internal` | `stakes-internal` | → Exec team, → Executives, → Stakeholders, → XFN stakeholders, → Students, → Corporate trainees, → Workshop attendees, → Professor, → Panel judges, → Classmates |
+| `unknown` | `stakes-unknown` | Audience blank / null / unmatched string |
 
-> Panel judges, Professor, and Executives are high-external — a student presenting to panel judges faces the same pressure as someone pitching investors.
+**Unknown audience handling:**
+- Tag `stakes-unknown` emitted (logs only, no weight).
+- L1 base key uses `role|internal` as safest default.
+- Override cannot apply (audience unknown).
+- System still scores — just less confidently; relies more on prompt + actions.
 
-The corresponding signal (`stakes-high-external`, `stakes-low-external`, `stakes-internal`) is added to `state.activeSignals` and carries per-feature weights in `DIRECT_MAP`.
+**Naming:** the `→` prefix reads "presenting TO this audience" and avoids the `Leadership` (role) vs `Leadership team` (audience) collision that existed in earlier configs. Legacy strings aliased: `"Leadership team"` → `"→ Exec team"`; `"Cross-functional team"` → `"→ XFN stakeholders"`.
 
 #### Layer 3 — Prompt Synthesis
 
