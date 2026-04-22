@@ -109,7 +109,7 @@ All engines read from and write to a central **NudgeState Bus**. Each engine own
 
 ### Context Layers
 - `mindsetVector` — per-feature weights derived from role × audience stakes (0-5 per feature)
-- `audienceStakes` — derived from audience (high-external, low-external, internal)
+- `audienceStakes` — derived from audience (`critical` / `external` / `internal` / `unknown`)
 - `promptSynthesis` — per-feature relevance scores (0-5) from prompt analysis
 
 ### Session State
@@ -207,17 +207,18 @@ Same role, different feature biases:
 | Student | Panel judges | export, ai-models, unbranded |
 | Student | Classmates | ai-models (low stakes) |
 
-**Scale:** 13 roles × 3 audience stakes = 39 unique vectors + 1 fallback. Total: 40 vectors.
+**Scale:** 13 roles × 3 stakes buckets = 39 base vectors + 1 fallback + ~17 sparse `(role, → audience)` overrides = **~57 cells**. Overrides are deltas on top of the base vector for sharp pairings (e.g. `Sales|→ Investors` lifts unbranded + analytics above the `Sales|critical` base).
 
-### Layer 2: Audience Stakes
+### Layer 2: Audience Stakes (classification only)
 
-Categorizes the audience by external pressure level:
+Classifies the audience into one of 4 buckets. **No direct weights** — buckets are tags for logs + L1 base-key input. Audience strings are prefixed with `→` to disambiguate from role names.
 
-| Stakes Level | Audiences | Feature bias |
+| Bucket | Tag | Audiences |
 |---|---|---|
-| high-external | Investors, VCs, Board members, Angel investors, Enterprise clients, C-suite buyers, Panel judges, Professor, Executives | unbranded, analytics, brand-kit, hire-team |
-| low-external | Prospects, Potential clients, Recruiters, Art directors, Workshop attendees, Corporate trainees | unbranded, brand-kit |
-| internal | Everything else (Leadership team, Stakeholders, Cross-functional team, Students, Classmates) | ai-models, invite-collab |
+| `critical` | `stakes-critical` | → Investors, → VCs, → Board members, → Angel investors, → Enterprise clients, → C-suite buyers |
+| `external` | `stakes-external` | → Prospects, → Potential clients, → Recruiters, → Art directors |
+| `internal` | `stakes-internal` | → Exec team, → Executives, → Stakeholders, → XFN stakeholders, → Students, → Corporate trainees, → Workshop attendees, → Professor, → Panel judges, → Classmates |
+| `unknown` | `stakes-unknown` | Blank / null / unmatched string — L1 falls back to `role|internal` base key, no override possible |
 
 ### Layer 3: Prompt Synthesis
 
@@ -352,7 +353,8 @@ Feature suppression and milestone counting happen at **fire time** (in `fireMile
 | `universal-signal-map.json` | Signal → universal weight mappings |
 | `mindset-vectors.json` | Layer 1 mindset vectors: role × audienceStakes → per-feature weights (39 combos + fallback) |
 | `prompt-synthesis-examples.json` | Example LLM outputs per topic type (30+ prompts) |
-| `context-layers.json` | Audience stakes classification rules (high-external / low-external / internal audiences) |
+| `context-layers.json` | Audience stakes classification rules (`critical` / `external` / `internal` audiences, → prefix) |
+| `mindset-overrides.json` | Sparse (role, → audience) deltas on top of base mindset vectors |
 | `guardrails.json` | Session cap, cooldown, threshold, intent floor, activity pause |
 | `feature-contributors.json` | Feature-centric view of all scoring inputs (reference doc) |
 

@@ -40,9 +40,10 @@
     "second-deck",
     "session-15min",
 
-    "stakes-high-external",
-    "stakes-low-external",
+    "stakes-critical",
+    "stakes-external",
     "stakes-internal",
+    "stakes-unknown",
 
     "bought-export",
     "deck-veteran",

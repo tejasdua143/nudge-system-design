@@ -1431,9 +1431,12 @@ const DIRECT_MAP = {
   'pricing-visit':         {},
 
   // ── Context layer signals ──
-  'stakes-high-external':  { 'unbranded': 3, 'analytics': 2, 'brand-kit': 2, 'hire-team': 2 },
-  'stakes-low-external':   { 'unbranded': 2, 'brand-kit': 1 },
-  'stakes-internal':       { 'invite-collab': 2 },
+  // Stakes tags — classification only. No direct weight. All stakes lift
+  // lives in the mindset vector (base + sparse overrides by (role, audience)).
+  'stakes-critical':       {},
+  'stakes-external':       {},
+  'stakes-internal':       {},
+  'stakes-unknown':        {},
 
   // ── User state signals ──
   'bought-export':         { 'export': 4 },
@@ -1487,61 +1490,107 @@ const REPEATABLE_SIGNALS = new Set([
   'doc-upload', 'deck-switch', 'pricing-visit', 'gate-hit'
 ]);
 
-// Mindset vectors: 'role|audienceStakes' -> per-feature weights (0-5)
+// Mindset vectors (BASE). Key = 'role|stakesBucket' where bucket ∈ {critical, external, internal}.
+// Per-feature weights 0-5. Specific (role, audience) pairs can override via MINDSET_OVERRIDES.
 const MINDSET_VECTORS = {
-  'Leadership|high-external':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
-  'Leadership|low-external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
+  'Leadership|critical':      { 'unbranded': 4, 'analytics': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
+  'Leadership|external':       { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
   'Leadership|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Sales|high-external':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
-  'Sales|low-external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
+  'Sales|critical':           { 'analytics': 4, 'unbranded': 4, 'export': 3, 'brand-kit': 3, 'ai-models': 0, 'hire-team': 2, 'invite-collab': 1 },
+  'Sales|external':            { 'unbranded': 3, 'analytics': 3, 'export': 3, 'brand-kit': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
   'Sales|internal':                { 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Marketing|high-external':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
-  'Marketing|low-external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
+  'Marketing|critical':       { 'brand-kit': 4, 'unbranded': 4, 'analytics': 3, 'export': 3, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 1 },
+  'Marketing|external':        { 'brand-kit': 4, 'unbranded': 3, 'export': 2, 'analytics': 2, 'ai-models': 0, 'hire-team': 1, 'invite-collab': 0 },
   'Marketing|internal':            { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 0, 'unbranded': 1, 'export': 1, 'analytics': 0, 'hire-team': 0 },
 
-  'Product|high-external':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
-  'Product|low-external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
+  'Product|critical':         { 'unbranded': 3, 'export': 3, 'ai-models': 3, 'brand-kit': 2, 'analytics': 2, 'invite-collab': 2, 'hire-team': 1 },
+  'Product|external':          { 'ai-models': 3, 'unbranded': 2, 'export': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 0 },
   'Product|internal':              { 'invite-collab': 4, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Design|high-external':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
-  'Design|low-external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Design|critical':          { 'brand-kit': 5, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Design|external':           { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
   'Design|internal':               { 'brand-kit': 3, 'invite-collab': 2, 'ai-models': 0, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Engineering|high-external':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
-  'Engineering|low-external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Engineering|critical':     { 'ai-models': 3, 'export': 3, 'unbranded': 2, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Engineering|external':      { 'ai-models': 3, 'export': 2, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'Engineering|internal':          { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Data Analytics|high-external':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
-  'Data Analytics|low-external':   { 'analytics': 3, 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Data Analytics|critical':  { 'analytics': 4, 'export': 4, 'ai-models': 3, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 1, 'hire-team': 1 },
+  'Data Analytics|external':   { 'analytics': 3, 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'Data Analytics|internal':       { 'analytics': 3, 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Consulting|high-external':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
-  'Consulting|low-external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
+  'Consulting|critical':      { 'unbranded': 3, 'brand-kit': 3, 'export': 3, 'ai-models': 0, 'analytics': 2, 'hire-team': 2, 'invite-collab': 1 },
+  'Consulting|external':       { 'unbranded': 3, 'brand-kit': 2, 'export': 3, 'ai-models': 0, 'analytics': 1, 'hire-team': 1, 'invite-collab': 1 },
   'Consulting|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Operations|high-external':      { 'export': 3, 'unbranded': 2, 'ai-models': 0, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
-  'Operations|low-external':       { 'export': 2, 'ai-models': 0, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
+  'Operations|critical':      { 'export': 3, 'unbranded': 2, 'ai-models': 0, 'invite-collab': 2, 'brand-kit': 1, 'analytics': 1, 'hire-team': 1 },
+  'Operations|external':       { 'export': 2, 'ai-models': 0, 'invite-collab': 2, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
   'Operations|internal':           { 'invite-collab': 3, 'ai-models': 0, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Finance|high-external':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 0, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
-  'Finance|low-external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 0, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
+  'Finance|critical':         { 'analytics': 3, 'export': 4, 'unbranded': 3, 'ai-models': 0, 'brand-kit': 2, 'invite-collab': 1, 'hire-team': 1 },
+  'Finance|external':          { 'export': 3, 'analytics': 2, 'unbranded': 2, 'ai-models': 0, 'brand-kit': 1, 'invite-collab': 0, 'hire-team': 0 },
   'Finance|internal':              { 'ai-models': 0, 'invite-collab': 2, 'export': 2, 'analytics': 1, 'unbranded': 0, 'brand-kit': 0, 'hire-team': 0 },
 
-  'Creator|high-external':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
-  'Creator|low-external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
+  'Creator|critical':         { 'brand-kit': 4, 'unbranded': 4, 'export': 3, 'ai-models': 3, 'analytics': 2, 'hire-team': 1, 'invite-collab': 0 },
+  'Creator|external':          { 'brand-kit': 4, 'unbranded': 3, 'ai-models': 3, 'export': 2, 'analytics': 1, 'hire-team': 0, 'invite-collab': 0 },
   'Creator|internal':              { 'brand-kit': 3, 'ai-models': 0, 'invite-collab': 1, 'unbranded': 1, 'export': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Teacher|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
-  'Teacher|low-external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|critical':         { 'export': 4, 'ai-models': 3, 'unbranded': 2, 'hire-team': 1, 'brand-kit': 1, 'analytics': 0, 'invite-collab': 0 },
+  'Teacher|external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'brand-kit': 1, 'hire-team': 0, 'analytics': 0, 'invite-collab': 0 },
   'Teacher|internal':              { 'export': 3, 'ai-models': 0, 'unbranded': 1, 'invite-collab': 1, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 },
 
-  'Student|high-external':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
-  'Student|low-external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
+  'Student|critical':         { 'export': 4, 'ai-models': 3, 'unbranded': 3, 'invite-collab': 2, 'brand-kit': 1, 'hire-team': 1, 'analytics': 0 },
+  'Student|external':          { 'export': 3, 'ai-models': 0, 'unbranded': 2, 'invite-collab': 1, 'brand-kit': 0, 'hire-team': 0, 'analytics': 0 },
   'Student|internal':              { 'ai-models': 0, 'invite-collab': 2, 'export': 1, 'unbranded': 0, 'brand-kit': 0, 'analytics': 0, 'hire-team': 0 } };
 
 var MINDSET_FALLBACK = { 'ai-models': 0, 'export': 1, 'unbranded': 1, 'brand-kit': 0, 'analytics': 0, 'invite-collab': 0, 'hire-team': 0 };
+
+// Sparse overrides on top of MINDSET_VECTORS. Keys = 'role|→ audience'. Values
+// are per-feature DELTAS added to the base role|stakes vector. Only pairs where
+// the role×audience combination is sharply different from the role×stakes base.
+// Empty / missing entry = base vector applies unchanged. Mirrors mindset-overrides.json.
+const MINDSET_OVERRIDES = {
+  'Leadership|→ Investors':          { 'unbranded': 2, 'analytics': 2 },
+  'Leadership|→ Board members':      { 'analytics': 2, 'export': 2 },
+
+  'Sales|→ Investors':               { 'unbranded': 3, 'analytics': 2, 'brand-kit': 1 },
+  'Sales|→ Enterprise clients':      { 'unbranded': 2, 'analytics': 1 },
+
+  'Marketing|→ C-suite buyers':      { 'analytics': 2, 'brand-kit': 2 },
+
+  'Design|→ Art directors':          { 'brand-kit': 1, 'unbranded': 1 },
+
+  'Creator|→ Recruiters':            { 'brand-kit': 2, 'unbranded': 2 },
+
+  'Engineering|→ Investors':         { 'hire-team': 2, 'unbranded': 1 },
+  'Engineering|→ Exec team':         { 'invite-collab': 1, 'export': 1 },
+
+  'Data Analytics|→ Board members':  { 'analytics': 3, 'export': 2 },
+
+  'Finance|→ Board members':         { 'analytics': 2, 'export': 3 },
+  'Finance|→ Investors':             { 'analytics': 2, 'export': 2, 'unbranded': 1 },
+
+  'Consulting|→ C-suite buyers':     { 'hire-team': 2, 'brand-kit': 1 },
+  'Consulting|→ Enterprise clients': { 'unbranded': 2, 'brand-kit': 1 },
+
+  'Teacher|→ Students':              { 'invite-collab': -2, 'export': 1 },
+
+  'Student|→ Professor':             { 'export': 3, 'unbranded': 1 },
+  'Student|→ Panel judges':          { 'export': 2, 'unbranded': 2, 'hire-team': 1 }
+};
+
+// Apply deltas from override onto base vector (non-destructive). Returns new vector.
+function applyMindsetOverride(baseVector, overrideKey) {
+  var override = MINDSET_OVERRIDES[overrideKey];
+  if (!override) return baseVector;
+  var out = Object.assign({}, baseVector);
+  Object.keys(override).forEach(function(f) {
+    out[f] = (out[f] || 0) + override[f];
+  });
+  return out;
+}
 
 // Prompt synthesis: topic -> per-feature relevance scores (simulated LLM output)
 const PROMPT_SYNTHESIS = {
@@ -1653,13 +1702,21 @@ const ROLES = [
   { label: 'Student', archetype: 'Student' },
 ];
 
+// Audience strings are prefixed with '→' to mean "presenting TO this audience"
+// — disambiguates from role names (e.g. role "Leadership" vs audience "→ Exec team").
 const AUDIENCES = {
-  Founder: ['Investors', 'VCs', 'Board members', 'Angel investors'],
-  Sales: ['Enterprise clients', 'Prospects', 'C-suite buyers'],
-  Corporate: ['Leadership team', 'Executives', 'Stakeholders', 'Cross-functional team'],
-  Creative: ['Potential clients', 'Recruiters', 'Art directors'],
-  Educator: ['Students', 'Corporate trainees', 'Workshop attendees'],
-  Student: ['Professor', 'Panel judges', 'Classmates'] };
+  Founder:   ['→ Investors', '→ VCs', '→ Board members', '→ Angel investors'],
+  Sales:     ['→ Enterprise clients', '→ Prospects', '→ C-suite buyers'],
+  Corporate: ['→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders'],
+  Creative:  ['→ Potential clients', '→ Recruiters', '→ Art directors'],
+  Educator:  ['→ Students', '→ Corporate trainees', '→ Workshop attendees'],
+  Student:   ['→ Professor', '→ Panel judges', '→ Classmates'] };
+
+// Legacy audience strings (saved sessions, older configs) aliased to new names.
+const AUDIENCE_ALIASES = {
+  'Leadership team':       '→ Exec team',
+  'Cross-functional team': '→ XFN stakeholders'
+};
 
 const TOPICS = {
   Founder: [
@@ -1819,23 +1876,30 @@ function generateUser() {
 function profileUser() {
   const u = state.user;
 
-  // ── LAYER 1: Mindset (role x audience stakes) ──
-  const audienceStakes = getAudienceStakes(u.audience);
-  const mindsetKey = u.role + '|' + audienceStakes;
-  const mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
-  u.mindsetVector = mindsetVector;
+  // Legacy audience string aliases (old configs) → new canonical strings.
+  if (u.audience && AUDIENCE_ALIASES[u.audience]) {
+    u.audience = AUDIENCE_ALIASES[u.audience];
+  }
+
+  // ── LAYER 2: Audience Stakes (classification only, no direct weight) ──
+  const audienceStakes = getAudienceStakes(u.audience);   // 'critical' | 'external' | 'internal' | 'unknown'
   u.audienceStakes = audienceStakes;
+  state.activeSignals.add('stakes-' + audienceStakes);
+
+  // ── LAYER 1: Mindset (role × stakes base + sparse (role, audience) override) ──
+  // Unknown audience → safest default internal bucket for the base lookup.
+  const effectiveStakes = (audienceStakes === 'unknown') ? 'internal' : audienceStakes;
+  const baseKey     = u.role + '|' + effectiveStakes;
+  const baseVector  = MINDSET_VECTORS[baseKey] || MINDSET_FALLBACK;
+  const overrideKey = u.role + '|' + u.audience;          // e.g. "Sales|→ Investors"
+  const mindsetVector = applyMindsetOverride(baseVector, overrideKey);
+  u.mindsetVector     = mindsetVector;
+  u.mindsetKey        = baseKey;
+  u.mindsetOverrideApplied = !!MINDSET_OVERRIDES[overrideKey];
 
   // Write mindset as a direct signal
   DIRECT_MAP['mindset-vector'] = mindsetVector;
   state.activeSignals.add('mindset-vector');
-
-  // ── LAYER 2: Audience Stakes ──
-  const HIGH_STAKES = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers'];
-  const LOW_STAKES = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors'];
-  if (HIGH_STAKES.includes(u.audience)) state.activeSignals.add('stakes-high-external');
-  else if (LOW_STAKES.includes(u.audience)) state.activeSignals.add('stakes-low-external');
-  else state.activeSignals.add('stakes-internal');
 
   // ── LAYER 3: Prompt Synthesis ──
   var synthesis = PROMPT_SYNTHESIS[u.topic];
@@ -1904,12 +1968,31 @@ function synthesizeFromKeywords(prompt) {
   return scores;
 }
 
+// Classify audience string → stakes bucket. Returns 'critical' | 'external' |
+// 'internal' | 'unknown'. Mirrors config/context-layers.json audienceStakes.
+// Blank / null / unmatched strings return 'unknown'.
 function getAudienceStakes(audience) {
-  const HIGH = ['Investors', 'VCs', 'Board members', 'Angel investors', 'Enterprise clients', 'C-suite buyers', 'Panel judges', 'Professor', 'Executives'];
-  const LOW = ['Prospects', 'Potential clients', 'Recruiters', 'Art directors', 'Workshop attendees', 'Corporate trainees'];
-  if (HIGH.includes(audience)) return 'high-external';
-  if (LOW.includes(audience)) return 'low-external';
-  return 'internal';
+  if (!audience || typeof audience !== 'string') return 'unknown';
+  // Legacy strings (pre-arrow-prefix) still classify correctly.
+  const a = AUDIENCE_ALIASES[audience] || audience;
+
+  const CRITICAL = [
+    '→ Investors', '→ VCs', '→ Board members', '→ Angel investors',
+    '→ Enterprise clients', '→ C-suite buyers'
+  ];
+  const EXTERNAL = [
+    '→ Prospects', '→ Potential clients', '→ Recruiters', '→ Art directors'
+  ];
+  const INTERNAL = [
+    '→ Exec team', '→ Executives', '→ Stakeholders', '→ XFN stakeholders',
+    '→ Students', '→ Corporate trainees', '→ Workshop attendees',
+    '→ Professor', '→ Panel judges', '→ Classmates'
+  ];
+
+  if (CRITICAL.includes(a)) return 'critical';
+  if (EXTERNAL.includes(a)) return 'external';
+  if (INTERNAL.includes(a)) return 'internal';
+  return 'unknown';
 }
 
 function addStateSignals() {
@@ -2485,7 +2568,7 @@ function showRandOverlay(pickedActions) {
   html += randRow('Name', u.name);
   html += randRow('Role', u.role);
   html += randRow('Audience', u.audience);
-  html += randRow('Stakes', (u.audienceStakes || '').replace(/-/g, ' '), u.audienceStakes === 'high-external');
+  html += randRow('Stakes', (u.audienceStakes || '').replace(/-/g, ' '), u.audienceStakes === 'critical');
   html += randRow('Email', u.email);
   html += randRow('Country', u.country + (u.countryTier === 2 ? ' (Tier 2)' : ''));
   html += randRow('Credits', u.credits + ' / 100', u.credits < 30);
@@ -2555,15 +2638,20 @@ function getUserContextImpact(label) {
   switch (label) {
     case 'Role':
     case 'Mindset Key': {
-      var key = u.role + '|' + (u.audienceStakes || 'internal');
-      var vec = MINDSET_VECTORS[key] || MINDSET_FALLBACK;
-      return { signalName: 'mindset-vector', note: key, directWeights: vec, universalWeight: 0 };
+      // Use effective stakes — fall back to 'internal' if unknown.
+      var stakes = (u.audienceStakes === 'unknown' ? 'internal' : (u.audienceStakes || 'internal'));
+      var baseKey = u.role + '|' + stakes;
+      var baseVec = MINDSET_VECTORS[baseKey] || MINDSET_FALLBACK;
+      var overrideKey = u.role + '|' + (u.audience || '');
+      var finalVec = applyMindsetOverride(baseVec, overrideKey);
+      var note = baseKey + (MINDSET_OVERRIDES[overrideKey] ? ' + override ' + overrideKey : '');
+      return { signalName: 'mindset-vector', note: note, directWeights: finalVec, universalWeight: 0 };
     }
     case 'Audience':
     case 'Audience Stakes': {
-      var sig = 'stakes-' + (u.audienceStakes || 'internal');
-      var weights = DIRECT_MAP[sig] || {};
-      return { signalName: sig, directWeights: weights, universalWeight: 0 };
+      // Stakes tags carry no direct weight now — show the tag name only.
+      var sig = 'stakes-' + (u.audienceStakes || 'unknown');
+      return { signalName: sig, directWeights: {}, universalWeight: 0 };
     }
     case 'Topic': {
       var synthesis = PROMPT_SYNTHESIS[u.topic];
@@ -2724,7 +2812,7 @@ function renderPromptAnalysis() {
 
   html += '<div class="prompt-section-label">What we infer</div>';
   if (audience) {
-    var stakesClass = u.audienceStakes === 'high-external' ? 'highlight' : '';
+    var stakesClass = u.audienceStakes === 'critical' ? 'highlight' : '';
     html += '<div style="display:flex;gap:16px;margin-bottom:14px">';
     html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Audience</span><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">' + audience + '</div></div>';
     html += '<div style="flex:1"><span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Stakes</span><div style="font-size:13px;font-weight:600;margin-top:2px" class="' + stakesClass + '">' + stakes + '</div></div>';
@@ -2830,7 +2918,7 @@ function synthesizeWithLLM(prompt) {
 
   var role = state.user.role || 'unknown';
 
-  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "high-external or low-external or internal",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Remove watermark — clean professional finish (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- high-external: investors, VCs, board, enterprise clients, C-suite\n- low-external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n\nRespond with ONLY the JSON object.';
+  var ollamaPrompt = 'You analyze prompts for a presentation-making tool. The user\'s role is: ' + role + '.\n\nTheir prompt: "' + prompt + '"' + docContext + '\n\nAnalyze this and respond with ONLY a JSON object (no markdown, no explanation) with these fields:\n{\n  "audience": "who this presentation is for (e.g. Investors, Team, Classmates)",\n  "audience_stakes": "critical or external or internal or unknown",\n  "scores": {\n    "ai-models": 0-5,\n    "brand-kit": 0-5,\n    "unbranded": 0-5,\n    "export": 0-5,\n    "invite-collab": 0-5,\n    "analytics": 0-5,\n    "hire-team": 0-5\n  }\n}\n\nFeature guide:\n- ai-models: Better AI for quality slides (lower if user has own content)\n- brand-kit: Custom brand colors/fonts\n- unbranded: Remove watermark — clean professional finish (higher for external audiences)\n- export: PowerPoint/PDF download (higher for formal/external presentations)\n- invite-collab: Real-time collaboration (higher for team/internal work)\n- analytics: Viewer tracking (higher for sales/investor contexts)\n- hire-team: Our team builds it (for struggling users or complex docs)\n\naudience_stakes guide:\n- critical: investors, VCs, board, enterprise clients, C-suite\n- external: prospects, recruiters, potential clients\n- internal: team, classmates, leadership, stakeholders\n- unknown: audience not given or unclear\n\nRespond with ONLY the JSON object.';
 
   fetch('http://localhost:11434/api/generate', {
     method: 'POST',
@@ -2863,17 +2951,21 @@ function synthesizeWithLLM(prompt) {
       state.user.audience = result.audience;
       // Update audience stakes from LLM
       var newStakes = result.audience_stakes;
-      if (['high-external', 'low-external', 'internal'].indexOf(newStakes) !== -1) {
-        // Remove old stakes signal
-        state.activeSignals.delete('stakes-high-external');
-        state.activeSignals.delete('stakes-low-external');
+      if (['critical', 'external', 'internal', 'unknown'].indexOf(newStakes) !== -1) {
+        // Remove any previous stakes tag
+        state.activeSignals.delete('stakes-critical');
+        state.activeSignals.delete('stakes-external');
         state.activeSignals.delete('stakes-internal');
+        state.activeSignals.delete('stakes-unknown');
         // Add new one
         state.activeSignals.add('stakes-' + newStakes);
         state.user.audienceStakes = newStakes;
-        // Update mindset vector with new stakes
-        var mindsetKey = state.user.role + '|' + newStakes;
-        var mindsetVector = MINDSET_VECTORS[mindsetKey] || MINDSET_FALLBACK;
+        // Update mindset vector with new stakes — fall back to internal if unknown.
+        var effectiveStakes = (newStakes === 'unknown') ? 'internal' : newStakes;
+        var baseKey = state.user.role + '|' + effectiveStakes;
+        var baseVec = MINDSET_VECTORS[baseKey] || MINDSET_FALLBACK;
+        var overrideKey = state.user.role + '|' + (state.user.audience || '');
+        var mindsetVector = applyMindsetOverride(baseVec, overrideKey);
         state.user.mindsetVector = mindsetVector;
         DIRECT_MAP['mindset-vector'] = mindsetVector;
       }
@@ -3062,8 +3154,9 @@ function renderSignals() {
     { id: 'pricing-visit', label: 'Visited pricing', type: 'universal' },
     // Context layers
     { id: 'mindset-vector', label: 'Role-based profile', type: 'direct' },
-    { id: 'stakes-high-external', label: 'High-stakes audience', type: 'direct' },
-    { id: 'stakes-low-external', label: 'External audience', type: 'direct' },
+    { id: 'stakes-critical', label: '→ Critical audience', type: 'direct' },
+    { id: 'stakes-external', label: '→ External audience', type: 'direct' },
+    { id: 'stakes-unknown', label: 'Audience unknown', type: 'direct' },
     { id: 'stakes-internal', label: 'Internal audience', type: 'direct' },
     { id: 'prompt-synthesis', label: 'Prompt analysis', type: 'direct' },
     // User state

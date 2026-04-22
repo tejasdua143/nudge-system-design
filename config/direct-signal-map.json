@@ -1,5 +1,5 @@
 {
-  "_doc": "Direct signal → feature weight mappings. Each signal key maps to an object of featureId → integer weight. Signals not listed for a feature have weight 0. Signal names match simulator (canonical). For repeatable signals, final score = base × log₂(count + 1). For boolean signals, final score = base. See signal-types.json.",
+  "_doc": "Direct signal → feature weight mappings. Each signal key maps to an object of featureId → integer weight. Signals not listed for a feature have weight 0. Signal names match simulator (canonical). For repeatable signals, final score = base × log₂(count + 1). For boolean signals, final score = base. See signal-types.json. Stakes tags (stakes-critical/external/internal/unknown) carry no direct weight — all stakes-based lift lives in mindset-vectors.json + mindset-overrides.json.",
 
   "text-edit":              { "ai-models": 1 },
   "style-change":           { "brand-kit": 3 },
@@ -35,9 +35,10 @@
   "gate-hit":               {},
   "pricing-visit":          {},
 
-  "stakes-high-external":   { "unbranded": 3, "analytics": 2, "brand-kit": 2, "hire-team": 2 },
-  "stakes-low-external":    { "unbranded": 2, "brand-kit": 1 },
-  "stakes-internal":        { "invite-collab": 2 },
+  "stakes-critical":        {},
+  "stakes-external":        {},
+  "stakes-internal":        {},
+  "stakes-unknown":         {},
 
   "bought-export":          { "export": 4 },
   "deck-veteran":           { "brand-kit": 3 },

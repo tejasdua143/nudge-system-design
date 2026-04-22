@@ -1,0 +1,32 @@
+{
+  "_doc": "Sparse overrides on top of mindset-vectors.json. Keys are 'role|→ audience' pairs (audience prefixed with → to avoid collision with role names). Values are per-feature DELTAS applied to the base role|stakes vector for that user. Empty / missing entries = no override, base vector applies unchanged. Only list cells where the pairing is sharply different from the role×stakes base.",
+  "_lookup": "ContextProfiler L1: base = mindsetVectors[role|stakes]; if mindsetOverrides[role|audience] exists, add deltas; else use base as-is. Deltas can be negative.",
+
+  "Leadership|→ Investors":          { "unbranded": 2, "analytics": 2 },
+  "Leadership|→ Board members":      { "analytics": 2, "export": 2 },
+
+  "Sales|→ Investors":               { "unbranded": 3, "analytics": 2, "brand-kit": 1 },
+  "Sales|→ Enterprise clients":      { "unbranded": 2, "analytics": 1 },
+
+  "Marketing|→ C-suite buyers":      { "analytics": 2, "brand-kit": 2 },
+
+  "Design|→ Art directors":          { "brand-kit": 1, "unbranded": 1 },
+
+  "Creator|→ Recruiters":            { "brand-kit": 2, "unbranded": 2 },
+
+  "Engineering|→ Investors":         { "hire-team": 2, "unbranded": 1 },
+  "Engineering|→ Exec team":         { "invite-collab": 1, "export": 1 },
+
+  "Data Analytics|→ Board members":  { "analytics": 3, "export": 2 },
+
+  "Finance|→ Board members":         { "analytics": 2, "export": 3 },
+  "Finance|→ Investors":             { "analytics": 2, "export": 2, "unbranded": 1 },
+
+  "Consulting|→ C-suite buyers":     { "hire-team": 2, "brand-kit": 1 },
+  "Consulting|→ Enterprise clients": { "unbranded": 2, "brand-kit": 1 },
+
+  "Teacher|→ Students":              { "invite-collab": -2, "export": 1 },
+
+  "Student|→ Professor":             { "export": 3, "unbranded": 1 },
+  "Student|→ Panel judges":          { "export": 2, "unbranded": 2, "hire-team": 1 }
+}

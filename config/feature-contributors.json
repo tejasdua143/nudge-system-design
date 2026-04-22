@@ -1,6 +1,5 @@
 {
-  "_doc": "Feature-centric view: every signal that contributes to each feature's score. For repeatable signals (see signal-types.json), final contribution = base × log₂(count + 1). For boolean signals, final contribution = base. Universal signals add base × 0.4 to ALL features; repeatable universals are also log-scaled before the 0.4× multiplier. Signal names match simulator (canonical).",
-
+  "_doc": "Feature-centric view: every signal that contributes to each feature's score. For repeatable signals (see signal-types.json), final contribution = base \u00d7 log\u2082(count + 1). For boolean signals, final contribution = base. Universal signals add base \u00d7 0.4 to ALL features; repeatable universals are also log-scaled before the 0.4\u00d7 multiplier. Signal names match simulator (canonical). Stakes tags (stakes-critical/external/internal/unknown) carry no direct weight; all stakes lift is in the mindset vector (L1) plus sparse overrides.",
   "ai-models": {
     "name": "Better AI Models",
     "type": "pro",
@@ -17,7 +16,7 @@
       "deck-regenerate": 5
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -39,11 +38,19 @@
       "mindsetVector": "High in: Engineering|internal (2), Student|internal (2), Product|internal (2). Low in: Sales|high-external (0), Marketing|high-external (0).",
       "promptSynthesis": "LLM scores 0-5 based on prompt content. High for: editing-heavy, quality-focused, AI-related prompts."
     },
-    "keywordTriggers": ["quality", "better", "improve", "upgrade", "ai", "smart", "polished", "professional"],
+    "keywordTriggers": [
+      "quality",
+      "better",
+      "improve",
+      "upgrade",
+      "ai",
+      "smart",
+      "polished",
+      "professional"
+    ],
     "urgencyBoost": 2,
     "typicalScenario": "User is heavily editing slides, regenerating deck, struggling with quality. Log-scaling on text-edit + undo-redo replaces old edit-streak-3 / edit-count-5 aggregates."
   },
-
   "brand-kit": {
     "name": "Brand Kit",
     "type": "pro",
@@ -59,12 +66,10 @@
       "doc-upload": 3,
       "deck-switch": 3,
       "second-deck": 3,
-      "deck-veteran": 3,
-      "stakes-high-external": 2,
-      "stakes-low-external": 1
+      "deck-veteran": 3
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -85,11 +90,18 @@
       "mindsetVector": "High in: Design|high-external (5), Creator|high-external (4), Marketing|high-external (4). Low in: Engineering|internal (0), Finance|internal (0).",
       "promptSynthesis": "LLM scores 0-5. High for: brand identity, portfolio, agency credentials, design-focused prompts."
     },
-    "keywordTriggers": ["brand", "logo", "colors", "identity", "company", "style", "design system"],
+    "keywordTriggers": [
+      "brand",
+      "logo",
+      "colors",
+      "identity",
+      "company",
+      "style",
+      "design system"
+    ],
     "urgencyBoost": 0,
     "typicalScenario": "User mentions their brand, changes themes/styles/media, switches decks, works across multiple decks."
   },
-
   "unbranded": {
     "name": "Remove Watermark",
     "type": "pro",
@@ -103,12 +115,10 @@
       "doc-upload": 2,
       "second-deck": 2,
       "deck-sharer": 2,
-      "deck-publisher": 3,
-      "stakes-high-external": 3,
-      "stakes-low-external": 2
+      "deck-publisher": 3
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -129,11 +139,18 @@
       "mindsetVector": "High in: Design|high-external (4), Sales|high-external (4), Marketing|high-external (4), Creator|high-external (4). Low in: Engineering|internal (0), Operations|internal (0).",
       "promptSynthesis": "LLM scores 0-5. High for: investor pitches, enterprise proposals, portfolio decks, client-facing work."
     },
-    "keywordTriggers": ["professional", "clean", "client", "enterprise", "investor", "watermark", "template"],
+    "keywordTriggers": [
+      "professional",
+      "clean",
+      "client",
+      "enterprise",
+      "investor",
+      "watermark",
+      "template"
+    ],
     "urgencyBoost": 0,
-    "typicalScenario": "User previewing/sharing to external stakeholders. Bases trimmed (play-preview 4→3, share-link-copy 4→3, theme-global 3→2, doc-upload 3→2) to prevent unbranded dominating the score under log-scaling."
+    "typicalScenario": "User previewing/sharing to external stakeholders. Bases trimmed (play-preview 4\u21923, share-link-copy 4\u21923, theme-global 3\u21922, doc-upload 3\u21922) to prevent unbranded dominating the score under log-scaling."
   },
-
   "export": {
     "name": "PowerPoint/PDF Export",
     "type": "pro",
@@ -147,7 +164,7 @@
       "bought-export": 4
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -168,11 +185,19 @@
       "mindsetVector": "High in: Data Analytics|high-external (4), Finance|high-external (4), Teacher|high-external (4), Student|high-external (4). Low in: most internal roles (1).",
       "promptSynthesis": "LLM scores 0-5. High for: thesis defense, investor meetings, enterprise proposals, anything needing offline delivery."
     },
-    "keywordTriggers": ["download", "pdf", "powerpoint", "pptx", "email", "offline", "print", "send"],
+    "keywordTriggers": [
+      "download",
+      "pdf",
+      "powerpoint",
+      "pptx",
+      "email",
+      "offline",
+      "print",
+      "send"
+    ],
     "urgencyBoost": 3,
     "typicalScenario": "User tries to download (hits paywall), plays slideshow, uploaded doc that needs to leave the tool."
   },
-
   "invite-collab": {
     "name": "Invite Collaborators",
     "type": "pro",
@@ -182,11 +207,10 @@
       "invite-attempt": 5,
       "prompt-team": 5,
       "deck-sharer": 2,
-      "stakes-internal": 2,
       "acq-referral": 3
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -206,11 +230,18 @@
       "mindsetVector": "High in: Product|internal (4), Engineering|internal (3), Operations|internal (3), Consulting|internal (3). Low in: Design|high-external (0), Creator|internal (1).",
       "promptSynthesis": "LLM scores 0-5. High for: team restructuring, product roadmap, group projects, collaborative work."
     },
-    "keywordTriggers": ["team", "collaborate", "together", "review", "feedback", "we ", "our "],
+    "keywordTriggers": [
+      "team",
+      "collaborate",
+      "together",
+      "review",
+      "feedback",
+      "we ",
+      "our "
+    ],
     "urgencyBoost": 0,
     "typicalScenario": "User uses team/we/our language, hits invite gate, works in internal/collaborative context. Repeatable lift comes mainly from invite-attempt and share-link-copy."
   },
-
   "analytics": {
     "name": "Viewer Analytics",
     "type": "pro",
@@ -219,11 +250,10 @@
       "share-link-copy": 3,
       "doc-upload": 2,
       "deck-sharer": 3,
-      "deck-publisher": 2,
-      "stakes-high-external": 2
+      "deck-publisher": 2
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -241,13 +271,20 @@
     },
     "contextLayers": {
       "mindsetVector": "High in: Sales|high-external (4), Data Analytics|high-external (4), Leadership|high-external (4). Low in: Student|internal (0), Teacher|internal (0).",
-      "promptSynthesis": "LLM scores 0-5. High for: enterprise proposals, ROI case studies, partnership pitches — anything where tracking engagement matters."
+      "promptSynthesis": "LLM scores 0-5. High for: enterprise proposals, ROI case studies, partnership pitches \u2014 anything where tracking engagement matters."
     },
-    "keywordTriggers": ["track", "analytics", "metrics", "engagement", "data", "measure", "roi"],
+    "keywordTriggers": [
+      "track",
+      "analytics",
+      "metrics",
+      "engagement",
+      "data",
+      "measure",
+      "roi"
+    ],
     "urgencyBoost": 0,
     "typicalScenario": "User shares decks, presents to external high-stakes audiences where follow-up tracking matters."
   },
-
   "hire-team": {
     "name": "Hire Our Team",
     "type": "service",
@@ -258,11 +295,10 @@
       "layout-slide": 1,
       "deck-regenerate": 5,
       "doc-upload": 2,
-      "doc-upload-long": 4,
-      "stakes-high-external": 2
+      "doc-upload-long": 4
     },
     "universalSignals": {
-      "_note": "Each universal signal contributes its weight × 0.4 to this feature. Repeatable universals get log-scaled first.",
+      "_note": "Each universal signal contributes its weight \u00d7 0.4 to this feature. Repeatable universals get log-scaled first.",
       "credits-low": 3,
       "credits-zero": 5,
       "returning-user": 4,
@@ -283,9 +319,17 @@
       "mindsetVector": "High in: Leadership|high-external (2), Sales|high-external (2), Consulting|high-external (2). Low in: most internal roles (0).",
       "promptSynthesis": "LLM scores 0-5. High for: urgent deadlines, struggle language ('help me', 'can't'), high-stakes presentations."
     },
-    "keywordTriggers": ["help me", "struggle", "can't", "complicated", "too hard", "do it for", "build it for"],
+    "keywordTriggers": [
+      "help me",
+      "struggle",
+      "can't",
+      "complicated",
+      "too hard",
+      "do it for",
+      "build it for"
+    ],
     "urgencyBoost": 3,
-    "typicalScenario": "User struggling — repeated undo/redo + deck-regenerate cycles + long doc upload. Log-scaling naturally captures escalation without explicit edit-streak-3 / re-edit-3x aggregates.",
+    "typicalScenario": "User struggling \u2014 repeated undo/redo + deck-regenerate cycles + long doc upload. Log-scaling naturally captures escalation without explicit edit-streak-3 / re-edit-3x aggregates.",
     "distinctBehavior": {
       "nudgeFraming": "Let us handle it (not 'unlock this feature')",
       "cta": "Talk to our team",

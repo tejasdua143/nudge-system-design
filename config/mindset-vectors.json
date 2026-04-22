@@ -1,6 +1,6 @@
 {
-  "_doc": "Layer 1 mindset vectors. Key = 'role|audienceStakes'. Value = per-feature weights (0-5). audienceStakes is one of: high-external, low-external, internal.",
-  "Leadership|high-external": {
+  "_doc": "Layer 1 mindset vectors (BASE). Key = 'role|stakesBucket'. Value = per-feature weights (0-5). stakesBucket is one of: critical, external, internal. Specific (role, audience) pairs can override this base via mindset-overrides.json.",
+  "Leadership|critical": {
     "unbranded": 4,
     "analytics": 4,
     "export": 3,
@@ -9,7 +9,7 @@
     "hire-team": 2,
     "invite-collab": 1
   },
-  "Leadership|low-external": {
+  "Leadership|external": {
     "unbranded": 3,
     "brand-kit": 3,
     "export": 3,
@@ -27,7 +27,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Sales|high-external": {
+  "Sales|critical": {
     "analytics": 4,
     "unbranded": 4,
     "export": 3,
@@ -36,7 +36,7 @@
     "hire-team": 2,
     "invite-collab": 1
   },
-  "Sales|low-external": {
+  "Sales|external": {
     "unbranded": 3,
     "analytics": 3,
     "export": 3,
@@ -54,7 +54,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Marketing|high-external": {
+  "Marketing|critical": {
     "brand-kit": 4,
     "unbranded": 4,
     "analytics": 3,
@@ -63,7 +63,7 @@
     "hire-team": 1,
     "invite-collab": 1
   },
-  "Marketing|low-external": {
+  "Marketing|external": {
     "brand-kit": 4,
     "unbranded": 3,
     "export": 2,
@@ -81,7 +81,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Product|high-external": {
+  "Product|critical": {
     "unbranded": 3,
     "export": 3,
     "ai-models": 3,
@@ -90,7 +90,7 @@
     "invite-collab": 2,
     "hire-team": 1
   },
-  "Product|low-external": {
+  "Product|external": {
     "ai-models": 3,
     "unbranded": 2,
     "export": 2,
@@ -108,7 +108,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Design|high-external": {
+  "Design|critical": {
     "brand-kit": 5,
     "unbranded": 4,
     "export": 3,
@@ -117,7 +117,7 @@
     "hire-team": 1,
     "invite-collab": 0
   },
-  "Design|low-external": {
+  "Design|external": {
     "brand-kit": 4,
     "unbranded": 4,
     "export": 3,
@@ -135,7 +135,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Engineering|high-external": {
+  "Engineering|critical": {
     "ai-models": 3,
     "export": 3,
     "unbranded": 2,
@@ -144,7 +144,7 @@
     "analytics": 1,
     "hire-team": 1
   },
-  "Engineering|low-external": {
+  "Engineering|external": {
     "ai-models": 3,
     "export": 2,
     "invite-collab": 2,
@@ -162,7 +162,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Data Analytics|high-external": {
+  "Data Analytics|critical": {
     "analytics": 4,
     "export": 4,
     "ai-models": 3,
@@ -171,7 +171,7 @@
     "invite-collab": 1,
     "hire-team": 1
   },
-  "Data Analytics|low-external": {
+  "Data Analytics|external": {
     "analytics": 3,
     "export": 3,
     "ai-models": 0,
@@ -189,7 +189,7 @@
     "brand-kit": 0,
     "hire-team": 0
   },
-  "Consulting|high-external": {
+  "Consulting|critical": {
     "unbranded": 3,
     "brand-kit": 3,
     "export": 3,
@@ -198,7 +198,7 @@
     "hire-team": 2,
     "invite-collab": 1
   },
-  "Consulting|low-external": {
+  "Consulting|external": {
     "unbranded": 3,
     "brand-kit": 2,
     "export": 3,
@@ -216,7 +216,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Operations|high-external": {
+  "Operations|critical": {
     "export": 3,
     "unbranded": 2,
     "ai-models": 0,
@@ -225,7 +225,7 @@
     "analytics": 1,
     "hire-team": 1
   },
-  "Operations|low-external": {
+  "Operations|external": {
     "export": 2,
     "ai-models": 0,
     "invite-collab": 2,
@@ -243,7 +243,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Finance|high-external": {
+  "Finance|critical": {
     "analytics": 3,
     "export": 4,
     "unbranded": 3,
@@ -252,7 +252,7 @@
     "invite-collab": 1,
     "hire-team": 1
   },
-  "Finance|low-external": {
+  "Finance|external": {
     "export": 3,
     "analytics": 2,
     "unbranded": 2,
@@ -270,7 +270,7 @@
     "brand-kit": 0,
     "hire-team": 0
   },
-  "Creator|high-external": {
+  "Creator|critical": {
     "brand-kit": 4,
     "unbranded": 4,
     "export": 3,
@@ -279,7 +279,7 @@
     "hire-team": 1,
     "invite-collab": 0
   },
-  "Creator|low-external": {
+  "Creator|external": {
     "brand-kit": 4,
     "unbranded": 3,
     "ai-models": 3,
@@ -297,7 +297,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Teacher|high-external": {
+  "Teacher|critical": {
     "export": 4,
     "ai-models": 3,
     "unbranded": 2,
@@ -306,7 +306,7 @@
     "analytics": 0,
     "invite-collab": 0
   },
-  "Teacher|low-external": {
+  "Teacher|external": {
     "export": 3,
     "ai-models": 0,
     "unbranded": 2,
@@ -324,7 +324,7 @@
     "analytics": 0,
     "hire-team": 0
   },
-  "Student|high-external": {
+  "Student|critical": {
     "export": 4,
     "ai-models": 3,
     "unbranded": 3,
@@ -333,7 +333,7 @@
     "hire-team": 1,
     "analytics": 0
   },
-  "Student|low-external": {
+  "Student|external": {
     "export": 3,
     "ai-models": 0,
     "unbranded": 2,
