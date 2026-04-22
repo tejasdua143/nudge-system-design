@@ -53,8 +53,9 @@ config/          Tunable JSON configs (signal weights, mindset vectors, guardrai
 docs/            Design references (nudge card component, design prompt)
 simulator/       Interactive HTML simulators (no build tools, vanilla JS)
 specs/           Engineering specs (9 files, one per engine)
-v1-archive/      Previous version files and archived plans
 ```
+
+Legacy v1 simulators + plans are preserved on branch `archive/v1` (frozen, never moves). Not on main. Check out with `git checkout archive/v1` if needed.
 
 ## Specs
 
