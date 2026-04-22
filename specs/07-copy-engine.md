@@ -69,7 +69,7 @@ These rules govern all nudge copy:
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| advanced-models | text-edit, edit-streak-3, edit-count-5, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Pro AI models generate sharper copy and more polished layouts without the back-and-forth. | Upgrade to Pro |
+| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Pro AI models generate sharper copy and more polished layouts without the back-and-forth. | Upgrade to Pro |
 | ai-credits | insert-slide-prompt, deck-regenerate | Don't lose momentum on your {topic} deck | You're running low on credits. Upgrade to keep generating without interruptions. | Upgrade to Pro |
 | project-knowledge | doc-upload, doc-upload-long, prompt-brand | Make your {topic} slides even more accurate | Upload your documents and the AI tailors every slide to your specific material. | Get Project Knowledge |
 
@@ -104,7 +104,7 @@ These rules govern all nudge copy:
 | guests | share-link-copy, prompt-team | Get feedback before this reaches {audience} | Invite guests to view and comment, all in one place. | Invite Collaborators |
 | workspace | prompt-team, invite-attempt | Your team should be building this {topic} deck with you | Add them to a shared workspace where everyone can edit and comment together. | Invite Collaborators |
 | present-remotely | play-preview | Present your {topic} deck live to {audience} | Share a link and your audience follows along in real time as you present. | Get Live Presenting |
-| version-history | undo-redo, deck-regenerate, edit-streak-3 | Keep a safety net for your {topic} deck | Version History tracks every edit for 30 days so you can undo anything, anytime. | Get Version History |
+| version-history | undo-redo, deck-regenerate | Keep a safety net for your {topic} deck | Version History tracks every edit for 30 days so you can undo anything, anytime. | Get Version History |
 
 ### analytics (3 variants)
 
@@ -118,7 +118,7 @@ These rules govern all nudge copy:
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| hire-team | edit-streak-3, undo-redo, deck-regenerate, edit-count-5, doc-upload-long | Let our team build your {topic} deck for {audience} | You focus on the message, we handle the design and polish. | Talk to Our Team |
+| hire-team | undo-redo, deck-regenerate, doc-upload-long | Let our team build your {topic} deck for {audience} | You focus on the message, we handle the design and polish. | Talk to Our Team |
 
 ---
 

@@ -2237,7 +2237,7 @@ function generateCopy(feature) {
 
   var subFeatures = {
     'ai-models': [
-      { id: 'advanced-models', signals: ['text-edit', 'edit-streak-3', 'edit-count-5', 'edit-after-preview', 'deck-regenerate'],
+      { id: 'advanced-models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
         title: 'Your ' + topic + ' deck could be better on the first try',
         body: 'Pro AI models generate sharper copy and more polished layouts without the back-and-forth.',
         cta: 'Upgrade to Pro' },
@@ -2305,7 +2305,7 @@ function generateCopy(feature) {
         title: 'Present your ' + topic + ' deck live to ' + u.audience,
         body: 'Share a link and your audience follows along in real time as you present.',
         cta: 'Get Live Presenting' },
-      { id: 'version-history', signals: ['undo-redo', 'deck-regenerate', 'edit-streak-3'],
+      { id: 'version-history', signals: ['undo-redo', 'deck-regenerate'],
         title: 'Let collaborators edit your ' + topic + ' deck without risk',
         body: 'Version History tracks every edit for 30 days so you can roll back any teammate\u2019s change in a click.',
         cta: 'Get Version History' },
@@ -2325,7 +2325,7 @@ function generateCopy(feature) {
         cta: 'Try Analytics' },
     ],
     'hire-team': [
-      { id: 'hire-team', signals: ['edit-streak-3', 'undo-redo', 'deck-regenerate', 'edit-count-5', 'doc-upload-long'],
+      { id: 'hire-team', signals: ['undo-redo', 'deck-regenerate', 'doc-upload-long'],
         title: 'Let our team build your ' + topic + ' deck for ' + u.audience,
         body: 'You focus on the message, we handle the design and polish.',
         cta: 'Talk to Our Team' },
@@ -3144,9 +3144,7 @@ function renderSignals() {
     { id: 'prompt-team', label: 'Team language in prompt', type: 'direct' },
     { id: 'doc-upload', label: 'Document uploaded', type: 'both' },
     { id: 'doc-upload-long', label: 'Long document (20+ pages)', type: 'direct' },
-    // Session thresholds
-    { id: 'edit-streak-3', label: 'Same slide edited 3x', type: 'direct' },
-    { id: 'edit-count-5', label: '5+ edits total', type: 'direct' },
+    // Session signals (aggregates edit-streak-3 / edit-count-5 removed — log-scaling on text-edit covers them)
     { id: 'second-deck', label: 'Started 2nd deck', type: 'both' },
     { id: 'deck-switch', label: 'Switched decks', type: 'direct' },
     { id: 'session-15min', label: '15+ min in editor', type: 'universal' },
