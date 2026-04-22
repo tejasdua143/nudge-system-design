@@ -67,9 +67,11 @@ Set by the ContextProfiler after `generateUser()`.
 
 | Field              | Type   | Description                                                      |
 |--------------------|--------|------------------------------------------------------------------|
-| `mindsetVector`    | object | Per-feature weight object (0--5 per feature for all 7 features)  |
-| `audienceStakes`   | string | `'high-external'` \| `'low-external'` \| `'internal'`           |
-| `promptSynthesis`  | object | Per-feature 0--5 scores derived from topic/prompt analysis       |
+| `mindsetVector`    | object | Per-feature weight object (base + any sparse override). Values 0-5+.  |
+| `mindsetKey`       | string | Base lookup key used, e.g. `"Sales|critical"`. For debugging.          |
+| `mindsetOverrideApplied` | boolean | `true` if a sparse (role, audience) override was applied        |
+| `audienceStakes`   | string | `'critical'` \| `'external'` \| `'internal'` \| `'unknown'`            |
+| `promptSynthesis`  | object | Per-feature 0--5 scores derived from topic/prompt analysis             |
 | `isProUser`        | boolean | Derived field set by `handleUpgrade()`; default `undefined`/`false` |
 
 ### featureScores Structure

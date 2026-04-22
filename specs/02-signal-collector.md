@@ -127,7 +127,7 @@ Colombia, Egypt, Bangladesh, Pakistan, Kenya
 
 ### Context / profile signals (boolean)
 
-Derived from the user profile, never from an action click: `stakes-high-external`, `stakes-low-external`, `stakes-internal`, `deck-veteran`, `deck-sharer`, `deck-publisher`, `acq-organic`, `acq-paid`, `acq-referral`, `credits-low`, `credits-zero`, `returning-user`, `zero-dismissals`, `company-domain`, `tier-1-country`, `mindset-vector`, `prompt-synthesis`.
+Derived from the user profile, never from an action click: `stakes-critical`, `stakes-external`, `stakes-internal`, `stakes-unknown`, `deck-veteran`, `deck-sharer`, `deck-publisher`, `acq-organic`, `acq-paid`, `acq-referral`, `credits-low`, `credits-zero`, `returning-user`, `zero-dismissals`, `company-domain`, `tier-1-country`, `mindset-vector`, `prompt-synthesis`. Stakes tags carry no direct weight — they are classification labels; all stakes-driven feature lift is encoded in `mindset-vector`.
 
 ### Counter semantics
 

@@ -128,7 +128,7 @@ DIRECT_MAP = {
 }
 ```
 
-**Static entries:** Most signals have fixed weights that don't change between users (e.g., `stakes-high-external`, `credits-low`, `returning-user`).
+**Static entries:** Most signals have fixed weights that don't change between users (e.g., `credits-low`, `returning-user`, `deck-veteran`). Stakes tags (`stakes-critical`, `stakes-external`, `stakes-internal`, `stakes-unknown`) are present as empty `{}` entries — classification tags only, no direct weight.
 
 **Dynamic entries:** Two signals are dynamically overwritten per user by the ContextProfiler:
 - `DIRECT_MAP['mindset-vector']` -- Per-feature weights from Layer 1 profiling (0--5 per feature, varies by role and audience stakes).

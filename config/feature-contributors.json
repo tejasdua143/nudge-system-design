@@ -35,7 +35,7 @@
       "doc-upload": 3
     },
     "contextLayers": {
-      "mindsetVector": "High in: Engineering|internal (2), Student|internal (2), Product|internal (2). Low in: Sales|high-external (0), Marketing|high-external (0).",
+      "mindsetVector": "High in: Engineering|internal (2), Student|internal (2), Product|internal (2). Low in: Sales|critical (0), Marketing|critical (0).",
       "promptSynthesis": "LLM scores 0-5 based on prompt content. High for: editing-heavy, quality-focused, AI-related prompts."
     },
     "keywordTriggers": [
@@ -87,7 +87,7 @@
       "doc-upload": 3
     },
     "contextLayers": {
-      "mindsetVector": "High in: Design|high-external (5), Creator|high-external (4), Marketing|high-external (4). Low in: Engineering|internal (0), Finance|internal (0).",
+      "mindsetVector": "High in: Design|critical (5), Creator|critical (4), Marketing|critical (4). Low in: Engineering|internal (0), Finance|internal (0).",
       "promptSynthesis": "LLM scores 0-5. High for: brand identity, portfolio, agency credentials, design-focused prompts."
     },
     "keywordTriggers": [
@@ -136,7 +136,7 @@
       "doc-upload": 3
     },
     "contextLayers": {
-      "mindsetVector": "High in: Design|high-external (4), Sales|high-external (4), Marketing|high-external (4), Creator|high-external (4). Low in: Engineering|internal (0), Operations|internal (0).",
+      "mindsetVector": "High in: Design|critical (4), Sales|critical (4), Marketing|critical (4), Creator|critical (4). Low in: Engineering|internal (0), Operations|internal (0).",
       "promptSynthesis": "LLM scores 0-5. High for: investor pitches, enterprise proposals, portfolio decks, client-facing work."
     },
     "keywordTriggers": [
@@ -182,7 +182,7 @@
       "doc-upload": 3
     },
     "contextLayers": {
-      "mindsetVector": "High in: Data Analytics|high-external (4), Finance|high-external (4), Teacher|high-external (4), Student|high-external (4). Low in: most internal roles (1).",
+      "mindsetVector": "High in: Data Analytics|critical (4), Finance|critical (4), Teacher|critical (4), Student|critical (4). Low in: most internal roles (1).",
       "promptSynthesis": "LLM scores 0-5. High for: thesis defense, investor meetings, enterprise proposals, anything needing offline delivery."
     },
     "keywordTriggers": [
@@ -227,7 +227,7 @@
       "acq-referral": 2
     },
     "contextLayers": {
-      "mindsetVector": "High in: Product|internal (4), Engineering|internal (3), Operations|internal (3), Consulting|internal (3). Low in: Design|high-external (0), Creator|internal (1).",
+      "mindsetVector": "High in: Product|internal (4), Engineering|internal (3), Operations|internal (3), Consulting|internal (3). Low in: Design|critical (0), Creator|internal (1).",
       "promptSynthesis": "LLM scores 0-5. High for: team restructuring, product roadmap, group projects, collaborative work."
     },
     "keywordTriggers": [
@@ -270,7 +270,7 @@
       "acq-referral": 2
     },
     "contextLayers": {
-      "mindsetVector": "High in: Sales|high-external (4), Data Analytics|high-external (4), Leadership|high-external (4). Low in: Student|internal (0), Teacher|internal (0).",
+      "mindsetVector": "High in: Sales|critical (4), Data Analytics|critical (4), Leadership|critical (4). Low in: Student|internal (0), Teacher|internal (0).",
       "promptSynthesis": "LLM scores 0-5. High for: enterprise proposals, ROI case studies, partnership pitches \u2014 anything where tracking engagement matters."
     },
     "keywordTriggers": [
@@ -316,7 +316,7 @@
       "doc-upload": 3
     },
     "contextLayers": {
-      "mindsetVector": "High in: Leadership|high-external (2), Sales|high-external (2), Consulting|high-external (2). Low in: most internal roles (0).",
+      "mindsetVector": "High in: Leadership|critical (2), Sales|critical (2), Consulting|critical (2). Low in: most internal roles (0).",
       "promptSynthesis": "LLM scores 0-5. High for: urgent deadlines, struggle language ('help me', 'can't'), high-stakes presentations."
     },
     "keywordTriggers": [

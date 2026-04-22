@@ -79,9 +79,11 @@ Start with the system overview, then dive into individual engines:
 |------|-----------------|
 | `direct-signal-map.json` | Signal → per-feature weight mappings |
 | `universal-signal-map.json` | Signal → universal weight (applied ×0.4 to all features) |
-| `mindset-vectors.json` | 40 role × stakes vectors (13 roles × 3 stakes + fallback) |
+| `mindset-vectors.json` | 39 base vectors (13 roles × 3 stakes buckets) + 1 fallback |
+| `mindset-overrides.json` | ~17 sparse `(role, → audience)` deltas applied on top of the base vector |
+| `signal-types.json` | Tags each signal as `repeatable` (log-scaled) or `boolean` |
 | `prompt-synthesis-examples.json` | 30+ pre-computed prompt → feature score mappings |
-| `context-layers.json` | Audience stakes classification (high/low external, internal) |
+| `context-layers.json` | Audience stakes classification (`critical` / `external` / `internal`, with `→` prefix on audience strings) |
 | `guardrails.json` | Thresholds, caps, cooldowns, timing |
 | `feature-contributors.json` | Feature-centric reference view of all scoring inputs |
 
