@@ -1146,64 +1146,86 @@ function evaluateAndFire() {
 
 function generateCopy(feature) {
   var u = state.user;
-  var topic = u.topic.split(' ').length > 4 ? u.topic.split(' ').slice(0, 4).join(' ') + '...' : u.topic;
+  var topic = u.topic;
+  // Audience strings carry a "→ " prefix (see context-layers.json). Strip + lowercase.
+  var audience = (u.audience || '').replace(/^→\s*/, '').toLowerCase();
 
   var signals = state.activeSignals;
 
   var subFeatures = {
     'ai-models': [
-      { id: 'advanced-models', title: 'Advanced AI Models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
-        body: 'Stop editing what the AI got wrong. With Advanced Models, your slides come out sharper and more polished \u2014 less fixing, more presenting.' },
-      { id: 'ai-credits', title: 'More AI Credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
-        body: 'You\u2019re using AI to build your deck \u2014 unlock 5,000 credits so you never hit the limit mid-flow.' },
-      { id: 'project-knowledge', title: 'Project Knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
-        body: 'Teach the AI about your project. With Project Knowledge, it remembers your content and generates slides that actually match your material.' },
+      { id: 'advanced-models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
+        title: 'Write tighter copy with Pro plans',
+        body: 'Pro AI nails the wording and layout so your ' + topic + ' deck sounds exactly how you want it.' },
+      { id: 'ai-credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
+        title: 'More AI credits, more iterations',
+        body: 'Go heavier on AI with Pro. Higher credit limits keep your ' + topic + ' deck evolving.' },
+      { id: 'project-knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
+        title: 'Your uploaded docs, working in every slide',
+        body: 'Project Knowledge on Pro feeds your uploaded docs into every AI-generated slide.' },
     ],
     'brand-kit': [
-      { id: 'brand-fonts', title: 'Custom Brand Fonts', signals: ['style-change'],
-        body: 'Stop adjusting fonts manually. With Custom Brand Fonts, set your typeface once and every slide matches automatically.' },
-      { id: 'brand-colors', title: 'Custom Brand Colors', signals: ['theme-global', 'layout-slide'],
-        body: 'Your brand has specific colors. Set them once in your Brand Kit and every new slide uses them by default.' },
-      { id: 'brand-assets', title: 'Custom Brand Assets', signals: ['insert-media', 'prompt-brand'],
-        body: 'Upload your logo, icons, and images to your Brand Kit. They\u2019re always available, ready to drop into any slide.' },
-      { id: 'brand-voice', title: 'Custom Brand Voice', signals: ['text-edit', 'insert-title', 'insert-list'],
-        body: 'The AI writes in your brand\u2019s tone. Set your voice once and every generated slide sounds like you.' },
+      { id: 'brand-fonts', signals: ['style-change'],
+        title: 'Let your fonts carry the presentation',
+        body: 'Save your typeface to Brand Kit on Pro. Every slide reads with the same voice, start to finish.' },
+      { id: 'brand-colors', signals: ['theme-global', 'layout-slide'],
+        title: 'Give your ' + audience + ' a deck that reads unmistakably yours',
+        body: "Pro's Brand Kit applies your colors and fonts everywhere. No toolbar touches needed." },
+      { id: 'brand-assets', signals: ['insert-media', 'prompt-brand'],
+        title: 'Your logo, one click into any slide',
+        body: 'Store your logo and images in Brand Kit. Drop them anywhere with one click on Pro.' },
+      { id: 'brand-voice', signals: ['text-edit', 'insert-title', 'insert-list'],
+        title: 'Keep your voice consistent across slides',
+        body: 'Brand Kit remembers your tone, Pro AI writes every new slide to match.' },
     ],
     'unbranded': [
-      { id: 'unbranded-links', title: 'Unbranded Public Links', signals: ['share-link-copy', 'play-preview'],
-        body: 'When you share this deck, your audience sees your content \u2014 not our watermark. Clean, professional links that look like yours.' },
-      { id: 'unbranded-export', title: 'Clean Exports', signals: ['export-click', 'export-download'],
-        body: 'Export a polished deck without the Presentations.AI watermark. Ready to email, print, or present offline.' },
+      { id: 'unbranded-links', signals: ['share-link-copy', 'play-preview'],
+        title: 'Send a clean link to your ' + audience,
+        body: 'Remove the watermark with Pro. Every shared link looks fully yours.' },
+      { id: 'unbranded-export', signals: ['export-click', 'export-download'],
+        title: 'Deliver a polished file to your ' + audience,
+        body: 'Pro exports come watermark-free so your ' + audience + ' gets a clean, finished deliverable.' },
     ],
     'export': [
-      { id: 'ppt-export', title: 'PowerPoint Export', signals: ['export-click', 'export-download'],
-        body: 'Download your deck as a .pptx file. Edit it in PowerPoint, share it over email, present it anywhere \u2014 no internet needed.' },
-      { id: 'pdf-export', title: 'PDF Export', signals: ['play-preview', 'share-link-copy'],
-        body: 'Export a presentation-ready PDF. Perfect for emailing to ' + u.audience + ' or printing for an in-person meeting.' },
-      { id: 'embed', title: 'Presentation Embeds', signals: ['share-link-copy'],
-        body: 'Embed your deck directly on a website or landing page. Your ' + topic + ' presentation, live and interactive, wherever you need it.' },
+      { id: 'ppt-export', signals: ['export-click', 'export-download'],
+        title: 'Send this wherever it needs to go',
+        body: 'Pro export gives you a polished .pptx or PDF that opens cleanly in any tool your ' + audience + ' uses.' },
+      { id: 'pdf-export', signals: ['play-preview', 'share-link-copy'],
+        title: 'Send a PDF they can open anywhere',
+        body: 'Export your ' + topic + ' deck to PDF with Pro. Ready to email, print, or attach.' },
+      { id: 'embed', signals: ['share-link-copy'],
+        title: 'Put your ' + topic + ' deck on any webpage',
+        body: 'Embed your ' + topic + ' deck on any page with Pro. Fully interactive, live updates.' },
     ],
     'invite-collab': [
-      { id: 'guests', title: 'Invite Guests', signals: ['share-link-copy', 'prompt-team'],
-        body: 'Invite up to 10 guests to view and comment on your deck. Get feedback before it goes to ' + u.audience + '.' },
-      { id: 'workspace', title: 'Workspace Members', signals: ['prompt-team', 'invite-attempt'],
-        body: 'Add your team to a shared workspace. Everyone can edit, comment, and build decks together \u2014 no more emailing files back and forth.' },
-      { id: 'present-remotely', title: 'Present Remotely', signals: ['play-preview'],
-        body: 'Present your deck live to anyone, anywhere. Share a link and your audience follows along in real time as you present.' },
-      { id: 'version-history', title: 'Version History', signals: ['undo-redo', 'deck-regenerate'],
-        body: 'Made changes you regret? Version History lets you go back to any previous state. 30 days of history, every edit tracked.' },
+      { id: 'guests', signals: ['share-link-copy', 'prompt-team'],
+        title: 'Keep every comment on the slide',
+        body: 'Invite guests to view and comment with Pro. Feedback stays on the deck, not in Slack.' },
+      { id: 'workspace', signals: ['prompt-team', 'invite-attempt'],
+        title: 'Build this deck with your team',
+        body: 'Work on your ' + topic + ' deck together in Pro workspaces. Real-time edits and comments.' },
+      { id: 'present-remotely', signals: ['play-preview'],
+        title: 'Present live to your ' + audience,
+        body: 'Present with Pro. A synced link keeps every slide moving with you, from anywhere.' },
+      { id: 'version-history', signals: ['undo-redo', 'deck-regenerate'],
+        title: 'Never lose an edit',
+        body: 'Keep 30 days of version history on Pro. Roll back any edit, anytime.' },
     ],
     'analytics': [
-      { id: 'page-views', title: 'Page Views', signals: ['share-link-copy', 'play-preview'],
-        body: 'See exactly how many people opened your ' + topic + ' deck. Know if your audience is actually viewing it.' },
-      { id: 'slide-engagement', title: 'Slide Engagement', signals: ['share-link-copy'],
-        body: 'See which slides ' + u.audience + ' spent the most time on. Know what\u2019s landing and what they\u2019re skipping.' },
-      { id: 'demographics', title: 'Viewer Demographics', signals: ['export-click', 'export-download'],
-        body: 'See where your viewers are and what devices they\u2019re using. Useful context for follow-up conversations with ' + u.audience + '.' },
+      { id: 'page-views', signals: ['share-link-copy', 'play-preview'],
+        title: 'See what lands after you hit share',
+        body: 'Pro tracks every open, which slide held attention, and for how long, so your next pitch hits harder.' },
+      { id: 'slide-engagement', signals: ['share-link-copy'],
+        title: 'See which slides kept your ' + audience + ' engaged',
+        body: 'Pro Analytics shows exactly where your viewers spent time, slide by slide.' },
+      { id: 'demographics', signals: ['export-click', 'export-download'],
+        title: "Know who's opening your deck",
+        body: 'Pro Analytics breaks down viewers by location, device, and time.' },
     ],
     'hire-team': [
-      { id: 'hire-team', title: 'Let Our Team Build It', signals: ['undo-redo', 'deck-regenerate', 'doc-upload-long'],
-        body: 'Spending too long on this? Our team will create a polished ' + topic + ' deck for ' + u.audience + '. You focus on the message, we handle the design.' },
+      { id: 'hire-team', signals: ['undo-redo', 'deck-regenerate', 'doc-upload-long'],
+        title: 'Let our design team build it for you',
+        body: 'Our team turns your ' + topic + ' deck for ' + audience + ' into a polished, on-brand presentation, delivered fast.' },
     ],
   };
 
@@ -1222,19 +1244,6 @@ function generateCopy(feature) {
   var base = best
     ? { title: best.title, body: best.body, subFeatureId: best.id }
     : { title: feature.verb, body: feature.does + '.', subFeatureId: null };
-
-  if (u.countryTier === 2) {
-    var valueAppend = {
-      'ai-models': ' Save hours of manual editing.',
-      'brand-kit': ' Set it once, reuse across every deck.',
-      'unbranded': ' Look established without hiring a designer.',
-      'export': ' Send it anywhere \u2014 no workarounds.',
-      'invite-collab': ' Get feedback in one place.',
-      'analytics': ' Know exactly who engaged.',
-      'hire-team': ' Save days of work for less than you think.',
-    };
-    if (valueAppend[feature.id]) base.body = base.body + valueAppend[feature.id];
-  }
 
   return base;
 }

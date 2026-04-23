@@ -415,6 +415,58 @@ Selects from 20 copy sub-variants across 7 features.
 
 | Sub-feature | Trigger signals | Title | CTA |
 |---|---|---|---|
+| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Write tighter copy with Pro plans | Upgrade to Pro |
+| ai-credits | insert-slide-prompt, deck-regenerate | More AI credits, more iterations | Upgrade to Pro |
+| project-knowledge | doc-upload, doc-upload-long, prompt-brand | Your uploaded docs, working in every slide | Get Project Knowledge |
+
+#### brand-kit (4)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| brand-fonts | style-change | Let your fonts carry the presentation | Get Brand Kit |
+| brand-colors | theme-global, layout-slide | Give your {audience} a deck that reads unmistakably yours | Get Brand Kit |
+| brand-assets | insert-media, prompt-brand | Your logo, one click into any slide | Get Brand Kit |
+| brand-voice | text-edit, insert-title, insert-list | Keep your voice consistent across slides | Get Brand Kit |
+
+#### unbranded (2)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| unbranded-links | share-link-copy, play-preview | Send a clean link to your {audience} | Remove Watermark |
+| unbranded-export | export-click, export-download | Deliver a polished file to your {audience} | Remove Watermark |
+
+#### export (3)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| ppt-export | export-click, export-download | Send this wherever it needs to go | Unlock Exports |
+| pdf-export | play-preview, share-link-copy | Send a PDF they can open anywhere | Unlock Exports |
+| embed | share-link-copy | Put your {topic} deck on any webpage | Unlock Embeds |
+
+#### invite-collab (4)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| guests | share-link-copy, prompt-team | Keep every comment on the slide | Invite Collaborators |
+| workspace | prompt-team, invite-attempt | Build this deck with your team | Invite Collaborators |
+| present-remotely | play-preview | Present live to your {audience} | Get Live Presenting |
+| version-history | undo-redo, deck-regenerate | Never lose an edit | Get Version History |
+
+#### analytics (3)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| page-views | share-link-copy, play-preview | See what lands after you hit share | Try Analytics |
+| slide-engagement | share-link-copy | See which slides kept your {audience} engaged | Try Analytics |
+| demographics | export-click, export-download | Know who's opening your deck | Try Analytics |
+
+#### hire-team (1)
+
+| Sub-feature | Trigger signals | Title | CTA |
+|---|---|---|---|
+| hire-team | undo-redo, deck-regenerate, doc-upload-long | Let our design team build it for you | Talk to Our Team |
+
+---|---|---|---|
 | advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Upgrade to Pro |
 | ai-credits | insert-slide-prompt, deck-regenerate | Don't lose momentum on your {topic} deck | Upgrade to Pro |
 | project-knowledge | doc-upload, doc-upload-long, prompt-brand | Make your {topic} slides even more accurate | Get Project Knowledge |

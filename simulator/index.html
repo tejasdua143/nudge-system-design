@@ -2226,108 +2226,114 @@ function checkGuardrails(featureId) {
 function generateCopy(feature) {
   const u = state.user;
   const topic = u.topic;
+  // Audience strings carry a "→ " prefix (see context-layers.json). Strip it
+  // and lowercase for natural interpolation: "→ Investors" → "investors".
+  const audience = (u.audience || '').replace(/^→\s*/, '').toLowerCase();
 
-  // Copy framework:
-  //   Title  → contextual, names the pain tied to what user is building and for whom
-  //   Body   → one sentence, pain to solution. No em dashes splitting into two thoughts.
-  //   CTA    → feature-specific: "Get Brand Kit", "Try Analytics", etc.
-  //   Never  → undermine current product, call out specific user behaviour, append tier modifiers
+  // Copy principles:
+  //   Title  → directional, outcome-focused. Frames the win, not the flaw.
+  //            Sentence-case, no period.
+  //   Body   → 1 sentence (or 2 short), no em dashes.
+  //            User action / outcome first; "Pro" as qualifier, not subject noun.
+  //   CTA    → feature-named ("Get Brand Kit", "Try Analytics").
+  //   Never  → imply current product is bad. Don't use "missing", "on the first try",
+  //            "shouldn't see our logo", "without the back-and-forth", etc.
 
   var signals = state.activeSignals;
 
   var subFeatures = {
     'ai-models': [
       { id: 'advanced-models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
-        title: 'Your ' + topic + ' deck could be better on the first try',
-        body: 'Pro AI models generate sharper copy and more polished layouts without the back-and-forth.',
+        title: 'Write tighter copy with Pro plans',
+        body: 'Pro AI nails the wording and layout so your ' + topic + ' deck sounds exactly how you want it.',
         cta: 'Upgrade to Pro' },
       { id: 'ai-credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
-        title: 'Your ' + topic + ' deck is pushing the AI hard',
-        body: 'Pro AI models produce sharper slides from every prompt, so you spend less time fixing output.',
+        title: 'More AI credits, more iterations',
+        body: 'Go heavier on AI with Pro. Higher credit limits keep your ' + topic + ' deck evolving.',
         cta: 'Upgrade to Pro' },
       { id: 'project-knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
-        title: 'Your ' + topic + ' deck deserves AI that knows your material',
-        body: 'Feed your documents to the AI and every generated slide comes out sharper and on-point.',
+        title: 'Your uploaded docs, working in every slide',
+        body: 'Project Knowledge on Pro feeds your uploaded docs into every AI-generated slide.',
         cta: 'Get Project Knowledge' },
     ],
     'brand-kit': [
       { id: 'brand-fonts', signals: ['style-change'],
-        title: 'Set your fonts once for the whole deck',
-        body: 'Brand Kit locks in your typeface and applies it across every slide automatically.',
+        title: 'Let your fonts carry the presentation',
+        body: 'Save your typeface to Brand Kit on Pro. Every slide reads with the same voice, start to finish.',
         cta: 'Get Brand Kit' },
       { id: 'brand-colors', signals: ['theme-global', 'layout-slide'],
-        title: 'Your ' + topic + ' deck should look like it came from your brand',
-        body: 'Brand Kit applies your exact colors across every slide so ' + u.audience + ' sees a polished, on-brand presentation.',
+        title: 'Give your ' + audience + ' a deck that reads unmistakably yours',
+        body: "Pro's Brand Kit applies your colors and fonts everywhere. No toolbar touches needed.",
         cta: 'Get Brand Kit' },
       { id: 'brand-assets', signals: ['insert-media', 'prompt-brand'],
-        title: 'Your ' + topic + ' deck is missing your brand assets',
-        body: 'Upload your logo and images once to Brand Kit and they\u2019re always ready when you need them.',
+        title: 'Your logo, one click into any slide',
+        body: 'Store your logo and images in Brand Kit. Drop them anywhere with one click on Pro.',
         cta: 'Get Brand Kit' },
       { id: 'brand-voice', signals: ['text-edit', 'insert-title', 'insert-list'],
-        title: 'Make sure ' + u.audience + ' hears your brand\u2019s voice in every slide',
-        body: 'Set your tone once in Brand Kit and every AI-generated slide in your ' + topic + ' deck sounds like you.',
+        title: 'Keep your voice consistent across slides',
+        body: 'Brand Kit remembers your tone, Pro AI writes every new slide to match.',
         cta: 'Get Brand Kit' },
     ],
     'unbranded': [
       { id: 'unbranded-links', signals: ['share-link-copy', 'play-preview'],
-        title: 'Before you share your ' + topic + ' deck with ' + u.audience,
-        body: 'Remove the watermark so your presentation looks fully yours when they open it.',
+        title: 'Send a clean link to your ' + audience,
+        body: 'Remove the watermark with Pro. Every shared link looks fully yours.',
         cta: 'Remove Watermark' },
       { id: 'unbranded-export', signals: ['export-click', 'export-download'],
-        title: 'Your ' + topic + ' export will carry our watermark',
-        body: 'Remove it for a polished file you can send directly to ' + u.audience + '.',
+        title: 'Deliver a polished file to your ' + audience,
+        body: 'Pro exports come watermark-free so your ' + audience + ' gets a clean, finished deliverable.',
         cta: 'Remove Watermark' },
     ],
     'export': [
       { id: 'ppt-export', signals: ['export-click', 'export-download'],
-        title: 'Take your ' + topic + ' deck offline',
-        body: 'Export to PowerPoint so you can edit, email, or present it anywhere.',
+        title: 'Send this wherever it needs to go',
+        body: 'Pro export gives you a polished .pptx or PDF that opens cleanly in any tool your ' + audience + ' uses.',
         cta: 'Unlock Exports' },
       { id: 'pdf-export', signals: ['play-preview', 'share-link-copy'],
-        title: 'Send ' + u.audience + ' a polished PDF of your ' + topic + ' deck',
-        body: 'Export a presentation-ready PDF that\u2019s perfect for email or print.',
+        title: 'Send a PDF they can open anywhere',
+        body: 'Export your ' + topic + ' deck to PDF with Pro. Ready to email, print, or attach.',
         cta: 'Unlock Exports' },
       { id: 'embed', signals: ['share-link-copy'],
-        title: 'Share your ' + topic + ' deck beyond a file download',
-        body: 'Embed it on any webpage as an always-updated alternative to a PowerPoint or PDF export.',
+        title: 'Put your ' + topic + ' deck on any webpage',
+        body: 'Embed your ' + topic + ' deck on any page with Pro. Fully interactive, live updates.',
         cta: 'Unlock Embeds' },
     ],
     'invite-collab': [
       { id: 'guests', signals: ['share-link-copy', 'prompt-team'],
-        title: 'Get feedback before this reaches ' + u.audience,
-        body: 'Invite guests to view and comment, all in one place.',
+        title: 'Keep every comment on the slide',
+        body: 'Invite guests to view and comment with Pro. Feedback stays on the deck, not in Slack.',
         cta: 'Invite Collaborators' },
       { id: 'workspace', signals: ['prompt-team', 'invite-attempt'],
-        title: 'Your team should be building this ' + topic + ' deck with you',
-        body: 'Add them to a shared workspace where everyone can edit and comment together.',
+        title: 'Build this deck with your team',
+        body: 'Work on your ' + topic + ' deck together in Pro workspaces. Real-time edits and comments.',
         cta: 'Invite Collaborators' },
       { id: 'present-remotely', signals: ['play-preview'],
-        title: 'Present your ' + topic + ' deck live to ' + u.audience,
-        body: 'Share a link and your audience follows along in real time as you present.',
+        title: 'Present live to your ' + audience,
+        body: 'Present with Pro. A synced link keeps every slide moving with you, from anywhere.',
         cta: 'Get Live Presenting' },
       { id: 'version-history', signals: ['undo-redo', 'deck-regenerate'],
-        title: 'Let collaborators edit your ' + topic + ' deck without risk',
-        body: 'Version History tracks every edit for 30 days so you can roll back any teammate\u2019s change in a click.',
+        title: 'Never lose an edit',
+        body: 'Keep 30 days of version history on Pro. Roll back any edit, anytime.',
         cta: 'Get Version History' },
     ],
     'analytics': [
       { id: 'page-views', signals: ['share-link-copy', 'play-preview'],
-        title: 'Know when ' + u.audience + ' opens your ' + topic + ' deck',
-        body: 'Analytics shows exactly who viewed it and when.',
+        title: 'See what lands after you hit share',
+        body: 'Pro tracks every open, which slide held attention, and for how long, so your next pitch hits harder.',
         cta: 'Try Analytics' },
       { id: 'slide-engagement', signals: ['share-link-copy'],
-        title: 'Find out which slides ' + u.audience + ' actually cared about',
-        body: 'See exactly where they spent the most time in your ' + topic + ' deck.',
+        title: 'See which slides kept your ' + audience + ' engaged',
+        body: 'Pro Analytics shows exactly where your viewers spent time, slide by slide.',
         cta: 'Try Analytics' },
       { id: 'demographics', signals: ['share-link-copy', 'prompt-team'],
-        title: 'See who\u2019s viewing your ' + topic + ' deck',
-        body: 'Analytics shows where your viewers are and what devices they\u2019re using.',
+        title: "Know who's opening your deck",
+        body: 'Pro Analytics breaks down viewers by location, device, and time.',
         cta: 'Try Analytics' },
     ],
     'hire-team': [
       { id: 'hire-team', signals: ['undo-redo', 'deck-regenerate', 'doc-upload-long'],
-        title: 'Let our team build your ' + topic + ' deck for ' + u.audience,
-        body: 'You focus on the message, we handle the design and polish.',
+        title: 'Let our design team build it for you',
+        body: 'Our team turns your ' + topic + ' deck for ' + audience + ' into a polished, on-brand presentation, delivered fast.',
         cta: 'Talk to Our Team' },
     ],
   };
