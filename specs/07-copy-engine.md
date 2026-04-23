@@ -76,50 +76,50 @@ const audience = (u.audience || '').replace(/^→\s*/, '').toLowerCase();
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Write tighter copy with Pro plans | Pro AI nails the wording and layout so your {topic} deck sounds exactly how you want it. | Upgrade to Pro |
-| ai-credits | insert-slide-prompt, deck-regenerate | More AI credits, more iterations | Go heavier on AI with Pro. Higher credit limits keep your {topic} deck evolving. | Upgrade to Pro |
-| project-knowledge | doc-upload, doc-upload-long, prompt-brand | Your uploaded docs, working in every slide | Project Knowledge on Pro feeds your uploaded docs into every AI-generated slide. | Get Project Knowledge |
+| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Write tighter copy with Pro plans | Get sharper wording and layouts. Your {topic} deck sounds exactly how you want it. | Upgrade to Pro |
+| ai-credits | insert-slide-prompt, deck-regenerate | More AI credits, more iterations | Go heavier on AI. Higher credit limits keep your {topic} deck evolving. | Upgrade to Pro |
+| project-knowledge | doc-upload, doc-upload-long, prompt-brand | Your uploaded docs, working in every slide | Project Knowledge feeds your uploaded docs into every AI-generated slide. | Get Project Knowledge |
 
 ### brand-kit (4 variants)
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| brand-fonts | style-change | Let your fonts carry the presentation | Save your typeface to Brand Kit on Pro. Every slide reads with the same voice, start to finish. | Get Brand Kit |
-| brand-colors | theme-global, layout-slide | Give your {audience} a deck that reads unmistakably yours | Pro's Brand Kit applies your colors and fonts everywhere. No toolbar touches needed. | Get Brand Kit |
-| brand-assets | insert-media, prompt-brand | Your logo, one click into any slide | Store your logo and images in Brand Kit. Drop them anywhere with one click on Pro. | Get Brand Kit |
-| brand-voice | text-edit, insert-title, insert-list | Keep your voice consistent across slides | Brand Kit remembers your tone, Pro AI writes every new slide to match. | Get Brand Kit |
+| brand-fonts | style-change | Let your fonts carry the presentation | Save your typeface to Brand Kit. Every slide reads with the same voice, start to finish. | Get Brand Kit |
+| brand-colors | theme-global, layout-slide | Give your {audience} a deck that reads unmistakably yours | Apply your colors and fonts everywhere with Brand Kit. No toolbar touches needed. | Get Brand Kit |
+| brand-assets | insert-media, prompt-brand | Your logo, one click into any slide | Store your logo and images in Brand Kit. Drop them anywhere with one click. | Get Brand Kit |
+| brand-voice | text-edit, insert-title, insert-list | Keep your voice consistent across slides | Brand Kit stores your tone. Every AI-generated slide sounds like you. | Get Brand Kit |
 
 ### unbranded (2 variants)
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| unbranded-links | share-link-copy, play-preview | Send a clean link to your {audience} | Remove the watermark with Pro. Every shared link looks fully yours. | Remove Watermark |
-| unbranded-export | export-click, export-download | Deliver a polished file to your {audience} | Pro exports come watermark-free so your {audience} gets a clean, finished deliverable. | Remove Watermark |
+| unbranded-links | share-link-copy, play-preview | Send a clean link to your {audience} | Remove the watermark. Every shared link looks fully yours. | Remove Watermark |
+| unbranded-export | export-click, export-download | Deliver a polished file to your {audience} | Download a watermark-free file. Your {audience} gets a clean, finished deliverable. | Remove Watermark |
 
 ### export (3 variants)
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| ppt-export | export-click, export-download | Send this wherever it needs to go | Pro export gives you a polished .pptx or PDF that opens cleanly in any tool your {audience} uses. | Unlock Exports |
-| pdf-export | play-preview, share-link-copy | Send a PDF they can open anywhere | Export your {topic} deck to PDF with Pro. Ready to email, print, or attach. | Unlock Exports |
-| embed | share-link-copy | Put your {topic} deck on any webpage | Embed your {topic} deck on any page with Pro. Fully interactive, live updates. | Unlock Embeds |
+| ppt-export | export-click, export-download | Export your {topic} deck anywhere | Export as .pptx or PDF. Share, print, or keep editing in PowerPoint. | Unlock Exports |
+| pdf-export | play-preview, share-link-copy | Send a PDF they can open anywhere | Export your {topic} deck to PDF. Ready to email, print, or attach. | Unlock Exports |
+| embed | share-link-copy | Put your {topic} deck on any webpage | Embed your {topic} deck on any page. Fully interactive, live updates. | Unlock Embeds |
 
 ### invite-collab (4 variants)
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| guests | share-link-copy, prompt-team | Keep every comment on the slide | Invite guests to view and comment with Pro. Feedback stays on the deck, not in Slack. | Invite Collaborators |
-| workspace | prompt-team, invite-attempt | Build this deck with your team | Work on your {topic} deck together in Pro workspaces. Real-time edits and comments. | Invite Collaborators |
-| present-remotely | play-preview | Present live to your {audience} | Present with Pro. A synced link keeps every slide moving with you, from anywhere. | Get Live Presenting |
-| version-history | undo-redo, deck-regenerate | Never lose an edit | Keep 30 days of version history on Pro. Roll back any edit, anytime. | Get Version History |
+| guests | share-link-copy, prompt-team | Keep every comment on the slide | Invite guests to view and comment. Feedback stays on the deck, not in Slack. | Invite Collaborators |
+| workspace | prompt-team, invite-attempt | Build this deck with your team | Work on your {topic} deck together in a shared workspace. Real-time edits and comments. | Invite Collaborators |
+| present-remotely | play-preview | Present live to your {audience} | Present live from anywhere. A synced link keeps every slide moving with you. | Get Live Presenting |
+| version-history | undo-redo, deck-regenerate | Never lose an edit | Keep 30 days of version history. Roll back any edit, anytime. | Get Version History |
 
 ### analytics (3 variants)
 
 | Sub-feature | Trigger signals | Title | Body | CTA |
 |---|---|---|---|---|
-| page-views | share-link-copy, play-preview | See what lands after you hit share | Pro tracks every open, which slide held attention, and for how long, so your next pitch hits harder. | Try Analytics |
-| slide-engagement | share-link-copy | See which slides kept your {audience} engaged | Pro Analytics shows exactly where your viewers spent time, slide by slide. | Try Analytics |
-| demographics | export-click, export-download | Know who's opening your deck | Pro Analytics breaks down viewers by location, device, and time. | Try Analytics |
+| page-views | share-link-copy, play-preview | See what lands after you hit share | See every open, which slide held attention, and for how long. Your next pitch hits harder. | Try Analytics |
+| slide-engagement | share-link-copy | See which slides kept your {audience} engaged | Track where your viewers spent time on every slide. | Try Analytics |
+| demographics | export-click, export-download | Know who's opening your deck | Break down viewers by location, device, and time. | Try Analytics |
 
 ### hire-team (1 variant)
 

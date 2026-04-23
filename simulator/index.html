@@ -2226,18 +2226,17 @@ function checkGuardrails(featureId) {
 function generateCopy(feature) {
   const u = state.user;
   const topic = u.topic;
-  // Audience strings carry a "→ " prefix (see context-layers.json). Strip it
-  // and lowercase for natural interpolation: "→ Investors" → "investors".
+  // Audience strings carry a "→ " prefix (see context-layers.json). Strip + lowercase
+  // for natural interpolation: "→ Investors" → "investors".
   const audience = (u.audience || '').replace(/^→\s*/, '').toLowerCase();
 
   // Copy principles:
   //   Title  → directional, outcome-focused. Frames the win, not the flaw.
-  //            Sentence-case, no period.
-  //   Body   → 1 sentence (or 2 short), no em dashes.
-  //            User action / outcome first; "Pro" as qualifier, not subject noun.
-  //   CTA    → feature-named ("Get Brand Kit", "Try Analytics").
-  //   Never  → imply current product is bad. Don't use "missing", "on the first try",
-  //            "shouldn't see our logo", "without the back-and-forth", etc.
+  //   Body   → 1-2 short sentences, no em dashes. No forced "with Pro" /
+  //            "on Pro" / "Pro AI" / "Pro Analytics" — CTA handles upsell.
+  //   CTA    → feature-named.
+  //   Never  → imply current product is bad. Banned: "missing", "first try",
+  //            "first pass", "shouldn't see", "back-and-forth".
 
   var signals = state.activeSignals;
 
@@ -2245,89 +2244,89 @@ function generateCopy(feature) {
     'ai-models': [
       { id: 'advanced-models', signals: ['text-edit', 'undo-redo', 'edit-after-preview', 'deck-regenerate'],
         title: 'Write tighter copy with Pro plans',
-        body: 'Pro AI nails the wording and layout so your ' + topic + ' deck sounds exactly how you want it.',
+        body: 'Get sharper wording and layouts. Your ' + topic + ' deck sounds exactly how you want it.',
         cta: 'Upgrade to Pro' },
       { id: 'ai-credits', signals: ['insert-slide-prompt', 'deck-regenerate'],
         title: 'More AI credits, more iterations',
-        body: 'Go heavier on AI with Pro. Higher credit limits keep your ' + topic + ' deck evolving.',
+        body: 'Go heavier on AI. Higher credit limits keep your ' + topic + ' deck evolving.',
         cta: 'Upgrade to Pro' },
       { id: 'project-knowledge', signals: ['doc-upload', 'doc-upload-long', 'prompt-brand'],
         title: 'Your uploaded docs, working in every slide',
-        body: 'Project Knowledge on Pro feeds your uploaded docs into every AI-generated slide.',
+        body: 'Project Knowledge feeds your uploaded docs into every AI-generated slide.',
         cta: 'Get Project Knowledge' },
     ],
     'brand-kit': [
       { id: 'brand-fonts', signals: ['style-change'],
         title: 'Let your fonts carry the presentation',
-        body: 'Save your typeface to Brand Kit on Pro. Every slide reads with the same voice, start to finish.',
+        body: 'Save your typeface to Brand Kit. Every slide reads with the same voice, start to finish.',
         cta: 'Get Brand Kit' },
       { id: 'brand-colors', signals: ['theme-global', 'layout-slide'],
         title: 'Give your ' + audience + ' a deck that reads unmistakably yours',
-        body: "Pro's Brand Kit applies your colors and fonts everywhere. No toolbar touches needed.",
+        body: 'Apply your colors and fonts everywhere with Brand Kit. No toolbar touches needed.',
         cta: 'Get Brand Kit' },
       { id: 'brand-assets', signals: ['insert-media', 'prompt-brand'],
         title: 'Your logo, one click into any slide',
-        body: 'Store your logo and images in Brand Kit. Drop them anywhere with one click on Pro.',
+        body: 'Store your logo and images in Brand Kit. Drop them anywhere with one click.',
         cta: 'Get Brand Kit' },
       { id: 'brand-voice', signals: ['text-edit', 'insert-title', 'insert-list'],
         title: 'Keep your voice consistent across slides',
-        body: 'Brand Kit remembers your tone, Pro AI writes every new slide to match.',
+        body: 'Brand Kit stores your tone. Every AI-generated slide sounds like you.',
         cta: 'Get Brand Kit' },
     ],
     'unbranded': [
       { id: 'unbranded-links', signals: ['share-link-copy', 'play-preview'],
         title: 'Send a clean link to your ' + audience,
-        body: 'Remove the watermark with Pro. Every shared link looks fully yours.',
+        body: 'Remove the watermark. Every shared link looks fully yours.',
         cta: 'Remove Watermark' },
       { id: 'unbranded-export', signals: ['export-click', 'export-download'],
         title: 'Deliver a polished file to your ' + audience,
-        body: 'Pro exports come watermark-free so your ' + audience + ' gets a clean, finished deliverable.',
+        body: 'Download a watermark-free file. Your ' + audience + ' gets a clean, finished deliverable.',
         cta: 'Remove Watermark' },
     ],
     'export': [
       { id: 'ppt-export', signals: ['export-click', 'export-download'],
-        title: 'Send this wherever it needs to go',
-        body: 'Pro export gives you a polished .pptx or PDF that opens cleanly in any tool your ' + audience + ' uses.',
+        title: 'Export your ' + topic + ' deck anywhere',
+        body: 'Export as .pptx or PDF. Share, print, or keep editing in PowerPoint.',
         cta: 'Unlock Exports' },
       { id: 'pdf-export', signals: ['play-preview', 'share-link-copy'],
         title: 'Send a PDF they can open anywhere',
-        body: 'Export your ' + topic + ' deck to PDF with Pro. Ready to email, print, or attach.',
+        body: 'Export your ' + topic + ' deck to PDF. Ready to email, print, or attach.',
         cta: 'Unlock Exports' },
       { id: 'embed', signals: ['share-link-copy'],
         title: 'Put your ' + topic + ' deck on any webpage',
-        body: 'Embed your ' + topic + ' deck on any page with Pro. Fully interactive, live updates.',
+        body: 'Embed your ' + topic + ' deck on any page. Fully interactive, live updates.',
         cta: 'Unlock Embeds' },
     ],
     'invite-collab': [
       { id: 'guests', signals: ['share-link-copy', 'prompt-team'],
         title: 'Keep every comment on the slide',
-        body: 'Invite guests to view and comment with Pro. Feedback stays on the deck, not in Slack.',
+        body: 'Invite guests to view and comment. Feedback stays on the deck, not in Slack.',
         cta: 'Invite Collaborators' },
       { id: 'workspace', signals: ['prompt-team', 'invite-attempt'],
         title: 'Build this deck with your team',
-        body: 'Work on your ' + topic + ' deck together in Pro workspaces. Real-time edits and comments.',
+        body: 'Work on your ' + topic + ' deck together in a shared workspace. Real-time edits and comments.',
         cta: 'Invite Collaborators' },
       { id: 'present-remotely', signals: ['play-preview'],
         title: 'Present live to your ' + audience,
-        body: 'Present with Pro. A synced link keeps every slide moving with you, from anywhere.',
+        body: 'Present live from anywhere. A synced link keeps every slide moving with you.',
         cta: 'Get Live Presenting' },
       { id: 'version-history', signals: ['undo-redo', 'deck-regenerate'],
         title: 'Never lose an edit',
-        body: 'Keep 30 days of version history on Pro. Roll back any edit, anytime.',
+        body: 'Keep 30 days of version history. Roll back any edit, anytime.',
         cta: 'Get Version History' },
     ],
     'analytics': [
       { id: 'page-views', signals: ['share-link-copy', 'play-preview'],
         title: 'See what lands after you hit share',
-        body: 'Pro tracks every open, which slide held attention, and for how long, so your next pitch hits harder.',
+        body: 'See every open, which slide held attention, and for how long. Your next pitch hits harder.',
         cta: 'Try Analytics' },
       { id: 'slide-engagement', signals: ['share-link-copy'],
         title: 'See which slides kept your ' + audience + ' engaged',
-        body: 'Pro Analytics shows exactly where your viewers spent time, slide by slide.',
+        body: 'Track where your viewers spent time on every slide.',
         cta: 'Try Analytics' },
       { id: 'demographics', signals: ['share-link-copy', 'prompt-team'],
         title: "Know who's opening your deck",
-        body: 'Pro Analytics breaks down viewers by location, device, and time.',
+        body: 'Break down viewers by location, device, and time.',
         cta: 'Try Analytics' },
     ],
     'hire-team': [
