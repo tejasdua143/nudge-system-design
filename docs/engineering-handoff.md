@@ -398,11 +398,12 @@ A gate, not a selector. Runs 6 checks in order after Milestone Selector picks th
 Selects from 20 copy sub-variants across 7 features.
 
 **Copy rules:**
-- Titles name the pain, never the feature — *"Your {topic} deck could be better on the first try"*, not *"Upgrade AI Models"*
-- CTAs name the specific feature — *"Get Brand Kit"*, *"Try Analytics"*, *"Remove Watermark"*
-- `{topic}` and `{audience}` tokens interpolated from `state.user`
-- Topic truncated to 4 words if longer — `"Series A investor pitch deck"` → `"Series A investor pitch..."`
-- No tier or country modifiers — same copy for all users globally
+- Titles are directional and outcome-focused. Frame the win, not the flaw. Example: *"Let your fonts carry the presentation"*, not *"Your deck is missing your fonts"*.
+- Never imply the current free product is bad. Banned phrases: *first try*, *first pass*, *back-and-forth*, *missing*, *shouldn't see*.
+- CTAs are feature-named: *"Get Brand Kit"*, *"Try Analytics"*, *"Remove Watermark"*.
+- `{topic}` and `{audience}` are interpolated from `state.user`. Audience strings lose their `→ ` prefix and lowercase for natural reading (`→ Investors` → `investors`).
+- No tier or country modifiers. Same copy for all users globally.
+- No em dashes in titles or bodies.
 
 **Sub-variant selection algorithm:**
 1. Count trigger signal matches in `state.activeSignals` for each sub-variant
@@ -465,58 +466,6 @@ Selects from 20 copy sub-variants across 7 features.
 | Sub-feature | Trigger signals | Title | CTA |
 |---|---|---|---|
 | hire-team | undo-redo, deck-regenerate, doc-upload-long | Let our design team build it for you | Talk to Our Team |
-
----|---|---|---|
-| advanced-models | text-edit, undo-redo, edit-after-preview, deck-regenerate | Your {topic} deck could be better on the first try | Upgrade to Pro |
-| ai-credits | insert-slide-prompt, deck-regenerate | Don't lose momentum on your {topic} deck | Upgrade to Pro |
-| project-knowledge | doc-upload, doc-upload-long, prompt-brand | Make your {topic} slides even more accurate | Get Project Knowledge |
-
-#### brand-kit (4)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| brand-fonts | style-change | Set your fonts once for the whole deck | Get Brand Kit |
-| brand-colors | theme-global, layout-slide | Your {topic} deck should look like it came from your brand | Get Brand Kit |
-| brand-assets | insert-media, prompt-brand | Your {topic} deck is missing your brand assets | Get Brand Kit |
-| brand-voice | text-edit, insert-title, insert-list | Make sure {audience} hears your brand's voice in every slide | Get Brand Kit |
-
-#### unbranded (2)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| unbranded-links | share-link-copy, play-preview | Before you share your {topic} deck with {audience} | Remove Watermark |
-| unbranded-export | export-click, export-download | Your {topic} export will carry our watermark | Remove Watermark |
-
-#### export (3)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| ppt-export | export-click, export-download | Take your {topic} deck offline | Unlock Exports |
-| pdf-export | play-preview, share-link-copy | Send {audience} a polished PDF of your {topic} deck | Unlock Exports |
-| embed | share-link-copy | Your {topic} presentation could live on your website | Unlock Embeds |
-
-#### invite-collab (4)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| guests | share-link-copy, prompt-team | Get feedback before this reaches {audience} | Invite Collaborators |
-| workspace | prompt-team, invite-attempt | Your team should be building this {topic} deck with you | Invite Collaborators |
-| present-remotely | play-preview | Present your {topic} deck live to {audience} | Get Live Presenting |
-| version-history | undo-redo, deck-regenerate | Keep a safety net for your {topic} deck | Get Version History |
-
-#### analytics (3)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| page-views | share-link-copy, play-preview | Know when {audience} opens your {topic} deck | Try Analytics |
-| slide-engagement | share-link-copy | Find out which slides {audience} actually cared about | Try Analytics |
-| demographics | export-click, export-download | See who's viewing your {topic} deck | Try Analytics |
-
-#### hire-team (1)
-
-| Sub-feature | Trigger signals | Title | CTA |
-|---|---|---|---|
-| hire-team | undo-redo, deck-regenerate, doc-upload-long | Let our team build your {topic} deck for {audience} | Talk to Our Team |
 
 ---
 

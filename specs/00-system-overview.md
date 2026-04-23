@@ -267,7 +267,7 @@ Copy is not a static template per feature. Each feature has 1-4 **sub-features**
 3. Pick the candidate with the most matches.
 4. Fallback to the first candidate if none match.
 
-**Example:** If `brand-kit` wins and the user has been changing fonts (`style-change` signal), the "brand-fonts" sub-feature fires with: *"Set your fonts once for the whole deck"*. If instead they uploaded media (`insert-media` signal), the "brand-assets" sub-feature fires with: *"Your {topic} deck is missing your brand assets"*.
+**Example:** If `brand-kit` wins and the user has been changing fonts (`style-change` signal), the "brand-fonts" sub-feature fires with: *"Let your fonts carry the presentation"*. If instead they uploaded media (`insert-media` signal), the "brand-assets" sub-feature fires with: *"Your logo, one click into any slide"*.
 
 ### Sub-Feature Count
 
